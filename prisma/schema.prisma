@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionDirection {
+  INCOME
+  EXPENSE
+  TRANSFER
+  REVERSAL
+}
+
+enum CategorizationSource {
+  SYSTEM_RULE
+  USER_MANUAL
+  AI_SUGGESTION
+  IMPORTED
+}
+
+enum StatementImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum StatementFormat {
+  CSV
+  OFX
+}
+
+model User {
+  id               String            @id @default(cuid())
+  name             String?
+  email            String            @unique
+  passwordHash     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  bankAccounts     BankAccount[]
+  statementImports StatementImport[]
+  transactions     Transaction[]
+  categories       Category[]
+  categoryRules    CategoryRule[]
+  auditLogs        AuditLog[]
+
+  @@index([email])
+}
+
+model BankAccount {
+  id               String            @id @default(cuid())
+  userId           String
+  name             String
+  institutionName  String?
+  accountMask      String?
+  currency         String            @default("BRL")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statementImports StatementImport[]
+  transactions     Transaction[]
+
+  @@index([userId])
+}
+
+model StatementImport {
+  id               String                @id @default(cuid())
+  userId           String
+  bankAccountId    String?
+  format           StatementFormat
+  status           StatementImportStatus @default(PENDING)
+  originalFileName String?
+  fileHash         String?
+  rowCount         Int                   @default(0)
+  importedCount    Int                   @default(0)
+  skippedCount     Int                   @default(0)
+  errorSummary     String?
+  createdAt        DateTime              @default(now())
+  completedAt      DateTime?
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankAccount      BankAccount?          @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  transactions     Transaction[]
+
+  @@index([userId, createdAt])
+  @@index([bankAccountId])
+}
+
+model Transaction {
+  id                    String               @id @default(cuid())
+  userId                String
+  bankAccountId         String?
+  statementImportId     String?
+  categoryId            String?
+  occurredAt            DateTime
+  postedAt              DateTime?
+  description           String
+  normalizedDescription String?
+  amountCents           Int
+  currency              String               @default("BRL")
+  direction             TransactionDirection
+  categorizationSource  CategorizationSource @default(IMPORTED)
+  dedupeKey             String
+  rawPayload            Json?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankAccount           BankAccount?         @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  statementImport       StatementImport?     @relation(fields: [statementImportId], references: [id], onDelete: SetNull)
+  category              Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, occurredAt])
+  @@index([userId, categoryId])
+  @@index([bankAccountId])
+  @@index([statementImportId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  userId       String
+  parentId     String?
+  name         String
+  color        String?
+  icon         String?
+  isSystem     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Category[]    @relation("CategoryHierarchy")
+  transactions Transaction[]
+  rules        CategoryRule[]
+
+  @@unique([userId, name, parentId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model CategoryRule {
+  id           String    @id @default(cuid())
+  userId       String
+  categoryId   String
+  name         String
+  matchText    String
+  isActive     Boolean   @default(true)
+  priority     Int       @default(100)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([categoryId])
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  action        String
+  entityType    String?
+  entityId      String?
+  metadata      Json?
+  ipHash        String?
+  userAgentHash String?
+  createdAt     DateTime @default(now())
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
