@@ -11,31 +11,61 @@
 
 ## Camadas
 
-`app/` contém rotas e layouts do App Router.
+`app/` contem rotas, paginas e Server Actions do App Router.
 
-`components/` contém componentes visuais reutilizáveis:
+`components/` contem componentes visuais reutilizaveis:
 
-- `layout`: navegação, sidebar e topo.
-- `ui`: botões, cards e elementos básicos.
-- `dashboard`: blocos específicos do dashboard.
-- `charts`: futuros componentes de gráficos.
+- `layout`: navegacao, sidebar e topo.
+- `ui`: botoes, cards e elementos basicos.
+- `dashboard`: blocos especificos do dashboard.
 
-`lib/` concentra lógica de domínio:
+`lib/` concentra logica de dominio:
 
-- `auth`: autenticação, sessão e rotas protegidas.
+- `auth`: hash de senha, cookies, sessoes, usuario atual e audit logs.
 - `db`: Prisma Client e helpers de acesso a dados.
-- `parsers`: CSV no MVP e OFX na próxima versão.
-- `security`: sanitização, hashing, validações e auditoria.
-- `insights`: KPIs, séries temporais, recorrência e insights.
+- `parsers`: CSV no MVP e OFX depois do MVP inicial.
+- `security`: sanitizacao, hashing, validacoes e auditoria futura.
+- `insights`: KPIs, series temporais, recorrencia e insights planejados.
 
-`prisma/` guarda o schema do banco.
+`prisma/` guarda o schema e migrations do banco.
 
-`docs/` guarda decisões e documentação de evolução.
+`docs/` guarda decisoes e documentacao de evolucao.
 
-## Segurança arquitetural
+## Autenticacao e sessao
 
-Todas as entidades financeiras principais usam `userId`. Qualquer query futura deve aplicar isolamento por usuário. Uploads serão tratados como entrada não confiável e não devem ser logados com conteúdo bruto.
+A Sprint 1 implementa autenticacao propria para o MVP:
 
-## Evolução prevista
+- Senhas sao salvas somente como hash bcrypt.
+- O token puro de sessao e gerado no servidor com `crypto`.
+- O banco armazena apenas `Session.tokenHash`.
+- O cookie `money_flow_session` carrega o token puro com `httpOnly`, `sameSite: "lax"`, `path: "/"`, expiracao de 30 dias e `secure` em producao.
+- Logout invalida a sessao no banco e remove o cookie.
+- `getCurrentUser` e `requireCurrentUser` concentram a obtencao server-side do usuario autenticado.
 
-Na Sprint 1 entram autenticação, sessão e rotas protegidas. Na Sprint 2 entram upload, parsing CSV e deduplicação. Na Sprint 3 o dashboard passa a usar dados reais.
+## Protecao de rotas
+
+O `middleware.ts` protege:
+
+- `/dashboard`
+- `/import`
+- `/transactions`
+- `/categories`
+- `/settings`
+
+As paginas internas tambem validam a sessao no servidor para evitar confiar apenas na presenca do cookie.
+
+## Modelo de dados
+
+`User` contem `name`, `email`, `passwordHash`, timestamps e relacoes com sessoes, logs e entidades financeiras.
+
+`Session` contem `userId`, `tokenHash`, `expiresAt`, timestamps, `userAgent` opcional e `ipHash` opcional. `tokenHash` e unico, com indices por `userId` e `expiresAt`.
+
+`AuditLog` registra eventos importantes sem senha, token ou dados financeiros sensiveis em claro.
+
+## Seguranca arquitetural
+
+Todas as entidades financeiras principais usam `userId`. Qualquer query futura deve aplicar isolamento por usuario. Uploads serao tratados como entrada nao confiavel e nao devem ser logados com conteudo bruto.
+
+## Evolucao prevista
+
+Na Sprint 2 entram upload, parsing CSV e deduplicacao. Na Sprint 3 o dashboard passa a usar dados reais. Rate limiting, MFA, recuperacao de senha, criptografia forte e modo de privacidade avancado ficam para fases futuras.

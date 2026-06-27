@@ -4,17 +4,17 @@ import { LinkButton } from "@/components/ui/button";
 const highlights = [
   {
     title: "Importe extratos",
-    text: "CSV no MVP, OFX na próxima versão.",
+    text: "CSV no MVP, OFX depois do MVP inicial.",
     icon: FileSpreadsheet,
   },
   {
     title: "Leia seus KPIs",
-    text: "Entradas, saídas, saldo, médias e evolução mensal.",
+    text: "Entradas, saidas, saldo, medias e evolucao mensal.",
     icon: TrendingUp,
   },
   {
     title: "Privacidade em primeiro lugar",
-    text: "Arquitetura preparada para LGPD, auditoria e isolamento por usuário.",
+    text: "Arquitetura preparada para LGPD, auditoria e isolamento por usuario.",
     icon: ShieldCheck,
   },
 ];
@@ -46,22 +46,22 @@ export default function HomePage() {
 
         <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-teal">Sprint 0</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-teal">Sprint 1</p>
             <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-tight text-brand-navy sm:text-6xl">
               Money Flow
             </h1>
             <p className="mt-5 max-w-2xl text-xl text-slate-600">Seu GPS financeiro pessoal.</p>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600">
-              Um sistema web para transformar extratos bancários em visão clara: KPIs,
-              dashboards, categorias editáveis e insights financeiros que ajudam a decidir melhor.
+              Um sistema web para transformar extratos bancarios em visao clara: KPIs,
+              dashboards, categorias editaveis e insights financeiros que ajudam a decidir melhor.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <LinkButton href="/dashboard">
-                Ver dashboard
+              <LinkButton href="/register">
+                Criar minha conta
                 <ArrowRight className="size-4" aria-hidden="true" />
               </LinkButton>
               <LinkButton href="/login" variant="secondary">
-                Acessar mockup
+                Entrar
               </LinkButton>
             </div>
           </div>

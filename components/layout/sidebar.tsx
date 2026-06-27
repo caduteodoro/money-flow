@@ -3,9 +3,9 @@ import { BarChart3, FileUp, Home, Layers3, Settings } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard", label: "Importações", icon: FileUp },
+  { href: "/dashboard", label: "Importacoes", icon: FileUp },
   { href: "/dashboard", label: "Categorias", icon: Layers3 },
-  { href: "/dashboard", label: "Relatórios", icon: BarChart3 },
+  { href: "/dashboard", label: "Relatorios", icon: BarChart3 },
   { href: "/dashboard", label: "Ajustes", icon: Settings },
 ];
 
@@ -40,8 +40,10 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto rounded-lg border border-slate-200 bg-brand-sky p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-teal">Sprint 0</p>
-        <p className="mt-2 text-sm text-slate-700">Fundação preparada para importar CSV no MVP.</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-teal">Sprint 1</p>
+        <p className="mt-2 text-sm text-slate-700">
+          Autenticacao real pronta. Importacao CSV fica para a proxima sprint.
+        </p>
       </div>
     </aside>
   );

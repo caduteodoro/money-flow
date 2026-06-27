@@ -35,11 +35,12 @@ enum StatementFormat {
 
 model User {
   id               String            @id @default(cuid())
-  name             String?
+  name             String
   email            String            @unique
-  passwordHash     String?
+  passwordHash     String
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  sessions         Session[]
   bankAccounts     BankAccount[]
   statementImports StatementImport[]
   transactions     Transaction[]
@@ -48,6 +49,21 @@ model User {
   auditLogs        AuditLog[]
 
   @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userAgent String?
+  ipHash    String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model BankAccount {

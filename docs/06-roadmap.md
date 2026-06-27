@@ -2,54 +2,75 @@
 
 ## Sprint 0
 
-- Fundação do projeto.
+- Fundacao do projeto.
 - Stack.
 - Docker.
 - Prisma.
-- Documentação.
+- Documentacao.
 - AGENTS.md.
 - Skills/agentes.
+- Telas mockadas para `/`, `/login`, `/register` e `/dashboard`.
+
+Status: concluida.
 
 ## Sprint 1
 
-- Cadastro.
+- Cadastro de usuario.
 - Login.
-- Sessão.
+- Logout.
+- Sessao segura com cookie HTTP-only.
+- Token puro somente no cookie.
+- Hash do token salvo em `Session.tokenHash`.
 - Rotas protegidas.
-- Layout principal.
+- Isolamento inicial por usuario.
+- Audit logs basicos de autenticacao.
+- Documentacao atualizada.
+
+Status: implementada no codigo. Validacao final depende dos checks locais.
 
 ## Sprint 2
 
 - Upload CSV.
-- Validação.
-- Preview.
-- Importação.
-- Deduplicação.
-- Histórico de importações.
+- Validacao de extensao, MIME type, tamanho, estrutura e conteudo.
+- Preview antes da importacao.
+- Importacao com `userId`.
+- Deduplicacao por `dedupeKey`.
+- Historico de importacoes.
+- Logs de auditoria sem conteudo financeiro sensivel.
 
 ## Sprint 3
 
-- Dashboard.
+- Dashboard com dados reais.
 - KPIs.
 - Filtro de datas.
-- Gráficos com tooltips.
-- Tabela de últimas transações.
+- Graficos com tooltips.
+- Tabela de ultimas transacoes.
 - Insights bem-humorados.
 
 ## Sprint 4
 
 - Categorias.
 - Categoria pai/filha.
-- Edição de categoria.
-- Criação de categoria.
-- Regras automáticas.
-- Transações não categorizadas.
+- Edicao de categoria.
+- Criacao de categoria.
+- Regras automaticas.
+- Transacoes nao categorizadas.
 
 ## Sprint 5
 
-- Segurança.
-- Audit logs.
-- Revisão de privacidade.
-- Documentação final do MVP.
-- README enriquecido.
-- Preparação para OFX.
+- Hardening de seguranca.
+- Rate limiting.
+- Revisao de privacidade.
+- Documentacao final do MVP.
+- Preparacao para OFX.
+
+## Futuro pos-MVP
+
+- MFA.
+- Recuperacao de senha.
+- Login social opcional.
+- OFX parser.
+- Criptografia mais forte para campos sensiveis.
+- Zero-knowledge/privacy mode.
+- Scanner de arquivos.
+- Deploy com revisao de variaveis, cookies e observabilidade.

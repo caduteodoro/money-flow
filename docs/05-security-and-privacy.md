@@ -1,41 +1,87 @@
-# 05 - Segurança e privacidade
+# 05 - Seguranca e privacidade
 
-## Princípios
+## Principios
 
-- Privacidade por padrão.
-- Menor exposição possível de dados financeiros.
+- Privacidade por padrao.
+- Menor exposicao possivel de dados financeiros.
 - Isolamento rigoroso por `userId`.
-- Logs úteis sem conteúdo sensível em claro.
-- Evolução considerando LGPD/GDPR.
+- Logs uteis sem conteudo sensivel em claro.
+- Evolucao considerando LGPD/GDPR.
 
 ## Regras atuais
 
-- `.env` real não deve ser versionado.
-- Extratos reais não devem entrar no GitHub.
-- Não criar telas administrativas para visualizar transações dos usuários.
-- Descrições de transações, CPF, dados bancários e nomes completos não devem ser logados sem necessidade.
+- `.env` real nao deve ser versionado.
+- Extratos reais nao devem entrar no GitHub.
+- Nao criar telas administrativas para visualizar transacoes dos usuarios.
+- Descricoes de transacoes, CPF, dados bancarios, nomes completos e valores sensiveis nao devem ser logados sem necessidade.
+- Senhas e tokens de sessao nunca devem ser registrados em logs.
 
-## Autenticação futura
+## Autenticacao da Sprint 1
 
-Na Sprint 1, revisar:
+- Senhas sao validadas no servidor e armazenadas com hash bcrypt.
+- E-mails sao normalizados com `trim/lowercase`.
+- Erros de login usam mensagem generica para nao revelar se o e-mail existe.
+- Login invalido registra `LOGIN_FAILED` com hash do e-mail e sem senha.
+- Sessao usa token aleatorio criado no servidor.
+- Apenas o hash do token e salvo em `Session.tokenHash`.
+- O token puro fica somente no cookie HTTP-only.
+- Logout remove a sessao do banco e limpa o cookie.
 
-- Hash de senha com algoritmo forte.
-- Política de sessão.
-- Cookies seguros.
-- Proteção de rotas.
-- Rate limiting em rotas sensíveis.
+## Cookies de sessao
+
+O cookie `money_flow_session` usa:
+
+- `httpOnly: true`
+- `sameSite: "lax"`
+- `secure: true` em producao
+- `path: "/"`
+- expiracao de 30 dias
+
+## Audit logs
+
+Eventos atuais:
+
+- `USER_REGISTERED`
+- `USER_LOGIN`
+- `USER_LOGOUT`
+- `LOGIN_FAILED`
+
+Metadados permitidos nesta fase:
+
+- Hash de e-mail em falhas de login.
+- Hash de IP quando disponivel.
+- Hash de user-agent quando disponivel.
+- Tipo de evento e timestamps.
+
+Nao registrar:
+
+- Senhas.
+- Tokens.
+- Descricoes completas de transacoes.
+- Dados de conta bancaria.
+- Valores financeiros sensiveis.
 
 ## Upload futuro
 
 Na Sprint 2, revisar:
 
-- Tamanho máximo.
-- Extensões permitidas.
+- Tamanho maximo.
+- Extensoes permitidas.
 - MIME type.
+- Estrutura do CSV.
 - Parsing seguro.
 - Scanner de arquivos no roadmap.
-- Armazenamento temporário com limpeza.
+- Armazenamento temporario com limpeza.
+
+## Limitacoes conhecidas
+
+- Ainda nao ha MFA.
+- Ainda nao ha recuperacao de senha.
+- Ainda nao ha rate limiting.
+- Ainda nao ha login social.
+- Ainda nao ha criptografia de campos financeiros.
+- Ainda nao ha modo zero-knowledge/privacy mode.
 
 ## Criptografia futura
 
-Antes de produção, avaliar criptografia de campos sensíveis e uma arquitetura que impeça operadores da plataforma de visualizar transações individuais.
+Antes de producao, avaliar criptografia de campos sensiveis e uma arquitetura que impeca operadores da plataforma de visualizar transacoes individuais. A modelagem atual ja separa `userId` e evita telas administrativas sobre dados financeiros.

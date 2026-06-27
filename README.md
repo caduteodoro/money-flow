@@ -2,32 +2,42 @@
 
 **Seu GPS financeiro pessoal.**
 
-Money Flow é um sistema web de finanças pessoais pensado para transformar extratos bancários em visão clara: KPIs, dashboards, gráficos, tabelas, categorias editáveis e insights úteis para decisões do dia a dia.
+Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 0 - Fundação do projeto**.
+Status atual: **Sprint 1 - Autenticacao real do MVP**.
 
 ## Problema
 
-Extratos bancários chegam em formatos diferentes, com descrições confusas e pouca visão consolidada. Para muita gente, entender para onde o dinheiro foi exige planilhas manuais, filtros repetitivos e pouca segurança sobre os próprios números.
+Extratos bancarios chegam em formatos diferentes, com descricoes confusas e pouca visao consolidada. Para muita gente, entender para onde o dinheiro foi exige planilhas manuais, filtros repetitivos e pouca seguranca sobre os proprios numeros.
 
 ## Proposta
 
-O Money Flow será uma aplicação SaaS pessoal para importar extratos, organizar transações, categorizar gastos e apresentar indicadores financeiros em uma experiência limpa, moderna e segura.
+O Money Flow sera uma aplicacao SaaS pessoal para importar extratos, organizar transacoes, categorizar gastos e apresentar indicadores financeiros em uma experiencia limpa, moderna e segura.
 
-O MVP começa com CSV. OFX entra na versão seguinte. PDF não faz parte da importação automática do MVP.
+O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da importacao automatica do MVP.
+
+## Funcionalidades atuais
+
+- Cadastro de usuario com nome, e-mail, senha e confirmacao.
+- Login com mensagem generica para credenciais invalidas.
+- Logout com invalidacao da sessao no banco.
+- Sessao propria com cookie HTTP-only.
+- Token de sessao salvo no banco apenas como hash.
+- Rotas internas protegidas por middleware e validacao server-side.
+- Dashboard mockado exibindo nome e e-mail do usuario autenticado.
+- Audit logs basicos para `USER_REGISTERED`, `USER_LOGIN`, `USER_LOGOUT` e `LOGIN_FAILED`.
 
 ## Funcionalidades planejadas do MVP
 
-- Cadastro, login, sessão e rotas protegidas.
-- Upload de CSV com validação e preview.
-- Importação com deduplicação.
-- Histórico de importações.
-- Dashboard com entradas, saídas, saldo, gasto médio diário e evolução mensal.
-- Tabela de últimas transações.
-- Categorias pai/filha editáveis.
-- Regras automáticas de categorização.
+- Upload de CSV com validacao e preview.
+- Importacao com deduplicacao por `dedupeKey`.
+- Historico de importacoes.
+- Dashboard com entradas, saidas, saldo, gasto medio diario e evolucao mensal usando dados reais.
+- Tabela de ultimas transacoes.
+- Categorias pai/filha editaveis.
+- Regras automaticas de categorizacao.
 - Insights financeiros bem-humorados.
-- Audit logs e revisão de privacidade.
+- Revisao final de privacidade do MVP.
 
 ## Stack
 
@@ -38,17 +48,37 @@ O MVP começa com CSV. OFX entra na versão seguinte. PDF não faz parte da impo
 - Prisma ORM.
 - Docker Compose.
 
-## Arquitetura inicial
+Dependencias de autenticacao adicionadas na Sprint 1:
 
-A aplicação usa o App Router do Next.js para telas públicas e internas. A camada visual está separada em `components/`, enquanto domínios futuros ficam em `lib/`:
+- `bcryptjs` para hash e verificacao de senha.
+- `zod` para validacao server-side de formularios.
 
-- `lib/auth`: autenticação e sessão.
-- `lib/db`: acesso ao banco e helpers Prisma.
-- `lib/parsers`: parsers CSV e OFX.
-- `lib/security`: validações, hashing, sanitização e auditoria.
-- `lib/insights`: cálculos de KPIs e insights.
+## Arquitetura
 
-O banco é modelado com Prisma e PostgreSQL. Todas as entidades financeiras principais carregam `userId` para isolamento por usuário desde a Sprint 0.
+A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada visual esta separada em `components/`, enquanto a regra de negocio fica em `lib/`:
+
+- `lib/auth`: senha, cookie de sessao, sessao, usuario atual e audit logs.
+- `lib/db`: Prisma Client.
+- `lib/parsers`: parsers CSV e OFX planejados.
+- `lib/security`: validacoes, sanitizacao e controles futuros.
+- `lib/insights`: KPIs e insights planejados.
+
+Todas as entidades financeiras principais carregam `userId` para isolamento por usuario desde a modelagem inicial.
+
+## Autenticacao no MVP
+
+O MVP usa autenticacao propria, sem OAuth ou login social.
+
+Fluxo:
+
+- Cadastro normaliza e-mail com `trim/lowercase`.
+- Senha e validada no servidor e salva somente como hash bcrypt.
+- Login compara a senha com o hash salvo.
+- Ao autenticar, o servidor gera um token aleatorio com `crypto`.
+- Apenas o hash SHA-256 do token e salvo em `Session.tokenHash`.
+- O token puro e enviado somente em cookie HTTP-only chamado `money_flow_session`.
+- O cookie usa `httpOnly`, `sameSite: "lax"`, `path: "/"`, expiracao de 30 dias e `secure` em producao.
+- Logout apaga a sessao correspondente no banco e remove o cookie.
 
 ## Como rodar localmente
 
@@ -65,11 +95,11 @@ npm install
 cp .env.example .env
 docker compose up -d postgres
 npx prisma generate
-npx prisma migrate dev --name init
+npx prisma migrate dev
 npm run dev
 ```
 
-A aplicação ficará em `http://localhost:3000`.
+A aplicacao ficara em `http://localhost:3000`.
 
 ## PostgreSQL com Docker
 
@@ -85,9 +115,9 @@ Parar banco:
 docker compose down
 ```
 
-O volume `postgres_data` mantém os dados entre reinícios do container.
+O volume `postgres_data` mantem os dados entre reinicios do container.
 
-## Variáveis de ambiente
+## Variaveis de ambiente
 
 Copie `.env.example` para `.env` e ajuste os valores locais:
 
@@ -96,11 +126,9 @@ POSTGRES_USER=money_flow
 POSTGRES_PASSWORD=change-me-in-local-env
 POSTGRES_DB=money_flow
 DATABASE_URL="postgresql://money_flow:change-me-in-local-env@localhost:5432/money_flow?schema=public"
-NEXTAUTH_SECRET=change-me-before-auth-sprint
-NEXTAUTH_URL=http://localhost:3000
 ```
 
-Não use segredos reais em arquivos versionados.
+Nao use segredos reais em arquivos versionados.
 
 ## Prisma
 
@@ -113,7 +141,7 @@ npx prisma generate
 Criar/aplicar migration local:
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate dev --name add_auth_sessions
 ```
 
 Abrir Prisma Studio:
@@ -130,7 +158,6 @@ components/
 components/layout/
 components/ui/
 components/dashboard/
-components/charts/
 lib/
 lib/auth/
 lib/db/
@@ -141,7 +168,6 @@ prisma/
 docs/
 sample-data/
 public/
-public/brand/
 .agents/
 .agents/skills/
 ```
@@ -150,68 +176,77 @@ public/brand/
 
 Sprint 0:
 
-- Fundação do projeto.
+- Fundacao do projeto.
 - Stack.
 - Docker.
 - Prisma.
-- Documentação.
+- Documentacao.
 - AGENTS.md.
 - Skills/agentes.
 
 Sprint 1:
 
-- Cadastro.
-- Login.
-- Sessão.
+- Cadastro, login e logout.
+- Sessao segura com cookie HTTP-only.
 - Rotas protegidas.
-- Layout principal.
+- Isolamento inicial por usuario.
+- Audit logs de autenticacao.
 
 Sprint 2:
 
 - Upload CSV.
-- Validação.
+- Validacao.
 - Preview.
-- Importação.
-- Deduplicação.
-- Histórico de importações.
+- Importacao.
+- Deduplicacao.
+- Historico de importacoes.
 
 Sprint 3:
 
-- Dashboard.
+- Dashboard com dados reais.
 - KPIs.
 - Filtro de datas.
-- Gráficos com tooltips.
-- Tabela de últimas transações.
+- Graficos com tooltips.
+- Tabela de ultimas transacoes.
 - Insights bem-humorados.
 
 Sprint 4:
 
 - Categorias.
 - Categoria pai/filha.
-- Edição de categoria.
-- Criação de categoria.
-- Regras automáticas.
-- Transações não categorizadas.
+- Edicao e criacao de categoria.
+- Regras automaticas.
+- Transacoes nao categorizadas.
 
 Sprint 5:
 
-- Segurança.
-- Audit logs.
-- Revisão de privacidade.
-- Documentação final do MVP.
-- README enriquecido.
-- Preparação para OFX.
+- Hardening de seguranca.
+- Rate limiting.
+- Revisao de privacidade.
+- Documentacao final do MVP.
+- Preparacao para OFX.
 
-## Segurança e privacidade
+## Seguranca e privacidade
 
 - Nunca use extratos reais no GitHub.
 - Nunca versionar `.env` real.
-- Nunca criar tela administrativa que exponha dados financeiros de usuários.
-- Todas as consultas futuras devem isolar dados por `userId`.
-- Logs não devem armazenar descrições completas de transações, documentos, contas bancárias ou valores sensíveis em texto claro sem necessidade.
+- Nunca criar tela administrativa que exponha dados financeiros de usuarios.
+- Todas as consultas financeiras devem isolar dados por `userId`.
+- Logs nao devem armazenar senhas, tokens, descricoes completas de transacoes, documentos, contas bancarias ou valores sensiveis em texto claro.
+- IP, quando registrado, deve ser armazenado apenas como hash.
 - O roadmap deve considerar LGPD/GDPR.
-- Futuramente, campos sensíveis devem ter criptografia e a plataforma deve evitar que operadores vejam transações individuais.
+- Futuramente, campos sensiveis devem ter criptografia e a plataforma deve evitar que operadores vejam transacoes individuais.
 
 ## Dados de exemplo
 
-A pasta `sample-data/` contém apenas dados fictícios. Use esses arquivos para desenvolvimento local e demonstrações.
+A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para desenvolvimento local e demonstracoes.
+
+## Limitacoes conhecidas da Sprint 1
+
+- Sem recuperacao de senha.
+- Sem MFA.
+- Sem rate limiting.
+- Sem login social.
+- Sem upload CSV.
+- Dashboard ainda usa dados mockados.
+- Sem modo zero-knowledge ou criptografia de campos financeiros.
