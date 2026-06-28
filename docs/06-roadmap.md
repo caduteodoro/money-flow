@@ -39,7 +39,7 @@ Status: implementada no codigo. Validacao final depende dos checks locais.
 - Historico de importacoes.
 - Logs de auditoria sem conteudo financeiro sensivel.
 
-Status: base tecnica em implementacao. Tela visual completa de upload fica para o proximo bloco da sprint.
+Status: bloco visual de `/import` implementado com upload, preview, confirmacao, resumo e historico.
 
 ## Sprint 3
 

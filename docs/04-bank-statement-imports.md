@@ -28,7 +28,9 @@ O parser inicial aceita o CSV estilo Nubank e converte as linhas para um formato
 7. Normalizar data, valor, descricao, direcao e identificador externo.
 8. Gerar `fileHash`, `descriptionHash` e `dedupeKey`.
 9. Gerar preview com duplicatas por usuario.
-10. Persistir `StatementImport` e `Transaction` sem salvar CSV bruto.
+10. Confirmar importacao a partir do mesmo arquivo selecionado.
+11. Persistir `StatementImport` e `Transaction` sem salvar CSV bruto.
+12. Exibir resumo e historico em `/import`.
 
 ## Deduplicacao
 
@@ -52,6 +54,8 @@ Ao importar, o sistema registra `STATEMENT_IMPORTED` com metadados seguros:
 - `fileSizeBytes`
 - `rowCount`
 - `importedCount`
+- `duplicateCount`
+- `invalidRowCount`
 - `skippedCount`
 
 Nao registrar conteudo bruto do arquivo, descricoes completas, valores individuais ou dados bancarios sensiveis.

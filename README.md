@@ -31,6 +31,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Validacao server-side de CSV por extensao, MIME type, tamanho, UTF-8 e estrutura.
 - Preview tecnico de importacao com `fileHash`, `descriptionHash` e `dedupeKey`.
 - Servico inicial para persistir importacoes e transacoes com deduplicacao por usuario.
+- Rota protegida `/import` com upload CSV, preview, confirmacao, resumo e historico.
 
 ## Funcionalidades planejadas do MVP
 
@@ -147,7 +148,7 @@ npx prisma generate
 Criar/aplicar migration local:
 
 ```bash
-npx prisma migrate dev --name add_statement_imports_transactions
+npx prisma migrate dev
 ```
 
 Abrir Prisma Studio:
@@ -255,7 +256,6 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem tela visual completa de upload CSV.
 - Dashboard ainda usa dados mockados.
 - Sem categorias reais.
 - Sem parser OFX.

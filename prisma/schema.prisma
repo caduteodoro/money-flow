@@ -94,6 +94,8 @@ model StatementImport {
   fileSizeBytes    Int?
   rowCount         Int                   @default(0)
   importedCount    Int                   @default(0)
+  duplicateCount   Int                   @default(0)
+  invalidRowCount  Int                   @default(0)
   skippedCount     Int                   @default(0)
   errorSummary     String?
   createdAt        DateTime              @default(now())

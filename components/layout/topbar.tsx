@@ -5,14 +5,16 @@ type TopbarProps = {
   user: {
     email: string;
   };
+  eyebrow?: string;
+  title?: string;
 };
 
-export function Topbar({ user }: TopbarProps) {
+export function Topbar({ user, eyebrow = "Visao geral", title = "Dashboard financeiro" }: TopbarProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
       <div>
-        <p className="text-sm font-medium text-brand-teal">Visao geral</p>
-        <h1 className="text-2xl font-bold text-brand-navy">Dashboard financeiro</h1>
+        <p className="text-sm font-medium text-brand-teal">{eyebrow}</p>
+        <h1 className="text-2xl font-bold text-brand-navy">{title}</h1>
         <p className="mt-1 text-sm text-slate-500">{user.email}</p>
       </div>
 
