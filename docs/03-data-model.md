@@ -1,24 +1,46 @@
 # 03 - Modelo de dados
 
-## Modelos iniciais
+## Modelos principais
 
 - `User`: dono dos dados e ponto de isolamento.
-- `BankAccount`: conta bancária do usuário.
-- `StatementImport`: histórico de arquivos importados.
-- `Transaction`: lançamento financeiro.
-- `Category`: categoria editável, com suporte a hierarquia.
-- `CategoryRule`: regra automática de categorização.
-- `AuditLog`: registro de ações importantes sem dados financeiros sensíveis em claro.
+- `Session`: sessao autenticada com hash do token.
+- `BankAccount`: conta bancaria do usuario.
+- `StatementImport`: historico de arquivos processados.
+- `Transaction`: lancamento financeiro normalizado.
+- `Category`: categoria editavel, com suporte a hierarquia futura.
+- `CategoryRule`: regra automatica de categorizacao futura.
+- `AuditLog`: registro de acoes importantes sem dados financeiros sensiveis em claro.
 
-## Regras importantes
+## Regras de isolamento
 
-- Toda transação pertence a um usuário.
-- Toda conta bancária pertence a um usuário.
-- Toda importação pertence a um usuário.
-- Categoria suporta `parentId` para pai/filha.
-- Transação suporta `categoryId` editável.
-- Transação suporta `rawPayload` em JSON para preservar dados brutos de importação quando necessário.
-- Transação usa `dedupeKey` com unicidade por usuário.
+- Toda conta bancaria pertence a um `userId`.
+- Toda importacao pertence a um `userId`.
+- Toda transacao pertence a um `userId`.
+- Queries financeiras devem filtrar explicitamente por `userId`.
+- `Transaction` usa `@@unique([userId, dedupeKey])` para deduplicacao por usuario.
+
+## Importacoes
+
+`StatementImport` guarda metadados do processamento:
+
+- `format` com `CSV` nesta fase.
+- `sourceProvider` para identificar o parser usado sem acoplar o dominio ao banco.
+- `fileHash` para rastrear o arquivo sem salvar o CSV bruto.
+- `fileSizeBytes`, `rowCount`, `importedCount` e `skippedCount`.
+- `status`, `createdAt`, `updatedAt` e `completedAt`.
+
+O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao confia nele como fonte de verdade.
+
+## Transacoes
+
+`Transaction` guarda:
+
+- `occurredAt`, `postedAt`, `amountCents`, `currency` e `direction`.
+- `description` para uso do proprio usuario autenticado.
+- `normalizedDescription` e `descriptionHash` para comparacao e deduplicacao.
+- `dedupeKey` calculado a partir de provedor, identificador externo quando existir, data, valor e hash de descricao.
+
+O MVP nao salva o CSV bruto no banco.
 
 ## Enums
 
@@ -36,8 +58,15 @@
 - `AI_SUGGESTION`
 - `IMPORTED`
 
-## Observações para próximas sprints
+`StatementImportStatus`:
 
-- Avaliar `Decimal` em vez de `Int` se houver necessidade multimoeda avançada. No MVP, `amountCents` evita erros de ponto flutuante.
-- Revisar índices após as primeiras queries reais do dashboard.
-- Validar se `rawPayload` deve ser reduzido, mascarado ou criptografado antes de produção.
+- `PENDING`
+- `PROCESSING`
+- `COMPLETED`
+- `FAILED`
+
+## Observacoes para proximas sprints
+
+- Avaliar `Decimal` se houver necessidade multimoeda avancada. No MVP, `amountCents` evita erros de ponto flutuante.
+- Revisar indices apos as primeiras queries reais do dashboard.
+- Evitar `rawPayload` para conteudo bruto sensivel; se usado no futuro, deve ser reduzido, mascarado ou criptografado.

@@ -45,6 +45,7 @@ Eventos atuais:
 - `USER_LOGIN`
 - `USER_LOGOUT`
 - `LOGIN_FAILED`
+- `STATEMENT_IMPORTED`
 
 Metadados permitidos nesta fase:
 
@@ -52,6 +53,7 @@ Metadados permitidos nesta fase:
 - Hash de IP quando disponivel.
 - Hash de user-agent quando disponivel.
 - Tipo de evento e timestamps.
+- Metadados agregados de importacao, como `fileHash`, tamanho do arquivo e contadores.
 
 Nao registrar:
 
@@ -60,18 +62,26 @@ Nao registrar:
 - Descricoes completas de transacoes.
 - Dados de conta bancaria.
 - Valores financeiros sensiveis.
+- Conteudo bruto de arquivos CSV.
 
-## Upload futuro
+## Upload CSV da Sprint 2
 
-Na Sprint 2, revisar:
+A base de importacao CSV aplica:
 
-- Tamanho maximo.
-- Extensoes permitidas.
-- MIME type.
-- Estrutura do CSV.
-- Parsing seguro.
+- Tamanho maximo de 2 MB.
+- Extensao `.csv`.
+- MIME types CSV comuns.
+- Validacao de UTF-8.
+- Bloqueio de bytes nulos.
+- Validacao de estrutura pelo parser.
+- Hash SHA-256 do arquivo.
+- Hash SHA-256 da descricao normalizada.
+- Deduplicacao por `userId` e `dedupeKey`.
+
+Ainda permanecem no roadmap:
+
 - Scanner de arquivos no roadmap.
-- Armazenamento temporario com limpeza.
+- Armazenamento temporario com limpeza caso arquivos sejam persistidos fora do banco.
 
 ## Limitacoes conhecidas
 
@@ -81,6 +91,8 @@ Na Sprint 2, revisar:
 - Ainda nao ha login social.
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
+- Ainda nao ha tela visual completa de upload.
+- Ainda nao ha parser OFX.
 
 ## Criptografia futura
 

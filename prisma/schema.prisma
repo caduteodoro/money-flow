@@ -88,19 +88,24 @@ model StatementImport {
   bankAccountId    String?
   format           StatementFormat
   status           StatementImportStatus @default(PENDING)
+  sourceProvider   String?
   originalFileName String?
   fileHash         String?
+  fileSizeBytes    Int?
   rowCount         Int                   @default(0)
   importedCount    Int                   @default(0)
   skippedCount     Int                   @default(0)
   errorSummary     String?
   createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
   completedAt      DateTime?
   user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   bankAccount      BankAccount?          @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
   transactions     Transaction[]
 
   @@index([userId, createdAt])
+  @@index([userId, fileHash])
+  @@index([userId, status, createdAt])
   @@index([bankAccountId])
 }
 
@@ -114,6 +119,7 @@ model Transaction {
   postedAt              DateTime?
   description           String
   normalizedDescription String?
+  descriptionHash       String?
   amountCents           Int
   currency              String               @default("BRL")
   direction             TransactionDirection
@@ -130,6 +136,7 @@ model Transaction {
   @@unique([userId, dedupeKey])
   @@index([userId, occurredAt])
   @@index([userId, categoryId])
+  @@index([userId, descriptionHash])
   @@index([bankAccountId])
   @@index([statementImportId])
 }

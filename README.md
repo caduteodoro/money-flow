@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 1 - Autenticacao real do MVP**.
+Status atual: **Sprint 2 - Base de importacao CSV**.
 
 ## Problema
 
@@ -26,6 +26,11 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Rotas internas protegidas por middleware e validacao server-side.
 - Dashboard mockado exibindo nome e e-mail do usuario autenticado.
 - Audit logs basicos para `USER_REGISTERED`, `USER_LOGIN`, `USER_LOGOUT` e `LOGIN_FAILED`.
+- Modelagem financeira inicial com `BankAccount`, `StatementImport` e `Transaction`.
+- Parser inicial para CSV estilo Nubank em `lib/parsers`.
+- Validacao server-side de CSV por extensao, MIME type, tamanho, UTF-8 e estrutura.
+- Preview tecnico de importacao com `fileHash`, `descriptionHash` e `dedupeKey`.
+- Servico inicial para persistir importacoes e transacoes com deduplicacao por usuario.
 
 ## Funcionalidades planejadas do MVP
 
@@ -48,7 +53,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Prisma ORM.
 - Docker Compose.
 
-Dependencias de autenticacao adicionadas na Sprint 1:
+Dependencias adicionadas ate a Sprint 2:
 
 - `bcryptjs` para hash e verificacao de senha.
 - `zod` para validacao server-side de formularios.
@@ -59,7 +64,8 @@ A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada
 
 - `lib/auth`: senha, cookie de sessao, sessao, usuario atual e audit logs.
 - `lib/db`: Prisma Client.
-- `lib/parsers`: parsers CSV e OFX planejados.
+- `lib/parsers`: contratos, registry, normalizacao e parser CSV inicial.
+- `lib/imports`: validacao, preview e persistencia inicial de importacao.
 - `lib/security`: validacoes, sanitizacao e controles futuros.
 - `lib/insights`: KPIs e insights planejados.
 
@@ -141,7 +147,7 @@ npx prisma generate
 Criar/aplicar migration local:
 
 ```bash
-npx prisma migrate dev --name add_auth_sessions
+npx prisma migrate dev --name add_statement_imports_transactions
 ```
 
 Abrir Prisma Studio:
@@ -161,6 +167,7 @@ components/dashboard/
 lib/
 lib/auth/
 lib/db/
+lib/imports/
 lib/parsers/
 lib/security/
 lib/insights/
@@ -197,9 +204,10 @@ Sprint 2:
 - Upload CSV.
 - Validacao.
 - Preview.
-- Importacao.
+- Importacao no banco.
 - Deduplicacao.
 - Historico de importacoes.
+- Audit log seguro de importacao.
 
 Sprint 3:
 
@@ -241,12 +249,14 @@ Sprint 5:
 
 A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para desenvolvimento local e demonstracoes.
 
-## Limitacoes conhecidas da Sprint 1
+## Limitacoes conhecidas da Sprint 2
 
 - Sem recuperacao de senha.
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem upload CSV.
+- Sem tela visual completa de upload CSV.
 - Dashboard ainda usa dados mockados.
+- Sem categorias reais.
+- Sem parser OFX.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.

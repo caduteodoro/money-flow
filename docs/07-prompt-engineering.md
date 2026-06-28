@@ -36,6 +36,9 @@ Pedidos de upload/importacao devem reforcar:
 - Nunca usar extratos reais no repositorio.
 - Nunca logar conteudo bruto de extrato.
 - Toda consulta e importacao precisa filtrar por `userId`.
+- Gerar `fileHash`, `descriptionHash` e `dedupeKey`.
+- Nao salvar arquivo bruto no banco.
+- Nao acoplar o dominio a um banco especifico; usar parsers/adaptadores.
 
 ## Prompts para insights futuros
 

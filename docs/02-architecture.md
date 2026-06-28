@@ -23,7 +23,8 @@
 
 - `auth`: hash de senha, cookies, sessoes, usuario atual e audit logs.
 - `db`: Prisma Client e helpers de acesso a dados.
-- `parsers`: CSV no MVP e OFX depois do MVP inicial.
+- `parsers`: contratos, registry, normalizacao e parser CSV inicial.
+- `imports`: validacao de arquivo, preview e persistencia inicial de importacao.
 - `security`: sanitizacao, hashing, validacoes e auditoria futura.
 - `insights`: KPIs, series temporais, recorrencia e insights planejados.
 
@@ -62,10 +63,22 @@ As paginas internas tambem validam a sessao no servidor para evitar confiar apen
 
 `AuditLog` registra eventos importantes sem senha, token ou dados financeiros sensiveis em claro.
 
+## Importacao CSV
+
+A Sprint 2 inicia a base de importacao sem tela visual completa:
+
+- `lib/parsers/statement-parser.ts` define o contrato interno para parsers.
+- `lib/parsers/parser-registry.ts` escolhe o parser compativel.
+- `lib/parsers/nubank-csv-parser.ts` implementa o CSV estilo Nubank usado em `sample-data/`.
+- `lib/parsers/normalization.ts` centraliza normalizacao, `fileHash`, `descriptionHash` e `dedupeKey`.
+- `lib/imports/statement-import-service.ts` valida upload, gera preview e persiste importacoes.
+
+O restante do sistema consome transacoes normalizadas, nao detalhes especificos do Nubank.
+
 ## Seguranca arquitetural
 
 Todas as entidades financeiras principais usam `userId`. Qualquer query futura deve aplicar isolamento por usuario. Uploads serao tratados como entrada nao confiavel e nao devem ser logados com conteudo bruto.
 
 ## Evolucao prevista
 
-Na Sprint 2 entram upload, parsing CSV e deduplicacao. Na Sprint 3 o dashboard passa a usar dados reais. Rate limiting, MFA, recuperacao de senha, criptografia forte e modo de privacidade avancado ficam para fases futuras.
+Na Sprint 2 entram a base de upload, parsing CSV, preview tecnico, importacao e deduplicacao. Na Sprint 3 o dashboard passa a usar dados reais. Rate limiting, MFA, recuperacao de senha, criptografia forte e modo de privacidade avancado ficam para fases futuras.

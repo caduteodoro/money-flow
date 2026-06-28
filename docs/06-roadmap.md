@@ -30,13 +30,16 @@ Status: implementada no codigo. Validacao final depende dos checks locais.
 
 ## Sprint 2
 
-- Upload CSV.
-- Validacao de extensao, MIME type, tamanho, estrutura e conteudo.
-- Preview antes da importacao.
+- Base de upload CSV.
+- Validacao de extensao, MIME type, tamanho, UTF-8, estrutura e conteudo.
+- Parser inicial para CSV estilo Nubank.
+- Preview tecnico antes da importacao.
 - Importacao com `userId`.
 - Deduplicacao por `dedupeKey`.
 - Historico de importacoes.
 - Logs de auditoria sem conteudo financeiro sensivel.
+
+Status: base tecnica em implementacao. Tela visual completa de upload fica para o proximo bloco da sprint.
 
 ## Sprint 3
 
