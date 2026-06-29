@@ -6,9 +6,9 @@ type TransactionsTableProps = {
 
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200">
-      <table className="min-w-[760px] w-full border-collapse text-sm">
-        <thead className="bg-slate-50 text-left font-semibold text-slate-600">
+    <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-200">
+      <table className="w-full min-w-[680px] border-collapse text-sm">
+        <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3">Data</th>
             <th className="px-4 py-3">Descricao</th>
@@ -19,7 +19,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
         <tbody className="divide-y divide-slate-100">
           {transactions.length > 0 ? (
             transactions.map((transaction) => (
-              <tr key={transaction.id} className="bg-white">
+              <tr key={transaction.id} className="bg-white transition hover:bg-slate-50">
                 <td className="whitespace-nowrap px-4 py-3 text-slate-600">
                   {formatDate(transaction.occurredAt)}
                 </td>
@@ -28,8 +28,16 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                     {transaction.description}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                  {formatDirection(transaction.direction, transaction.amountCents)}
+                <td className="whitespace-nowrap px-4 py-3">
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+                      isExpense(transaction.direction, transaction.amountCents)
+                        ? "bg-rose-50 text-rose-700"
+                        : "bg-emerald-50 text-emerald-700"
+                    }`}
+                  >
+                    {formatDirection(transaction.direction, transaction.amountCents)}
+                  </span>
                 </td>
                 <td
                   className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${

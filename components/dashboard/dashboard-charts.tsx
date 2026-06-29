@@ -11,12 +11,15 @@ type DashboardChartsProps = {
 
 export function DashboardCharts({ charts, insights }: DashboardChartsProps) {
   return (
-    <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
+    <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-base font-bold text-brand-navy">Evolucao financeira</h2>
-            <span className="text-xs font-semibold text-slate-500">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Fluxo do periodo</p>
+              <h2 className="mt-1 text-base font-bold text-brand-navy">Evolucao financeira</h2>
+            </div>
+            <span className="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
               {charts.granularity === "month" ? "Agrupado por mes" : "Agrupado por dia"}
             </span>
           </div>
@@ -26,10 +29,13 @@ export function DashboardCharts({ charts, insights }: DashboardChartsProps) {
         </CardBody>
       </Card>
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <Card>
           <CardHeader>
-            <h2 className="text-base font-bold text-brand-navy">Entradas vs saidas</h2>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Composicao</p>
+              <h2 className="mt-1 text-base font-bold text-brand-navy">Entradas vs saidas</h2>
+            </div>
           </CardHeader>
           <CardBody>
             <IncomeExpenseChart comparison={charts.incomeExpense} />
@@ -38,7 +44,10 @@ export function DashboardCharts({ charts, insights }: DashboardChartsProps) {
 
         <Card>
           <CardHeader>
-            <h2 className="text-base font-bold text-brand-navy">Insights basicos</h2>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Leitura rapida</p>
+              <h2 className="mt-1 text-base font-bold text-brand-navy">Insights basicos</h2>
+            </div>
           </CardHeader>
           <CardBody>
             <BasicInsights insights={insights} />

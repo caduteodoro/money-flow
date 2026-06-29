@@ -14,17 +14,20 @@ const filters: { id: DashboardDateFilterId; label: string }[] = [
 
 export function DashboardPeriodFilter({ activeFilter }: DashboardPeriodFilterProps) {
   return (
-    <nav className="flex flex-wrap gap-2" aria-label="Filtros de periodo do dashboard">
+    <nav
+      className="flex w-full flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1.5 xl:w-auto"
+      aria-label="Filtros de periodo do dashboard"
+    >
       {filters.map((filter) => {
         const active = filter.id === activeFilter;
 
         return (
           <Link
             key={filter.id}
-            className={`inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-semibold transition ${
+            className={`inline-flex min-h-10 flex-1 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition xl:flex-none ${
               active
-                ? "border-brand-teal bg-teal-50 text-brand-teal"
-                : "border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50 hover:text-brand-teal"
+                ? "border-brand-teal bg-white text-brand-teal shadow-sm"
+                : "border-transparent text-slate-600 hover:bg-white hover:text-brand-teal"
             }`}
             href={`/dashboard?period=${filter.id}`}
           >

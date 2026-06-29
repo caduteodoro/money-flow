@@ -11,6 +11,20 @@ export function IncomeExpenseChart({ comparison }: IncomeExpenseChartProps) {
 
   return (
     <div className="space-y-5">
+      <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-3">
+        <div className="flex h-5 overflow-hidden rounded-full bg-white">
+          <div
+            className="bg-emerald-500"
+            style={{ width: `${incomePercent}%` }}
+            title={`Entradas: ${incomePercent}%`}
+          />
+          <div
+            className="bg-rose-500"
+            style={{ width: `${expensePercent}%` }}
+            title={`Saidas: ${expensePercent}%`}
+          />
+        </div>
+      </div>
       <ComparisonRow
         amountCents={comparison.incomeCents}
         label="Entradas"
@@ -43,7 +57,7 @@ function ComparisonRow({ label, amountCents, percent, tone }: ComparisonRowProps
         <span className="font-semibold text-brand-navy">{label}</span>
         <span className="text-slate-600">{formatCurrency(amountCents)}</span>
       </div>
-      <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100" title={`${label}: ${percent}%`}>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100" title={`${label}: ${percent}%`}>
         <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${percent}%` }} />
       </div>
       <p className="mt-1 text-xs text-slate-500">{percent}% do movimento financeiro do periodo.</p>

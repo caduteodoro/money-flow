@@ -21,31 +21,33 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
   const hasTransactions = summary.kpis.transactionCount > 0;
 
   return (
-    <div className="min-h-screen bg-brand-surface">
-      <Sidebar />
-      <main className="lg:pl-72">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50">
+      <Sidebar activeItem="dashboard" />
+      <main className="min-w-0 lg:pl-72">
         <Topbar
           eyebrow="Sprint 3"
           periodLabel={formatFilterLabel(activeFilter)}
           title="Dashboard financeiro"
           user={user}
         />
-        <div className="space-y-6 px-5 py-6 lg:px-8">
-          <section className="rounded-lg border border-teal-100 bg-white p-5 shadow-soft">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-brand-teal">Sessao ativa</p>
-                <h2 className="mt-2 text-xl font-bold text-brand-navy">
+        <div className="min-w-0 space-y-6 px-4 py-5 sm:px-5 lg:px-8 lg:py-7">
+          <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-soft">
+            <div className="border-l-4 border-brand-teal p-5 sm:p-6">
+              <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Sessao ativa</p>
+                  <h2 className="mt-2 text-balance text-xl font-bold text-brand-navy sm:text-2xl">
                   Ola, {user.name}. Seu GPS financeiro esta pronto para recalcular a rota.
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
                   {hasTransactions
                     ? "Dados calculados a partir das transacoes importadas para o seu usuario."
                     : "Importe seu primeiro CSV ficticio para ver os indicadores reais."}
-                </p>
-              </div>
+                  </p>
+                </div>
 
-              <DashboardPeriodFilter activeFilter={activeFilter} />
+                <DashboardPeriodFilter activeFilter={activeFilter} />
+              </div>
             </div>
           </section>
 
@@ -57,7 +59,10 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 
               <Card>
                 <CardHeader>
-                  <h2 className="text-base font-bold text-brand-navy">Ultimas transacoes</h2>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Movimento recente</p>
+                    <h2 className="mt-1 text-base font-bold text-brand-navy">Ultimas transacoes</h2>
+                  </div>
                 </CardHeader>
                 <CardBody>
                   <TransactionsTable transactions={summary.recentTransactions} />
