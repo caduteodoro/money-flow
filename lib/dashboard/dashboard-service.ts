@@ -10,10 +10,12 @@ import type {
   DashboardDateRange,
   DashboardQueryParams,
   DashboardSummary,
+  DashboardTransactionItem,
   FinancialKpis,
 } from "@/lib/dashboard/dashboard-types";
 
 const DEFAULT_DASHBOARD_FILTER: DashboardDateFilterId = "imported-period";
+const RECENT_TRANSACTIONS_LIMIT = 10;
 
 type DashboardTransaction = {
   id: string;
@@ -99,6 +101,7 @@ function buildDashboardSummary(period: DashboardDateRange, transactions: Dashboa
           amountCents: Math.abs(largestExpense.amountCents),
         }
       : null,
+    recentTransactions: buildRecentTransactions(transactions),
   };
 }
 
@@ -141,7 +144,18 @@ function buildEmptyDashboardSummary(period: DashboardDateRange): DashboardSummar
       transactionCount: 0,
     },
     largestExpense: null,
+    recentTransactions: [],
   };
+}
+
+function buildRecentTransactions(transactions: DashboardTransaction[]): DashboardTransactionItem[] {
+  return transactions.slice(0, RECENT_TRANSACTIONS_LIMIT).map((transaction) => ({
+    id: transaction.id,
+    occurredAt: transaction.occurredAt.toISOString(),
+    description: transaction.description,
+    direction: transaction.direction,
+    amountCents: transaction.amountCents,
+  }));
 }
 
 function isIncomeTransaction(transaction: DashboardTransaction) {

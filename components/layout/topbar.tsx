@@ -7,9 +7,15 @@ type TopbarProps = {
   };
   eyebrow?: string;
   title?: string;
+  periodLabel?: string;
 };
 
-export function Topbar({ user, eyebrow = "Visao geral", title = "Dashboard financeiro" }: TopbarProps) {
+export function Topbar({
+  user,
+  eyebrow = "Visao geral",
+  title = "Dashboard financeiro",
+  periodLabel = "Periodo",
+}: TopbarProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
       <div>
@@ -24,7 +30,7 @@ export function Topbar({ user, eyebrow = "Visao geral", title = "Dashboard finan
           type="button"
         >
           <CalendarDays className="size-4" aria-hidden="true" />
-          Abril 2026
+          {periodLabel}
         </button>
         <form action={logoutAction}>
           <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-teal-200 hover:bg-teal-50">

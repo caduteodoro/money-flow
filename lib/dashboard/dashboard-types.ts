@@ -28,8 +28,17 @@ export type DashboardLargestExpense = {
   amountCents: number;
 } | null;
 
+export type DashboardTransactionItem = {
+  id: string;
+  occurredAt: string;
+  description: string;
+  direction: string;
+  amountCents: number;
+};
+
 export type DashboardSummary = {
   period: DashboardDateRange;
   kpis: FinancialKpis;
   largestExpense: DashboardLargestExpense;
+  recentTransactions: DashboardTransactionItem[];
 };
