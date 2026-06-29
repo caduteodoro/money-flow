@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 2 - Base de importacao CSV**.
+Status atual: **Sprint 2 - Importacao CSV do MVP**.
 
 ## Problema
 
@@ -31,7 +31,8 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Validacao server-side de CSV por extensao, MIME type, tamanho, UTF-8 e estrutura.
 - Preview tecnico de importacao com `fileHash`, `descriptionHash` e `dedupeKey`.
 - Servico inicial para persistir importacoes e transacoes com deduplicacao por usuario.
-- Rota protegida `/import` com upload CSV, preview, confirmacao, resumo e historico.
+- Rota protegida `/import` com upload CSV, preview e confirmacao na mesma tela.
+- Historico de importacoes com mes ou periodo do extrato.
 
 ## Funcionalidades planejadas do MVP
 
@@ -259,4 +260,5 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Dashboard ainda usa dados mockados.
 - Sem categorias reais.
 - Sem parser OFX.
+- Sem importacao automatica de PDF.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.

@@ -2,8 +2,8 @@
 
 ## Formatos
 
-- CSV: base implementada no MVP.
-- OFX: planejado para depois do MVP inicial.
+- CSV: formato implementado no MVP.
+- OFX: fora da Sprint 2, planejado para depois do MVP inicial.
 - PDF: fora do escopo de importacao automatica no MVP.
 
 ## CSV inicial
@@ -17,6 +17,8 @@ Data,Valor,Identificador,Descricao
 
 O parser inicial aceita o CSV estilo Nubank e converte as linhas para um formato interno normalizado. O restante do sistema nao deve depender de colunas especificas do Nubank.
 
+A arquitetura usa contratos e registry de parsers para permitir novos adaptadores no futuro sem acoplar o dominio financeiro ao Nubank.
+
 ## Pipeline da Sprint 2
 
 1. Receber arquivo CSV como entrada nao confiavel.
@@ -29,8 +31,20 @@ O parser inicial aceita o CSV estilo Nubank e converte as linhas para um formato
 8. Gerar `fileHash`, `descriptionHash` e `dedupeKey`.
 9. Gerar preview com duplicatas por usuario.
 10. Confirmar importacao a partir do mesmo arquivo selecionado.
-11. Persistir `StatementImport` e `Transaction` sem salvar CSV bruto.
-12. Exibir resumo e historico em `/import`.
+11. Calcular `periodStart` e `periodEnd` usando todas as transacoes validas parseadas.
+12. Persistir `StatementImport` e `Transaction` sem salvar CSV bruto.
+13. Exibir resumo e historico em `/import`.
+
+Preview e confirmacao acontecem na mesma tela. O usuario seleciona o CSV uma vez, gera o preview e confirma usando o arquivo ja selecionado.
+
+## Periodo do extrato
+
+O historico exibe:
+
+- `Jun/2026` quando todas as transacoes validas estao no mesmo mes.
+- `Mai/2026 - Jun/2026` quando o arquivo cobre mais de um mes.
+
+O periodo e calculado a partir das linhas validas do CSV, nao apenas das transacoes novas. Assim, uma reimportacao 100% duplicada ainda preserva o mes ou intervalo do extrato.
 
 ## Deduplicacao
 
@@ -52,6 +66,8 @@ Ao importar, o sistema registra `STATEMENT_IMPORTED` com metadados seguros:
 - `sourceProvider`
 - `fileHash`
 - `fileSizeBytes`
+- `periodStart`
+- `periodEnd`
 - `rowCount`
 - `importedCount`
 - `duplicateCount`

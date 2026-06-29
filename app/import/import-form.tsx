@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, FileUp, Loader2, TriangleAlert } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,7 @@ type ImportFormProps = {
 };
 
 type SelectedFile = {
+  file: File;
   name: string;
   size: number;
 };
@@ -33,8 +34,9 @@ export function ImportForm({ history }: ImportFormProps) {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const [previewFile, setPreviewFile] = useState<SelectedFile | null>(null);
+  const [confirmState, setConfirmState] = useState<ImportActionState>(initialState);
+  const [isConfirmPending, startConfirmTransition] = useTransition();
   const [previewState, previewAction] = useActionState(previewStatementImportAction, initialState);
-  const [confirmState, confirmAction] = useActionState(confirmStatementImportAction, initialState);
   const preview = previewState.preview;
   const canConfirm =
     Boolean(preview) &&
@@ -70,7 +72,7 @@ export function ImportForm({ history }: ImportFormProps) {
           </div>
         </CardHeader>
         <CardBody>
-          <form action={previewAction} className="space-y-5" encType="multipart/form-data">
+          <form action={previewAction} className="space-y-5">
             <label className="block">
               <span className="text-sm font-medium text-slate-700">Arquivo CSV</span>
               <input
@@ -79,7 +81,9 @@ export function ImportForm({ history }: ImportFormProps) {
                 name="statementFile"
                 onChange={(event) => {
                   const file = event.target.files?.[0];
-                  setSelectedFile(file ? { name: file.name, size: file.size } : null);
+                  setSelectedFile(file ? { file, name: file.name, size: file.size } : null);
+                  setPreviewFile(null);
+                  setConfirmState(initialState);
                 }}
                 required
                 type="file"
@@ -88,7 +92,27 @@ export function ImportForm({ history }: ImportFormProps) {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <PreviewButton />
-              <ConfirmButton canConfirm={canConfirm} formAction={confirmAction} />
+              <ConfirmButton
+                canConfirm={canConfirm}
+                isPending={isConfirmPending}
+                onConfirm={() => {
+                  if (!selectedFile) {
+                    setConfirmState({
+                      status: "error",
+                      message: "Selecione um arquivo CSV antes de confirmar.",
+                    });
+                    return;
+                  }
+
+                  const formData = new FormData();
+                  formData.set("statementFile", selectedFile.file, selectedFile.name);
+
+                  startConfirmTransition(async () => {
+                    const nextState = await confirmStatementImportAction(initialState, formData);
+                    setConfirmState(nextState);
+                  });
+                }}
+              />
             </div>
 
             <ActionMessage state={previewState} />
@@ -105,6 +129,9 @@ export function ImportForm({ history }: ImportFormProps) {
                 <h2 className="text-lg font-bold text-brand-navy">Preview</h2>
                 <p className="text-sm text-slate-500">
                   {preview.sourceProvider} via {preview.parserId}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Periodo: {formatStatementPeriod(preview.periodStart, preview.periodEnd)}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
@@ -188,22 +215,26 @@ function PreviewButton() {
 
 function ConfirmButton({
   canConfirm,
-  formAction,
+  isPending,
+  onConfirm,
 }: {
   canConfirm: boolean;
-  formAction: (payload: FormData) => void;
+  isPending: boolean;
+  onConfirm: () => void;
 }) {
-  const { pending } = useFormStatus();
-
   return (
     <Button
       className="w-full sm:w-auto"
-      disabled={pending || !canConfirm}
-      formAction={formAction}
-      type="submit"
+      disabled={isPending || !canConfirm}
+      onClick={onConfirm}
+      type="button"
       variant="secondary"
     >
-      {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
+      {isPending ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+      ) : (
+        <CheckCircle2 className="size-4" aria-hidden="true" />
+      )}
       Confirmar importacao
     </Button>
   );
@@ -270,6 +301,7 @@ function ImportHistory({ history }: { history: StatementImportSummary[] }) {
               <tr>
                 <th className="px-4 py-3">Data</th>
                 <th className="px-4 py-3">Origem/parser</th>
+                <th className="px-4 py-3">Periodo</th>
                 <th className="px-4 py-3 text-right">Linhas</th>
                 <th className="px-4 py-3 text-right">Importadas</th>
                 <th className="px-4 py-3 text-right">Duplicadas</th>
@@ -283,6 +315,7 @@ function ImportHistory({ history }: { history: StatementImportSummary[] }) {
                   <tr key={item.id} className="text-slate-700">
                     <td className="px-4 py-3">{formatDateTime(item.createdAt)}</td>
                     <td className="px-4 py-3">{item.sourceProvider ?? "CSV"}</td>
+                    <td className="px-4 py-3">{formatStatementPeriod(item.periodStart, item.periodEnd)}</td>
                     <td className="px-4 py-3 text-right">{item.rowCount}</td>
                     <td className="px-4 py-3 text-right">{item.importedCount}</td>
                     <td className="px-4 py-3 text-right">{item.duplicateCount}</td>
@@ -292,7 +325,7 @@ function ImportHistory({ history }: { history: StatementImportSummary[] }) {
                 ))
               ) : (
                 <tr>
-                  <td className="px-4 py-8 text-center text-slate-500" colSpan={7}>
+                  <td className="px-4 py-8 text-center text-slate-500" colSpan={8}>
                     Nenhuma importacao registrada ainda.
                   </td>
                 </tr>
@@ -321,6 +354,31 @@ function formatDateTime(value: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatStatementPeriod(periodStart: string | null, periodEnd: string | null) {
+  if (!periodStart || !periodEnd) {
+    return "-";
+  }
+
+  const start = new Date(periodStart);
+  const end = new Date(periodEnd);
+  const startLabel = formatMonthYear(start);
+  const endLabel = formatMonthYear(end);
+
+  return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
+}
+
+function formatMonthYear(value: Date) {
+  const formatted = new Intl.DateTimeFormat("pt-BR", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(value);
+
+  const label = formatted.replace(".", "").replace(" de ", "/");
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function formatDirection(direction: string) {

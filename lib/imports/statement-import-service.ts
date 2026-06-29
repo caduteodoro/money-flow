@@ -37,6 +37,8 @@ export type StatementImportPreview = {
   fileName: string;
   parserId: string;
   sourceProvider: string;
+  periodStart: string | null;
+  periodEnd: string | null;
   rowCount: number;
   duplicateCount: number;
   invalidRowCount: number;
@@ -48,6 +50,8 @@ export type StatementImportSummary = {
   id: string;
   status: string;
   sourceProvider: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
   rowCount: number;
   importedCount: number;
   duplicateCount: number;
@@ -74,6 +78,8 @@ export async function buildStatementImportPreview(input: StatementUploadInput): 
     fileName: preparedImport.fileName,
     parserId: preparedImport.parserId,
     sourceProvider: preparedImport.sourceProvider,
+    periodStart: preparedImport.periodStart,
+    periodEnd: preparedImport.periodEnd,
     rowCount: preparedImport.rowCount,
     duplicateCount: preparedImport.duplicateCount,
     invalidRowCount: preparedImport.invalidRowCount,
@@ -102,6 +108,8 @@ export async function importStatementTransactions(input: StatementUploadInput) {
         originalFileName: preparedImport.fileName,
         fileHash: preparedImport.fileHash,
         fileSizeBytes: preparedImport.fileSizeBytes,
+        periodStart: preparedImport.periodStart ? new Date(preparedImport.periodStart) : null,
+        periodEnd: preparedImport.periodEnd ? new Date(preparedImport.periodEnd) : null,
         rowCount: preparedImport.rowCount,
         importedCount: transactionsToCreate.length,
         duplicateCount: preparedImport.duplicateCount,
@@ -142,6 +150,8 @@ export async function importStatementTransactions(input: StatementUploadInput) {
           sourceProvider: preparedImport.sourceProvider,
           fileHash: preparedImport.fileHash,
           fileSizeBytes: preparedImport.fileSizeBytes,
+          periodStart: preparedImport.periodStart,
+          periodEnd: preparedImport.periodEnd,
           rowCount: preparedImport.rowCount,
           importedCount: transactionsToCreate.length,
           duplicateCount: preparedImport.duplicateCount,
@@ -158,6 +168,8 @@ export async function importStatementTransactions(input: StatementUploadInput) {
     id: statementImport.id,
     status: statementImport.status,
     sourceProvider: statementImport.sourceProvider,
+    periodStart: statementImport.periodStart?.toISOString() ?? null,
+    periodEnd: statementImport.periodEnd?.toISOString() ?? null,
     rowCount: statementImport.rowCount,
     importedCount: statementImport.importedCount,
     duplicateCount: statementImport.duplicateCount,
@@ -180,6 +192,8 @@ export async function getStatementImportHistory(userId: string): Promise<Stateme
       id: true,
       status: true,
       sourceProvider: true,
+      periodStart: true,
+      periodEnd: true,
       rowCount: true,
       importedCount: true,
       duplicateCount: true,
@@ -191,6 +205,8 @@ export async function getStatementImportHistory(userId: string): Promise<Stateme
 
   return imports.map((statementImport) => ({
     ...statementImport,
+    periodStart: statementImport.periodStart?.toISOString() ?? null,
+    periodEnd: statementImport.periodEnd?.toISOString() ?? null,
     createdAt: statementImport.createdAt.toISOString(),
   }));
 }
@@ -229,6 +245,7 @@ async function prepareStatementImport(input: StatementUploadInput): Promise<Prep
       duplicate,
     };
   });
+  const statementPeriod = calculateStatementPeriod(parsedStatement.transactions);
 
   return {
     fileHash,
@@ -236,6 +253,8 @@ async function prepareStatementImport(input: StatementUploadInput): Promise<Prep
     fileName: sanitizeFileName(input.fileName),
     parserId: parsedStatement.parserId,
     sourceProvider: parsedStatement.sourceProvider,
+    periodStart: statementPeriod.periodStart,
+    periodEnd: statementPeriod.periodEnd,
     rowCount: parsedStatement.transactions.length + parsedStatement.warnings.length,
     duplicateCount: transactionsToImport.filter((transaction) => transaction.duplicate).length,
     invalidRowCount: parsedStatement.warnings.length,
@@ -249,6 +268,22 @@ async function prepareStatementImport(input: StatementUploadInput): Promise<Prep
       duplicate: transaction.duplicate,
     })),
     transactionsToImport,
+  };
+}
+
+function calculateStatementPeriod(transactions: NormalizedStatementTransaction[]) {
+  if (transactions.length === 0) {
+    return {
+      periodStart: null,
+      periodEnd: null,
+    };
+  }
+
+  const timestamps = transactions.map((transaction) => transaction.occurredAt.getTime());
+
+  return {
+    periodStart: new Date(Math.min(...timestamps)).toISOString(),
+    periodEnd: new Date(Math.max(...timestamps)).toISOString(),
   };
 }
 

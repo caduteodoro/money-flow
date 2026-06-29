@@ -53,7 +53,7 @@ Metadados permitidos nesta fase:
 - Hash de IP quando disponivel.
 - Hash de user-agent quando disponivel.
 - Tipo de evento e timestamps.
-- Metadados agregados de importacao, como `fileHash`, tamanho do arquivo e contadores.
+- Metadados agregados de importacao, como `fileHash`, periodo do extrato, tamanho do arquivo e contadores.
 
 Nao registrar:
 
@@ -77,6 +77,7 @@ A base de importacao CSV aplica:
 - Hash SHA-256 do arquivo.
 - Hash SHA-256 da descricao normalizada.
 - Deduplicacao por `userId` e `dedupeKey`.
+- Historico por usuario com mes ou periodo do extrato.
 
 Ainda permanecem no roadmap:
 
@@ -91,7 +92,6 @@ Ainda permanecem no roadmap:
 - Ainda nao ha login social.
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
-- Ainda nao ha tela visual completa de upload.
 - Ainda nao ha parser OFX.
 
 ## Criptografia futura

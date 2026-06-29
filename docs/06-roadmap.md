@@ -36,10 +36,10 @@ Status: implementada no codigo. Validacao final depende dos checks locais.
 - Preview tecnico antes da importacao.
 - Importacao com `userId`.
 - Deduplicacao por `dedupeKey`.
-- Historico de importacoes.
+- Historico de importacoes com mes ou periodo do extrato.
 - Logs de auditoria sem conteudo financeiro sensivel.
 
-Status: bloco visual de `/import` implementado com upload, preview, confirmacao, resumo e historico.
+Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico ficaram fora da Sprint 2.
 
 ## Sprint 3
 

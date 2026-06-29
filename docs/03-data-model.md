@@ -26,8 +26,10 @@
 - `format` com `CSV` nesta fase.
 - `sourceProvider` para identificar o parser usado sem acoplar o dominio ao banco.
 - `fileHash` para rastrear o arquivo sem salvar o CSV bruto.
-- `fileSizeBytes`, `rowCount`, `importedCount` e `skippedCount`.
+- `fileSizeBytes`, `periodStart`, `periodEnd`, `rowCount`, `importedCount`, `duplicateCount`, `invalidRowCount` e `skippedCount`.
 - `status`, `createdAt`, `updatedAt` e `completedAt`.
+
+`periodStart` e `periodEnd` sao calculados a partir das datas das linhas validas do arquivo parseado. O periodo nao depende apenas das transacoes novas, entao importacoes 100% duplicadas ainda preservam o mes ou intervalo do extrato.
 
 O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao confia nele como fonte de verdade.
 

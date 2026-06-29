@@ -92,6 +92,8 @@ model StatementImport {
   originalFileName String?
   fileHash         String?
   fileSizeBytes    Int?
+  periodStart      DateTime?
+  periodEnd        DateTime?
   rowCount         Int                   @default(0)
   importedCount    Int                   @default(0)
   duplicateCount   Int                   @default(0)
