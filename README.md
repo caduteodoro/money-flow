@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 2 - Importacao CSV do MVP**.
+Status atual: **Sprint 3 concluida - Dashboard real do MVP**.
 
 ## Problema
 
@@ -24,7 +24,6 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Sessao propria com cookie HTTP-only.
 - Token de sessao salvo no banco apenas como hash.
 - Rotas internas protegidas por middleware e validacao server-side.
-- Dashboard mockado exibindo nome e e-mail do usuario autenticado.
 - Audit logs basicos para `USER_REGISTERED`, `USER_LOGIN`, `USER_LOGOUT` e `LOGIN_FAILED`.
 - Modelagem financeira inicial com `BankAccount`, `StatementImport` e `Transaction`.
 - Parser inicial para CSV estilo Nubank em `lib/parsers`.
@@ -33,17 +32,19 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Servico inicial para persistir importacoes e transacoes com deduplicacao por usuario.
 - Rota protegida `/import` com upload CSV, preview e confirmacao na mesma tela.
 - Historico de importacoes com mes ou periodo do extrato.
+- Dashboard real baseado nas transacoes importadas pelo usuario autenticado.
+- KPIs financeiros reais: entradas, saidas, saldo, gasto medio diario, maior saida e quantidade de transacoes.
+- Filtros de periodo: periodo importado, ultimos 30 dias, mes atual e mes anterior.
+- Graficos simples de evolucao financeira e entradas vs saidas.
+- Insights basicos calculados localmente, sem IA externa.
+- Tabela de ultimas transacoes.
+- Estado vazio para usuarios sem transacoes.
+- UI polish e ajuste responsivo dos KPIs para zoom 100%.
 
 ## Funcionalidades planejadas do MVP
 
-- Upload de CSV com validacao e preview.
-- Importacao com deduplicacao por `dedupeKey`.
-- Historico de importacoes.
-- Dashboard com entradas, saidas, saldo, gasto medio diario e evolucao mensal usando dados reais.
-- Tabela de ultimas transacoes.
 - Categorias pai/filha editaveis.
 - Regras automaticas de categorizacao.
-- Insights financeiros bem-humorados.
 - Revisao final de privacidade do MVP.
 
 ## Stack
@@ -55,7 +56,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Prisma ORM.
 - Docker Compose.
 
-Dependencias adicionadas ate a Sprint 2:
+Dependencias adicionadas ate a Sprint 3:
 
 - `bcryptjs` para hash e verificacao de senha.
 - `zod` para validacao server-side de formularios.
@@ -68,8 +69,11 @@ A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada
 - `lib/db`: Prisma Client.
 - `lib/parsers`: contratos, registry, normalizacao e parser CSV inicial.
 - `lib/imports`: validacao, preview e persistencia inicial de importacao.
+- `lib/dashboard`: filtros de periodo, queries por `userId`, KPIs, series para graficos e insights basicos.
 - `lib/security`: validacoes, sanitizacao e controles futuros.
-- `lib/insights`: KPIs e insights planejados.
+- `lib/insights`: area reservada para evolucoes futuras de insights.
+
+Os componentes em `components/dashboard` recebem dados prontos. A regra financeira e as queries ficam fora da UI, concentradas em `lib/dashboard`.
 
 Todas as entidades financeiras principais carregam `userId` para isolamento por usuario desde a modelagem inicial.
 
@@ -170,6 +174,7 @@ lib/
 lib/auth/
 lib/db/
 lib/imports/
+lib/dashboard/
 lib/parsers/
 lib/security/
 lib/insights/
@@ -216,9 +221,10 @@ Sprint 3:
 - Dashboard com dados reais.
 - KPIs.
 - Filtro de datas.
-- Graficos com tooltips.
+- Graficos simples.
 - Tabela de ultimas transacoes.
-- Insights bem-humorados.
+- Insights basicos calculados localmente.
+- UI polish e responsividade em zoom 100%.
 
 Sprint 4:
 
@@ -251,14 +257,23 @@ Sprint 5:
 
 A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para desenvolvimento local e demonstracoes.
 
-## Limitacoes conhecidas da Sprint 2
+## Limitacoes conhecidas atuais
 
 - Sem recuperacao de senha.
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Dashboard ainda usa dados mockados.
 - Sem categorias reais.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
+- Sem Open Finance.
+- Sem PWA.
+- Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
+
+## Fora do escopo atual
+
+- Categorias e regras automaticas entram na Sprint 4.
+- OFX fica para uma fase posterior ao CSV do MVP.
+- PDF nao entra como importacao automatica no MVP.
+- Open Finance, PWA e IA externa continuam fora do escopo atual.

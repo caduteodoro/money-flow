@@ -12,7 +12,9 @@
 
 - `.env` real nao deve ser versionado.
 - Extratos reais nao devem entrar no GitHub.
+- Apenas `sample-data/` ficticio deve ser usado no repositorio e em demonstracoes publicas.
 - Nao criar telas administrativas para visualizar transacoes dos usuarios.
+- Toda query financeira deve filtrar por `userId`.
 - Descricoes de transacoes, CPF, dados bancarios, nomes completos e valores sensiveis nao devem ser logados sem necessidade.
 - Senhas e tokens de sessao nunca devem ser registrados em logs.
 
@@ -84,6 +86,20 @@ Ainda permanecem no roadmap:
 - Scanner de arquivos no roadmap.
 - Armazenamento temporario com limpeza caso arquivos sejam persistidos fora do banco.
 
+## Dashboard da Sprint 3
+
+O dashboard real usa dados de `Transaction` apenas por meio de consultas filtradas por `userId`.
+
+Controles aplicados:
+
+- `getDashboardSummary` exige `userId`.
+- KPIs, graficos, insights e tabela usam somente transacoes do usuario autenticado.
+- Componentes visuais recebem dados ja calculados e nao executam queries financeiras.
+- Nao ha tela administrativa para visualizar transacoes de usuarios.
+- Nao foram adicionados logs para valores financeiros, descricoes completas ou conteudo bruto de CSV.
+
+Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda assim, logs e audit logs continuam proibidos de registrar valores financeiros sensiveis ou descricoes completas.
+
 ## Limitacoes conhecidas
 
 - Ainda nao ha MFA.
@@ -93,6 +109,10 @@ Ainda permanecem no roadmap:
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
 - Ainda nao ha parser OFX.
+- Ainda nao ha categorias.
+- Ainda nao ha Open Finance.
+- Ainda nao ha PWA.
+- Ainda nao ha IA externa.
 
 ## Criptografia futura
 

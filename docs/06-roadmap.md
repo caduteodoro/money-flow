@@ -26,7 +26,7 @@ Status: concluida.
 - Audit logs basicos de autenticacao.
 - Documentacao atualizada.
 
-Status: implementada no codigo. Validacao final depende dos checks locais.
+Status: concluida.
 
 ## Sprint 2
 
@@ -43,12 +43,18 @@ Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico fica
 
 ## Sprint 3
 
-- Dashboard com dados reais.
-- KPIs.
-- Filtro de datas.
-- Graficos com tooltips.
+- Camada server-side de dashboard em `lib/dashboard`.
+- Queries financeiras filtradas por `userId`.
+- KPIs financeiros reais.
+- Filtros de periodo: periodo importado, ultimos 30 dias, mes atual e mes anterior.
+- Dashboard conectado aos dados reais.
+- Estado vazio para usuarios sem transacoes.
 - Tabela de ultimas transacoes.
-- Insights bem-humorados.
+- Graficos simples de evolucao financeira e entradas vs saidas.
+- Insights basicos calculados localmente.
+- UI polish e correcao responsiva dos KPIs em zoom 100%.
+
+Status: concluida no escopo planejado para dashboard real do MVP.
 
 ## Sprint 4
 
@@ -73,6 +79,12 @@ Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico fica
 - Recuperacao de senha.
 - Login social opcional.
 - OFX parser.
+- Gastos por categoria.
+- Top estabelecimentos/descricoes.
+- Ranking de maiores saidas.
+- Saldo acumulado.
+- Calendario financeiro.
+- Ofensores do mes.
 - Criptografia mais forte para campos sensiveis.
 - Zero-knowledge/privacy mode.
 - Scanner de arquivos.
