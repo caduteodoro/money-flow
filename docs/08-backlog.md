@@ -1,52 +1,214 @@
 # 08 - Backlog
 
-## Visão geral
+## Visão Geral
 
-Este documento registra ideias, melhorias, bugs, débitos técnicos e decisões futuras do Money Flow.
+Este documento registra ideias, melhorias, bugs, débitos técnicos, pesquisas e decisões futuras do Money Flow.
 
-O backlog não representa compromisso imediato de implementação. Ele serve para preservar contexto e apoiar priorização das próximas sprints sem misturar ideias futuras com o escopo da sprint atual.
+O backlog não representa compromisso imediato de implementação. Ele preserva contexto, ajuda a priorizar próximas sprints e evita misturar ideias futuras com o escopo da sprint atual sem decisão explícita.
 
-## Status possíveis
+## Base Já Concluída
 
-- Ideia
-- Backlog
-- Refinado
-- Em andamento
-- Bloqueado
-- Concluído
-- Descartado
+Os itens abaixo já foram tratados nas Sprints 2 ou 3 e não entram como pendência neste backlog:
 
-## Critérios de classificação
+- Preview e confirmação sem precisar escolher o arquivo novamente.
+- Histórico de importações com mês/período do extrato.
+- Upload CSV básico.
+- Validação CSV básica.
+- Importação no banco.
+- Deduplicação por `userId + dedupeKey`.
+- Audit log seguro da importação.
+- Parser inicial estilo Nubank/sample-data.
+- Dashboard real com dados importados.
+- KPIs reais.
+- Filtros básicos da Sprint 3.
+- Gráficos simples.
+- Insights básicos.
+- Tabela de últimas transações.
+- Estado vazio do dashboard.
+- Correção responsiva principal dos KPIs em zoom 100%.
 
-Cada item deve manter, sempre que possível:
+## Status Possíveis
 
-- Tipo: Bug, Feature, UX, Tech Debt, Segurança, Documentação ou Pesquisa.
-- Prioridade: Alta, Média ou Baixa.
-- Sprint sugerida: Sprint atual, Sprint 4, Sprint 5 ou Pós-MVP.
-- Esforço estimado: P, M ou G.
-- Impacto: Baixo, Médio ou Alto.
-- Risco: Baixo, Médio ou Alto.
-- Dependências, se houver.
-- Status claro e atualizado.
+- Ideia: item ainda pouco definido.
+- Backlog: item aceito como pendência futura, ainda sem execução iniciada.
+- Refinado: item detalhado com problema, objetivo, critérios de aceite e limites.
+- Em andamento: item em desenvolvimento.
+- Bloqueado: item depende de decisão, dependência técnica ou outro item.
+- Concluído: item implementado e validado.
+- Descartado: item removido por decisão explícita.
 
-## Itens
+## Critérios De Priorização
 
-| ID | Tipo | Item | Descrição | Prioridade | Sprint sugerida | Esforço | Status |
-|----|------|------|-----------|------------|-----------------|---------|--------|
-| BCK-001 | Feature | Gastos por categoria | Exibir distribuição de despesas por categoria quando a Sprint 4 entregar categorias e categorização de transações. | Média | Sprint 5 | M | Backlog |
-| BCK-002 | Feature | Top estabelecimentos/descrições | Listar descrições ou estabelecimentos mais recorrentes/relevantes, com cuidado para não expor texto sensível em logs ou telas indevidas. | Baixa | Pós-MVP | M | Ideia |
-| BCK-003 | Feature | Ranking de maiores saídas | Mostrar maiores despesas do período para ajudar o usuário a identificar impactos financeiros relevantes. | Média | Sprint 5 | M | Backlog |
-| BCK-004 | Feature | Saldo acumulado | Calcular e exibir evolução de saldo acumulado ao longo do tempo, deixando claro se o saldo é estimado a partir das transações importadas. | Média | Pós-MVP | M | Ideia |
-| BCK-005 | Feature | Calendário financeiro | Criar visualização por calendário para localizar dias de maior concentração de entradas e saídas. | Baixa | Pós-MVP | G | Ideia |
-| BCK-006 | Feature | Ofensores do mês | Destacar principais categorias, descrições ou despesas que mais impactaram o mês, sem tom julgador. | Média | Pós-MVP | M | Ideia |
-| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Ajustar tabela de transações para melhor leitura em telas menores e em desktop com sidebar, preservando densidade e clareza. | Média | Sprint 4 | M | Backlog |
-| BCK-008 | UX | Exibir período real calculado | Mostrar de forma explícita o intervalo real considerado pelos filtros e KPIs, reduzindo ambiguidade para usuários com dados importados fora do mês atual. | Alta | Sprint 4 | P | Backlog |
-| BCK-009 | Pesquisa | Avaliar regra do filtro "Mês atual" | Decidir se "Mês atual" deve usar o mês do sistema ou o mês mais recente disponível nos dados importados. | Alta | Sprint 4 | P | Backlog |
-| BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | Média | Sprint 4 | P | Backlog |
+Use as prioridades abaixo para ordenar o backlog:
+
+- P0: bloqueia a sprint, segurança/privacidade crítica ou risco relevante de dados.
+- P1: alto valor para o MVP, reduz confusão importante ou desbloqueia trabalho planejado.
+- P2: melhoria útil, mas não bloqueante.
+- P3: ideia futura, experimento, refinamento pós-MVP ou baixa urgência.
+
+Priorize itens que:
+
+1. Aumentam valor claro para o usuário.
+2. Reduzem risco de segurança ou privacidade.
+3. Desbloqueiam outras funcionalidades.
+4. Melhoram entendimento financeiro.
+5. Reduzem confusão na interface.
+6. Evitam retrabalho técnico futuro.
+
+Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deploy/produção, categorias ainda não entregues ou qualquer escopo que infle a sprint atual sem decisão explícita.
+
+## Tabela Principal
+
+| ID | Tipo | Item | Descrição | Prioridade | Sprint sugerida | Esforço | Impacto | Risco | Dependências | Status |
+|----|------|------|-----------|------------|-----------------|---------|---------|-------|--------------|--------|
+| BCK-001 | Feature | Gastos por categoria | Exibir distribuição de despesas por categoria quando a base de categorias e categorização estiver pronta. | P1 | Sprint 5 | M | Alto | Médio | Sprint 4: categorias e transações categorizadas | Backlog |
+| BCK-002 | Feature | Top estabelecimentos/descrições | Listar descrições ou estabelecimentos mais recorrentes/relevantes, com cuidado para não expor texto financeiro sensível em logs ou telas indevidas. | P3 | Pós-MVP | M | Médio | Médio | Normalização segura de descrições; revisão de privacidade | Ideia |
+| BCK-003 | Feature | Ranking de maiores saídas | Mostrar maiores despesas do período para ajudar o usuário a identificar impactos financeiros relevantes. | P1 | Sprint 5 | M | Alto | Médio | Filtros de período confiáveis; regras de privacidade para descrições | Backlog |
+| BCK-004 | Feature | Saldo acumulado | Calcular e exibir evolução de saldo acumulado ao longo do tempo, deixando claro se o saldo é estimado a partir das transações importadas. | P2 | Pós-MVP | M | Alto | Alto | Decisão de produto sobre saldo estimado vs. saldo bancário real | Ideia |
+| BCK-005 | Feature | Calendário financeiro | Criar visualização por calendário para localizar dias de maior concentração de entradas e saídas. | P3 | Futuro | G | Médio | Médio | Mais volume de dados; definição de visualização responsiva | Ideia |
+| BCK-006 | Feature | Ofensores do mês | Destacar principais categorias, descrições ou despesas que mais impactaram o mês, sem tom julgador. | P2 | Pós-MVP | M | Médio | Médio | Categorias; cuidado de linguagem; possível dependência de BCK-001 | Ideia |
+| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Ajustar tabela de transações para melhor leitura em telas menores e em desktop com sidebar, preservando densidade e clareza. | P1 | Sprint 4 | M | Alto | Baixo | Design responsivo da área autenticada | Backlog |
+| BCK-008 | UX | Exibir período real calculado | Mostrar de forma explícita o intervalo real considerado pelos filtros e KPIs, reduzindo ambiguidade para usuários com dados importados fora do mês atual. | P1 | Sprint 4 | P | Alto | Baixo | Definição da semântica dos filtros de data | Refinado |
+| BCK-009 | Pesquisa | Avaliar regra do filtro "Mês atual" | Decidir se "Mês atual" deve usar o mês do sistema ou o mês mais recente disponível nos dados importados. | P1 | Discovery | P | Alto | Médio | Alinhamento de produto sobre expectativa do usuário | Ideia |
+| BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | P2 | Discovery | P | Médio | Baixo | Decisão de texto e consistência com filtros | Ideia |
+
+## Por Sprint Sugerida
+
+### Sprint 4
+
+- BCK-007: melhorar responsividade/legibilidade da tabela.
+- BCK-008: exibir período real calculado.
+
+### Sprint 5
+
+- BCK-001: gastos por categoria.
+- BCK-003: ranking de maiores saídas.
+
+### Pós-MVP
+
+- BCK-002: top estabelecimentos/descrições.
+- BCK-004: saldo acumulado.
+- BCK-006: ofensores do mês.
+
+### Futuro
+
+- BCK-005: calendário financeiro.
+
+### Discovery
+
+- BCK-009: avaliar regra do filtro "Mês atual".
+- BCK-010: avaliar rótulo "Todo o período importado".
+
+## Por Tema
+
+### Analytics Financeiros
+
+- BCK-001: gastos por categoria.
+- BCK-003: ranking de maiores saídas.
+- BCK-004: saldo acumulado.
+- BCK-005: calendário financeiro.
+- BCK-006: ofensores do mês.
+
+### Clareza De Filtros E Períodos
+
+- BCK-008: exibir período real calculado.
+- BCK-009: avaliar regra do filtro "Mês atual".
+- BCK-010: avaliar rótulo "Todo o período importado".
+
+### UX De Tabela
+
+- BCK-007: melhorar responsividade/legibilidade da tabela.
+
+### Privacidade E Dados Sensíveis
+
+- BCK-002: top estabelecimentos/descrições.
+- BCK-003: ranking de maiores saídas.
+- BCK-006: ofensores do mês.
+
+## Itens Refinados
+
+### BCK-008 - Exibir Período Real Calculado
+
+**Tipo:** UX  
+**Prioridade:** P1  
+**Sprint sugerida:** Sprint 4  
+**Esforço estimado:** P  
+**Impacto:** Alto  
+**Risco:** Baixo  
+**Status:** Refinado
+
+#### Problema
+
+Filtros como "Mês atual", "Mês anterior" e "Período importado" podem gerar dúvida quando o usuário importa dados antigos, incompletos ou de múltiplos períodos.
+
+#### Objetivo
+
+Exibir o intervalo real usado nos KPIs, gráficos e tabela para que o usuário entenda exatamente quais transações estão sendo consideradas.
+
+#### Critérios De Aceite
+
+- [ ] A interface mostra o intervalo inicial e final considerado pelo filtro ativo.
+- [ ] O texto não promete saldo bancário real quando o cálculo usa apenas transações importadas.
+- [ ] O comportamento respeita os filtros existentes e não altera cálculos financeiros nesta tarefa.
+
+#### Observações Técnicas
+
+Item provável de interface/dashboard. Não deve alterar queries Prisma, schema, migrations ou regras financeiras sem tarefa específica.
+
+#### Fora Do Escopo
+
+- Criar novos filtros.
+- Alterar cálculo de KPIs.
+- Implementar categorização.
+
+### BCK-007 - Melhorar Responsividade/Legibilidade Da Tabela
+
+**Tipo:** UX  
+**Prioridade:** P1  
+**Sprint sugerida:** Sprint 4  
+**Esforço estimado:** M  
+**Impacto:** Alto  
+**Risco:** Baixo  
+**Status:** Backlog
+
+#### Problema
+
+A tabela de transações precisa continuar legível em telas menores e em desktop com sidebar, principalmente quando descrições, datas e valores competem por espaço.
+
+#### Objetivo
+
+Melhorar a leitura da tabela sem esconder informações essenciais e sem transformar a tela em uma experiência pesada.
+
+#### Critérios De Aceite
+
+- [ ] A tabela permanece legível em mobile e desktop.
+- [ ] Valores, datas e descrições não se sobrepõem.
+- [ ] A solução preserva privacidade e não expõe descrições completas fora do contexto autenticado.
+
+#### Observações Técnicas
+
+Item de UX. Deve evitar mudanças em modelo de dados, importação, deduplicação ou cálculos.
+
+#### Fora Do Escopo
+
+- Adicionar paginação avançada.
+- Criar busca global.
+- Alterar dados exibidos por regras financeiras novas.
+
+## Candidatos A Validar
+
+Os itens abaixo precisam de confirmação de produto antes de virar implementação:
+
+| ID | Pergunta | Decisão necessária | Status |
+|----|----------|--------------------|--------|
+| BCK-009 | "Mês atual" deve seguir o mês do sistema ou o mês mais recente dos dados importados? | Definir semântica do filtro para evitar surpresa em datasets antigos. | Ideia |
+| BCK-010 | O rótulo "Período importado" deve virar "Todo o período importado"? | Validar clareza do texto e consistência com a navegação do dashboard. | Ideia |
+| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-011 quando a lista for colada. | Ideia |
 
 ## Observações
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.
-- Itens que dependem de categorias devem aguardar a base da Sprint 4.
+- Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-011`.
