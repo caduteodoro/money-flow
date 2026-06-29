@@ -36,9 +36,44 @@ export type DashboardTransactionItem = {
   amountCents: number;
 };
 
+export type DashboardChartGranularity = "day" | "month";
+
+export type DashboardTimeSeriesPoint = {
+  key: string;
+  label: string;
+  incomeCents: number;
+  expenseCents: number;
+  balanceCents: number;
+  cumulativeBalanceCents: number;
+  transactionCount: number;
+};
+
+export type DashboardIncomeExpenseComparison = {
+  incomeCents: number;
+  expenseCents: number;
+};
+
+export type DashboardCharts = {
+  granularity: DashboardChartGranularity;
+  cashflow: DashboardTimeSeriesPoint[];
+  incomeExpense: DashboardIncomeExpenseComparison;
+};
+
+export type DashboardInsightTone = "positive" | "warning" | "neutral";
+
+export type DashboardInsight = {
+  id: string;
+  title: string;
+  description: string;
+  tone: DashboardInsightTone;
+  amountCents?: number;
+};
+
 export type DashboardSummary = {
   period: DashboardDateRange;
   kpis: FinancialKpis;
   largestExpense: DashboardLargestExpense;
   recentTransactions: DashboardTransactionItem[];
+  charts: DashboardCharts;
+  insights: DashboardInsight[];
 };

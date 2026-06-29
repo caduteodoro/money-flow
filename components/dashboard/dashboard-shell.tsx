@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-filter";
@@ -51,6 +52,8 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
           {hasTransactions ? (
             <>
               <DashboardKpis kpis={summary.kpis} largestExpense={summary.largestExpense} />
+
+              <DashboardCharts charts={summary.charts} insights={summary.insights} />
 
               <Card>
                 <CardHeader>
