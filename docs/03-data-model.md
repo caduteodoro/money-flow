@@ -16,6 +16,7 @@
 - Toda conta bancaria pertence a um `userId`.
 - Toda importacao pertence a um `userId`.
 - Toda transacao pertence a um `userId`.
+- Toda categoria e regra de categoria pertence a um `userId`.
 - Queries financeiras devem filtrar explicitamente por `userId`.
 - `Transaction` usa `@@unique([userId, dedupeKey])` para deduplicacao por usuario.
 
@@ -33,6 +34,8 @@
 
 O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao confia nele como fonte de verdade.
 
+`importedCount`, `duplicateCount` e `skippedCount` devem refletir a persistencia real. Como `Transaction` tem restricao unica por `userId + dedupeKey`, o servico de importacao usa a quantidade retornada pelo `createMany` para evitar contadores otimistas em cenarios concorrentes.
+
 ## Transacoes
 
 `Transaction` guarda:
@@ -43,6 +46,17 @@ O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao co
 - `dedupeKey` calculado a partir de provedor, identificador externo quando existir, data, valor e hash de descricao.
 
 O MVP nao salva o CSV bruto no banco.
+
+## Categorias
+
+`Category` e `CategoryRule` ja existem no schema como base da Sprint 4, mas ainda nao ha telas ou mutacoes publicas para categorias.
+
+Regras para a Sprint 4:
+
+- Criar categorias somente por servicos que recebam o `userId` autenticado.
+- Ao atribuir `categoryId` a uma transacao, validar que a transacao e a categoria pertencem ao mesmo `userId`.
+- Ao criar `CategoryRule`, validar que a regra e a categoria pertencem ao mesmo `userId`.
+- Evitar nomes duplicados entre categorias irmas. Como `parentId` pode ser `NULL`, nao confiar apenas em `@@unique([userId, name, parentId])` para categorias raiz no PostgreSQL; a regra precisa ser aplicada no servico ou reforcada por indice/migration especifica antes de liberar a UI.
 
 ## Enums
 
@@ -71,4 +85,5 @@ O MVP nao salva o CSV bruto no banco.
 
 - Avaliar `Decimal` se houver necessidade multimoeda avancada. No MVP, `amountCents` evita erros de ponto flutuante.
 - Revisar indices apos as primeiras queries reais do dashboard.
+- Revisar a migration `20260628214608_add_statement_imports_transactions` antes de aplicar em banco com dados, pois ela adiciona `StatementImport.updatedAt` obrigatorio sem default.
 - Evitar `rawPayload` para conteudo bruto sensivel; se usado no futuro, deve ser reduzido, mascarado ou criptografado.

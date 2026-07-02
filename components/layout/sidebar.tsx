@@ -50,7 +50,7 @@ export function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
       </nav>
 
       <div className="mt-auto rounded-xl border border-sky-100 bg-sky-50/80 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-teal">Sprint 3</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-teal">MVP em evolucao</p>
         <p className="mt-2 text-sm text-slate-700">
           Dashboard com KPIs, graficos e insights calculados localmente.
         </p>

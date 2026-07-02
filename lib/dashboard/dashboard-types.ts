@@ -71,6 +71,7 @@ export type DashboardInsight = {
 
 export type DashboardSummary = {
   period: DashboardDateRange;
+  hasImportedTransactions: boolean;
   kpis: FinancialKpis;
   largestExpense: DashboardLargestExpense;
   recentTransactions: DashboardTransactionItem[];

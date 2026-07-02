@@ -33,7 +33,8 @@ A arquitetura usa contratos e registry de parsers para permitir novos adaptadore
 10. Confirmar importacao a partir do mesmo arquivo selecionado.
 11. Calcular `periodStart` e `periodEnd` usando todas as transacoes validas parseadas.
 12. Persistir `StatementImport` e `Transaction` sem salvar CSV bruto.
-13. Exibir resumo e historico em `/import`.
+13. Atualizar contadores de importacao com base na quantidade realmente inserida pelo banco.
+14. Exibir resumo e historico em `/import`.
 
 Preview e confirmacao acontecem na mesma tela. O usuario seleciona o CSV uma vez, gera o preview e confirma usando o arquivo ja selecionado.
 
@@ -57,6 +58,14 @@ O periodo e calculado a partir das linhas validas do CSV, nao apenas das transac
 - Hash da descricao normalizada.
 
 A restricao `@@unique([userId, dedupeKey])` impede duplicidade entre importacoes do mesmo usuario. O servico tambem marca duplicatas ja existentes e duplicatas repetidas dentro do proprio CSV.
+
+Durante a confirmacao, o servico reprocessa o arquivo recebido e nao confia no preview enviado pelo cliente. Como a persistencia usa `createMany` com `skipDuplicates`, `importedCount` usa a quantidade realmente inserida pelo banco. Duplicatas que surgirem por corrida entre imports tambem entram em `duplicateCount` e `skippedCount`.
+
+## Erros esperados
+
+Erros de validacao de CSV usam mensagens controladas, por exemplo arquivo vazio, tamanho acima do limite, extensao invalida, MIME type nao reconhecido, UTF-8 invalido, bytes nulos ou estrutura nao reconhecida.
+
+Erros internos de banco, runtime ou infraestrutura nao devem ser expostos integralmente na UI. Nesses casos, a Server Action retorna mensagem generica.
 
 ## Audit log
 

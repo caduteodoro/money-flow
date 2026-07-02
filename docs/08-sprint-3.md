@@ -86,6 +86,8 @@ A Sprint 2 entregou:
 
 Os filtros afetam KPIs, graficos, insights e tabela.
 
+A interface tambem exibe o intervalo real considerado pelo filtro ativo. Quando o usuario ja possui transacoes importadas, mas o filtro atual nao encontra movimentacoes, o dashboard mostra um estado especifico de periodo vazio em vez de sugerir primeira importacao.
+
 ## Graficos
 
 - Evolucao financeira: entradas e saidas agregadas por dia ou por mes, conforme tamanho do periodo.
@@ -114,6 +116,17 @@ Os insights usam tom leve e informativo, sem julgamento agressivo.
 - Apenas dados ficticios em `sample-data/` devem ser usados no GitHub.
 - O dashboard exibe dados do proprio usuario autenticado.
 
+## Manutencao posterior
+
+Apos o fechamento da Sprint 3, foram aplicados ajustes de preparacao para Sprint 4:
+
+- Remocao de rotulos visuais antigos de sprint na home e importacao.
+- Exibicao do intervalo real considerado pelo filtro ativo no dashboard.
+- Estado visual separado para filtro sem transacoes no periodo.
+- Mensagens controladas para erros esperados de importacao CSV.
+- Contadores de importacao calculados com base na quantidade realmente inserida pelo banco.
+- Documentacao de guardrails para categorias, regras e transacoes por `userId`.
+
 ## Validacoes tecnicas realizadas
 
 Durante os blocos da Sprint 3, foram executadas validacoes como:
@@ -131,6 +144,8 @@ Observacao: `npx prisma generate` foi executado em blocos anteriores da Sprint 3
 - Usuario sem transacoes deve ver estado vazio amigavel.
 - Usuario com CSV ficticio importado deve ver KPIs, graficos, insights e tabela.
 - Trocar filtros deve atualizar KPIs, graficos, insights e tabela.
+- Filtro sem transacoes deve mostrar estado de periodo vazio quando o usuario ja possui dados importados.
+- Dashboard deve mostrar o intervalo real considerado pelo filtro ativo.
 - Usuario B nao deve ver dados importados pelo usuario A.
 - Dashboard em zoom 100% nao deve quebrar valores financeiros nos KPIs.
 
