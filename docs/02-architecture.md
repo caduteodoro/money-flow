@@ -83,6 +83,7 @@ A Sprint 3 move o dashboard de mock para dados reais usando `lib/dashboard`:
 - `dashboard-types.ts` define filtros, KPIs, series temporais, comparativos, insights e resumo do dashboard.
 - `date-filters.ts` centraliza os filtros `imported-period`, `last-30-days`, `current-month` e `previous-month`.
 - `dashboard-service.ts` recebe obrigatoriamente `userId`, busca apenas transacoes do usuario autenticado e calcula os dados agregados.
+- O resumo do dashboard tambem informa se o usuario tem transacoes importadas em qualquer periodo, permitindo diferenciar primeiro uso de filtro vazio.
 
 Os componentes em `components/dashboard` recebem dados prontos e fazem apenas apresentacao e formatacao visual. A logica financeira nao deve ser duplicada na UI.
 
@@ -92,12 +93,16 @@ Dados atuais do dashboard:
 - Graficos: evolucao financeira por dia ou mes e entradas vs saidas.
 - Insights basicos: maior gasto, relacao entradas/saidas, saldo positivo ou negativo, gasto medio diario e volume de transacoes.
 - Tabela de ultimas transacoes.
+- Intervalo real considerado pelo filtro ativo.
 - Estado vazio para usuarios sem transacoes.
+- Estado especifico para filtros sem transacoes, sem sugerir uma nova importacao como se fosse primeiro uso.
 
 ## Seguranca arquitetural
 
 Todas as entidades financeiras principais usam `userId`. Qualquer query financeira deve aplicar isolamento por usuario, incluindo dashboard, importacoes, transacoes, categorias e regras futuras. Uploads sao tratados como entrada nao confiavel e nao devem ser logados com conteudo bruto.
 
+Server Actions devem expor ao cliente apenas erros esperados e controlados. Erros internos de banco, infraestrutura ou runtime devem cair em mensagens genericas.
+
 ## Evolucao prevista
 
-Sprint 4 foca em categorias, categoria pai/filha, edicao/criacao de categorias, regras automaticas e transacoes nao categorizadas. Rate limiting, MFA, recuperacao de senha, criptografia forte, OFX e modo de privacidade avancado ficam para fases futuras.
+Sprint 4 foca em categorias, categoria pai/filha, edicao/criacao de categorias, regras automaticas e transacoes nao categorizadas. Antes de expor mutacoes de categoria, validar no servico que categoria, regra e transacao pertencem ao mesmo `userId`. Rate limiting, MFA, recuperacao de senha, criptografia forte, OFX e modo de privacidade avancado ficam para fases futuras.

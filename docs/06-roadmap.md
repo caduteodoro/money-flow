@@ -47,14 +47,25 @@ Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico fica
 - Queries financeiras filtradas por `userId`.
 - KPIs financeiros reais.
 - Filtros de periodo: periodo importado, ultimos 30 dias, mes atual e mes anterior.
+- Intervalo real considerado pelo filtro ativo.
 - Dashboard conectado aos dados reais.
 - Estado vazio para usuarios sem transacoes.
+- Estado especifico para filtros sem transacoes no periodo.
 - Tabela de ultimas transacoes.
 - Graficos simples de evolucao financeira e entradas vs saidas.
 - Insights basicos calculados localmente.
 - UI polish e correcao responsiva dos KPIs em zoom 100%.
 
 Status: concluida no escopo planejado para dashboard real do MVP.
+
+## Preparacao para Sprint 4
+
+- Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
+- Importacao passou a diferenciar erro esperado de CSV de erro interno.
+- Contadores de importacao passaram a refletir a quantidade realmente inserida pelo banco.
+- Documentada a regra de integridade de categorias: toda mutacao futura deve validar `userId` e evitar nomes duplicados entre categorias irmas, incluindo categorias raiz.
+
+Status: em andamento.
 
 ## Sprint 4
 

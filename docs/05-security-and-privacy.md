@@ -80,6 +80,8 @@ A base de importacao CSV aplica:
 - Hash SHA-256 da descricao normalizada.
 - Deduplicacao por `userId` e `dedupeKey`.
 - Historico por usuario com mes ou periodo do extrato.
+- Mensagens controladas para erros esperados de CSV, sem repassar detalhes internos de infraestrutura ao cliente.
+- Contadores de importacao calculados com base no que o banco realmente inseriu, reduzindo divergencia em cenarios de duplicidade concorrente.
 
 Ainda permanecem no roadmap:
 
@@ -94,6 +96,8 @@ Controles aplicados:
 
 - `getDashboardSummary` exige `userId`.
 - KPIs, graficos, insights e tabela usam somente transacoes do usuario autenticado.
+- A interface mostra o intervalo real considerado pelo filtro ativo.
+- A interface diferencia usuario sem transacoes de filtro sem transacoes no periodo.
 - Componentes visuais recebem dados ja calculados e nao executam queries financeiras.
 - Nao ha tela administrativa para visualizar transacoes de usuarios.
 - Nao foram adicionados logs para valores financeiros, descricoes completas ou conteudo bruto de CSV.
@@ -113,6 +117,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
+- Ainda nao ha suite automatizada de testes versionada.
 
 ## Criptografia futura
 

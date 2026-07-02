@@ -14,6 +14,13 @@ const ALLOWED_CSV_MIME_TYPES = new Set([
   "application/octet-stream",
 ]);
 
+export class StatementImportError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StatementImportError";
+  }
+}
+
 export type StatementUploadInput = {
   userId: string;
   bankAccountId?: string;
@@ -98,7 +105,7 @@ export async function importStatementTransactions(input: StatementUploadInput) {
   const transactionsToCreate = preparedImport.transactionsToImport.filter((transaction) => !transaction.duplicate);
 
   const statementImport = await prisma.$transaction(async (tx) => {
-    const statementImport = await tx.statementImport.create({
+    const initialStatementImport = await tx.statementImport.create({
       data: {
         userId: input.userId,
         bankAccountId: input.bankAccountId,
@@ -111,7 +118,7 @@ export async function importStatementTransactions(input: StatementUploadInput) {
         periodStart: preparedImport.periodStart ? new Date(preparedImport.periodStart) : null,
         periodEnd: preparedImport.periodEnd ? new Date(preparedImport.periodEnd) : null,
         rowCount: preparedImport.rowCount,
-        importedCount: transactionsToCreate.length,
+        importedCount: 0,
         duplicateCount: preparedImport.duplicateCount,
         invalidRowCount: preparedImport.invalidRowCount,
         skippedCount: preparedImport.duplicateCount + preparedImport.invalidRowCount,
@@ -119,12 +126,14 @@ export async function importStatementTransactions(input: StatementUploadInput) {
       },
     });
 
+    let importedCount = 0;
+
     if (transactionsToCreate.length > 0) {
-      await tx.transaction.createMany({
+      const createResult = await tx.transaction.createMany({
         data: transactionsToCreate.map((transaction) => ({
           userId: input.userId,
           bankAccountId: input.bankAccountId,
-          statementImportId: statementImport.id,
+          statementImportId: initialStatementImport.id,
           occurredAt: transaction.occurredAt,
           postedAt: transaction.postedAt,
           description: transaction.description,
@@ -137,7 +146,23 @@ export async function importStatementTransactions(input: StatementUploadInput) {
         })),
         skipDuplicates: true,
       });
+
+      importedCount = createResult.count;
     }
+
+    const duplicateCount =
+      preparedImport.duplicateCount + (transactionsToCreate.length - importedCount);
+    const skippedCount = duplicateCount + preparedImport.invalidRowCount;
+    const statementImport = await tx.statementImport.update({
+      where: {
+        id: initialStatementImport.id,
+      },
+      data: {
+        importedCount,
+        duplicateCount,
+        skippedCount,
+      },
+    });
 
     await tx.auditLog.create({
       data: {
@@ -153,10 +178,10 @@ export async function importStatementTransactions(input: StatementUploadInput) {
           periodStart: preparedImport.periodStart,
           periodEnd: preparedImport.periodEnd,
           rowCount: preparedImport.rowCount,
-          importedCount: transactionsToCreate.length,
-          duplicateCount: preparedImport.duplicateCount,
+          importedCount,
+          duplicateCount,
           invalidRowCount: preparedImport.invalidRowCount,
-          skippedCount: preparedImport.duplicateCount + preparedImport.invalidRowCount,
+          skippedCount,
         },
       },
     });
@@ -215,11 +240,7 @@ async function prepareStatementImport(input: StatementUploadInput): Promise<Prep
   validateStatementUpload(input);
 
   const fileContent = decodeUtf8(input.fileBuffer);
-  const parsedStatement = parseStatement({
-    content: fileContent,
-    fileName: input.fileName,
-    mimeType: input.mimeType,
-  });
+  const parsedStatement = parseUploadedStatement(fileContent, input);
   const fileHash = generateFileHash(input.fileBuffer);
   const transactionsWithDedupe = parsedStatement.transactions.map((transaction) => ({
     ...transaction,
@@ -289,27 +310,27 @@ function calculateStatementPeriod(transactions: NormalizedStatementTransaction[]
 
 function validateStatementUpload(input: StatementUploadInput) {
   if (!input.userId) {
-    throw new Error("Usuario autenticado obrigatorio.");
+    throw new StatementImportError("Usuario autenticado obrigatorio.");
   }
 
   if (!input.fileBuffer || input.fileBuffer.length === 0) {
-    throw new Error("Arquivo CSV vazio.");
+    throw new StatementImportError("Arquivo CSV vazio.");
   }
 
   if (input.fileBuffer.length > MAX_CSV_FILE_SIZE_BYTES) {
-    throw new Error("Arquivo CSV acima do tamanho maximo permitido.");
+    throw new StatementImportError("Arquivo CSV acima do tamanho maximo permitido.");
   }
 
   if (!input.fileName.toLowerCase().endsWith(".csv")) {
-    throw new Error("Apenas arquivos CSV sao aceitos nesta etapa.");
+    throw new StatementImportError("Apenas arquivos CSV sao aceitos nesta etapa.");
   }
 
   if (input.mimeType && !ALLOWED_CSV_MIME_TYPES.has(input.mimeType.toLowerCase())) {
-    throw new Error("Tipo de arquivo CSV nao reconhecido.");
+    throw new StatementImportError("Tipo de arquivo CSV nao reconhecido.");
   }
 
   if (input.fileBuffer.includes(0)) {
-    throw new Error("Arquivo CSV invalido.");
+    throw new StatementImportError("Arquivo CSV invalido.");
   }
 }
 
@@ -317,7 +338,27 @@ function decodeUtf8(fileBuffer: Buffer) {
   try {
     return new TextDecoder("utf-8", { fatal: true }).decode(fileBuffer);
   } catch {
-    throw new Error("CSV deve estar codificado em UTF-8.");
+    throw new StatementImportError("CSV deve estar codificado em UTF-8.");
+  }
+}
+
+function parseUploadedStatement(fileContent: string, input: StatementUploadInput) {
+  try {
+    return parseStatement({
+      content: fileContent,
+      fileName: input.fileName,
+      mimeType: input.mimeType,
+    });
+  } catch (error) {
+    if (error instanceof StatementImportError) {
+      throw error;
+    }
+
+    if (error instanceof Error) {
+      throw new StatementImportError(error.message);
+    }
+
+    throw new StatementImportError("Formato de extrato nao reconhecido.");
   }
 }
 
@@ -357,6 +398,6 @@ async function assertBankAccountBelongsToUser(userId: string, bankAccountId: str
   });
 
   if (!bankAccount) {
-    throw new Error("Conta bancaria nao encontrada.");
+    throw new StatementImportError("Conta bancaria nao encontrada.");
   }
 }

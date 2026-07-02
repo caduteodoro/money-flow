@@ -12,7 +12,7 @@ export default async function ImportPage() {
     <div className="min-h-screen bg-brand-surface">
       <Sidebar activeItem="imports" />
       <main className="lg:pl-72">
-        <Topbar eyebrow="Sprint 2" title="Importar extrato" user={user} />
+        <Topbar eyebrow="CSV seguro" title="Importar extrato" user={user} />
         <div className="space-y-6 px-5 py-6 lg:px-8">
           <section className="rounded-lg border border-teal-100 bg-white p-5 shadow-soft">
             <p className="text-sm font-semibold text-brand-teal">CSV seguro</p>

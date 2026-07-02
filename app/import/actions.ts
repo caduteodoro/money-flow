@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/lib/auth/current-user";
 import {
   buildStatementImportPreview,
   importStatementTransactions,
+  StatementImportError,
   type StatementImportPreview,
   type StatementImportSummary,
   type StatementUploadInput,
@@ -77,7 +78,7 @@ async function buildUploadInput(userId: string, formData: FormData): Promise<Sta
   const file = formData.get("statementFile");
 
   if (!(file instanceof File)) {
-    throw new Error("Selecione um arquivo CSV.");
+    throw new StatementImportError("Selecione um arquivo CSV.");
   }
 
   return {
@@ -89,7 +90,7 @@ async function buildUploadInput(userId: string, formData: FormData): Promise<Sta
 }
 
 function getFriendlyErrorMessage(error: unknown) {
-  if (error instanceof Error) {
+  if (error instanceof StatementImportError) {
     return error.message;
   }
 

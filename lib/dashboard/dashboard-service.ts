@@ -34,10 +34,18 @@ export async function getDashboardSummary(params: DashboardQueryParams): Promise
   }
 
   const dateFilter = params.dateFilter ?? DEFAULT_DASHBOARD_FILTER;
-  const period = await resolveDashboardDateRange(params.userId, dateFilter, params.now);
+  const [period, totalTransactionCount] = await Promise.all([
+    resolveDashboardDateRange(params.userId, dateFilter, params.now),
+    prisma.transaction.count({
+      where: {
+        userId: params.userId,
+      },
+    }),
+  ]);
+  const hasImportedTransactions = totalTransactionCount > 0;
 
   if (!period.startDate || !period.endDate) {
-    return buildEmptyDashboardSummary(period);
+    return buildEmptyDashboardSummary(period, hasImportedTransactions);
   }
 
   const transactions = await prisma.transaction.findMany({
@@ -60,7 +68,7 @@ export async function getDashboardSummary(params: DashboardQueryParams): Promise
     },
   });
 
-  return buildDashboardSummary(period, transactions);
+  return buildDashboardSummary(period, transactions, hasImportedTransactions);
 }
 
 async function resolveDashboardDateRange(
@@ -87,7 +95,11 @@ async function resolveDashboardDateRange(
   return resolveImportedPeriodDateRange(importedPeriod._min.occurredAt, importedPeriod._max.occurredAt);
 }
 
-function buildDashboardSummary(period: DashboardDateRange, transactions: DashboardTransaction[]): DashboardSummary {
+function buildDashboardSummary(
+  period: DashboardDateRange,
+  transactions: DashboardTransaction[],
+  hasImportedTransactions: boolean,
+): DashboardSummary {
   const kpis = calculateFinancialKpis(transactions, period.dayCount);
   const largestExpense = transactions
     .filter(isExpenseTransaction)
@@ -103,6 +115,7 @@ function buildDashboardSummary(period: DashboardDateRange, transactions: Dashboa
 
   return {
     period,
+    hasImportedTransactions,
     kpis,
     largestExpense: dashboardLargestExpense,
     recentTransactions: buildRecentTransactions(transactions),
@@ -139,9 +152,13 @@ function calculateFinancialKpis(transactions: DashboardTransaction[], dayCount: 
   };
 }
 
-function buildEmptyDashboardSummary(period: DashboardDateRange): DashboardSummary {
+function buildEmptyDashboardSummary(
+  period: DashboardDateRange,
+  hasImportedTransactions: boolean,
+): DashboardSummary {
   return {
     period,
+    hasImportedTransactions,
     kpis: {
       totalIncomeCents: 0,
       totalExpenseCents: 0,

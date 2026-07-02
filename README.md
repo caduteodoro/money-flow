@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 3 concluida - Dashboard real do MVP**.
+Status atual: **Sprint 3 concluida - Dashboard real do MVP; preparacao para Sprint 4 iniciada**.
 
 ## Problema
 
@@ -35,10 +35,12 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Dashboard real baseado nas transacoes importadas pelo usuario autenticado.
 - KPIs financeiros reais: entradas, saidas, saldo, gasto medio diario, maior saida e quantidade de transacoes.
 - Filtros de periodo: periodo importado, ultimos 30 dias, mes atual e mes anterior.
+- Exibicao do intervalo real considerado pelo filtro ativo.
 - Graficos simples de evolucao financeira e entradas vs saidas.
 - Insights basicos calculados localmente, sem IA externa.
 - Tabela de ultimas transacoes.
-- Estado vazio para usuarios sem transacoes.
+- Estado vazio separado para usuarios sem transacoes e filtros sem movimento no periodo.
+- Importacao com mensagens controladas para erros esperados de CSV e contadores baseados no que o banco realmente inseriu.
 - UI polish e ajuste responsivo dos KPIs para zoom 100%.
 
 ## Funcionalidades planejadas do MVP
@@ -76,6 +78,8 @@ A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada
 Os componentes em `components/dashboard` recebem dados prontos. A regra financeira e as queries ficam fora da UI, concentradas em `lib/dashboard`.
 
 Todas as entidades financeiras principais carregam `userId` para isolamento por usuario desde a modelagem inicial.
+
+O dashboard tambem informa se o usuario ja possui transacoes importadas em qualquer periodo. Isso evita confundir "nenhum dado importado" com "nenhuma transacao no filtro atual".
 
 ## Autenticacao no MVP
 
@@ -221,6 +225,7 @@ Sprint 3:
 - Dashboard com dados reais.
 - KPIs.
 - Filtro de datas.
+- Intervalo real considerado pelo filtro ativo.
 - Graficos simples.
 - Tabela de ultimas transacoes.
 - Insights basicos calculados localmente.
@@ -270,6 +275,8 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem PWA.
 - Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
+- Sem suite automatizada de testes versionada.
+- Algumas migrations antigas assumem banco local sem dados preexistentes.
 
 ## Fora do escopo atual
 

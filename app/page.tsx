@@ -46,7 +46,7 @@ export default function HomePage() {
 
         <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-teal">Sprint 1</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-teal">MVP local</p>
             <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-tight text-brand-navy sm:text-6xl">
               Money Flow
             </h1>
