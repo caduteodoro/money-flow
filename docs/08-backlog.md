@@ -77,12 +77,12 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | P2 | Discovery | P | Médio | Baixo | Decisão de texto e consistência com filtros | Concluído |
 | BCK-011 | Tech Debt | Suíte automatizada de testes | Adicionar testes para parser CSV, normalização, dedupe, filtros de data e fluxos sensíveis de sessão/importação. | P1 | Sprint 4 | M | Alto | Médio | Definir runner de testes sem inflar dependências | Backlog |
 | BCK-012 | Tech Debt | Migration segura para bancos com dados | Revisar migrations antigas que assumem banco vazio, especialmente `StatementImport.updatedAt` obrigatório sem default. | P1 | Sprint 4 | P | Alto | Médio | Ambiente local com Postgres e histórico de migrations | Backlog |
-| BCK-013 | Segurança | Guardrails de categorias por usuário | Antes da UI de categorias, criar serviços que validem `userId` em categoria, regra e transação, evitando associações cruzadas. | P1 | Sprint 4 | M | Alto | Médio | Sprint 4: categorias e regras | Backlog |
+| BCK-013 | Segurança | Guardrails de categorias por usuário | Antes da UI de categorias, criar serviços que validem `userId` em categoria, regra e transação, evitando associações cruzadas. | P1 | Sprint 4 | M | Alto | Médio | Sprint 4: categorias e regras | Concluído |
 | BCK-014 | UX | Navegação mobile autenticada | Criar navegação responsiva para área autenticada, já que a sidebar atual aparece apenas em telas grandes. | P2 | Sprint 4 | M | Médio | Baixo | Layout autenticado | Backlog |
 | BCK-015 | Tech Debt | Reconciliar Bloco 1 | Integrar conscientemente dashboard local e contribuição remota, preservando estados vazios, período e tabela responsiva. | P1 | Sprint 4 | P | Alto | Médio | PR #1 e alterações locais | Concluído |
 | BCK-016 | Data Model | Unicidade de categorias raiz | Definir proteção para nomes raiz duplicados quando `parentId` for `NULL`. | P1 | Sprint 4 | P | Alto | Alto | Decisão de schema e migration | Refinado |
-| BCK-017 | Segurança | Bloquear relacionamentos entre usuários | Impedir pai, categoria, regra ou transação de usuários diferentes no serviço e avaliar constraints compostas. | P0 | Sprint 4 | M | Alto | Alto | Revisão do modelo | Refinado |
-| BCK-018 | Feature | Camada `lib/categories/` | Implementar tipos, listagem e mutações server-side com isolamento por `userId`. | P1 | Sprint 4 | M | Alto | Alto | BCK-016 e BCK-017 | Backlog |
+| BCK-017 | Segurança | Bloquear relacionamentos entre usuários | Impedir pai, categoria, regra ou transação de usuários diferentes no serviço e avaliar constraints compostas. | P0 | Sprint 4 | M | Alto | Alto | Revisão do modelo | Em andamento |
+| BCK-018 | Feature | Camada `lib/categories/` | Implementar tipos, listagem e mutações server-side com isolamento por `userId`. | P1 | Sprint 4 | M | Alto | Alto | BCK-016 e BCK-017 | Concluído |
 | BCK-019 | Teste | Autorização de categorias | Cobrir acesso, edição e associação de recursos de outro usuário. | P0 | Sprint 4 | M | Alto | Alto | BCK-018 e runner de testes | Backlog |
 | BCK-020 | Teste | Validar hardening CSV | Cobrir mensagens controladas, erro interno genérico, contadores reais e deduplicação concorrente. | P1 | Sprint 4 | M | Alto | Médio | BCK-011 | Concluído |
 | BCK-021 | UX | Corrigir link Categorias | Fazer a sidebar apontar para `/categories` somente quando a rota funcional existir. | P1 | Sprint 4 | P | Médio | Baixo | Bloco 4 | Backlog |
@@ -238,6 +238,7 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 ## Observações
 
 - Testes manuais do Bloco 1: PASSOU para login, filtros, período real, estados vazios, tabela responsiva, preview/importação/reimportação CSV, CSV inválido, histórico e dashboard pós-importação.
+- Bloco 3: camada `lib/categories/` concluída por revisão estática e validações técnicas; constraints compostas, testes automatizados, UI, categorização manual e regras continuam pendentes.
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.

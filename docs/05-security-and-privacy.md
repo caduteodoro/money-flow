@@ -113,7 +113,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
 - Ainda nao ha parser OFX.
-- A modelagem de categorias existe, mas ainda nao ha servico, mutacoes ou tela funcional.
+- A modelagem e o servico server-side de categorias existem, mas ainda nao ha tela ou mutacoes publicas.
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
@@ -125,4 +125,6 @@ Antes de producao, avaliar criptografia de campos sensiveis e uma arquitetura qu
 
 ## Categorias da Sprint 4
 
-As futuras mutacoes devem consultar categoria, pai, regra e transacao com o mesmo `userId` autenticado. IDs enviados pelo cliente nao bastam, e nenhuma associacao cruzada entre usuarios pode ser aceita mesmo quando a chave estrangeira for valida.
+Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
+
+O servico impede associacoes cruzadas nas operacoes atuais, mas constraints compostas e unicidade robusta de categorias raiz ainda precisam ser avaliadas no banco antes de producao.

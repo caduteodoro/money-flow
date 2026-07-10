@@ -68,8 +68,9 @@ Status: concluida no escopo planejado para dashboard real do MVP.
 Status:
 
 - Bloco 1: concluido; reconciliacao, hardening CSV, validacoes tecnicas e testes manuais aprovados.
-- Bloco 2: modelo preparatorio existente e revisao tecnica realizada; qualquer correcao de schema depende de decisao e migration futura.
-- Blocos 3 a 6: nao iniciados.
+- Bloco 2: modelo preparatorio existente e revisao tecnica realizada; hardening do banco depende de decisao e migration futura.
+- Bloco 3: concluido; camada server-side segura para listar, criar e renomear categorias pai/filha.
+- Blocos 4 a 6: nao iniciados.
 
 ## Sprint 4
 

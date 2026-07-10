@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Bloco 1 concluido e modelo de categorias revisado tecnicamente**.
+Status atual: **Sprint 4 em andamento - Blocos 1 e 3 concluidos; tela e categorizacao ainda pendentes**.
 
 ## Problema
 
@@ -49,7 +49,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Regras automaticas de categorizacao.
 - Revisao final de privacidade do MVP.
 
-Os modelos `Category` e `CategoryRule` ja existem no schema como preparacao. Categorias ainda nao sao funcionais: nao ha `lib/categories/`, tela `/categories` ou mutacoes publicas.
+Os modelos `Category` e `CategoryRule` ja existem no schema. A camada server-side `lib/categories/` implementa listagem, criacao de raiz/filha e edicao de nome com isolamento por usuario. Ainda nao ha tela `/categories`, Server Actions publicas, categorizacao manual ou regras automaticas.
 
 O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 
@@ -76,7 +76,7 @@ A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada
 - `lib/parsers`: contratos, registry, normalizacao e parser CSV inicial.
 - `lib/imports`: validacao, preview e persistencia inicial de importacao.
 - `lib/dashboard`: filtros de periodo, queries por `userId`, KPIs, series para graficos e insights basicos.
-- `lib/categories`: camada server-side planejada para a Sprint 4; ainda nao implementada.
+- `lib/categories`: tipos, validacao Zod, erros controlados e servico server-side de categorias.
 - `lib/security`: validacoes, sanitizacao e controles futuros.
 - `lib/insights`: area reservada para evolucoes futuras de insights.
 
@@ -273,7 +273,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem fluxo funcional de categorias, apesar da modelagem preparatoria existente.
+- Sem tela ou fluxo client-side de categorias, apesar da camada server-side existente.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

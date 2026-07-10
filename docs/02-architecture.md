@@ -26,7 +26,7 @@
 - `parsers`: contratos, registry, normalizacao e parser CSV inicial.
 - `imports`: validacao de arquivo, preview e persistencia inicial de importacao.
 - `dashboard`: filtros de periodo, queries por `userId`, KPIs financeiros, series para graficos e insights basicos.
-- `categories`: camada server-side planejada para listagem e mutacoes seguras; ainda nao implementada.
+- `categories`: tipos, normalizacao, validacao Zod, erros controlados, listagem hierarquica e mutacoes seguras.
 - `security`: sanitizacao, hashing, validacoes e auditoria futura.
 - `insights`: area reservada para evolucoes futuras de analytics e insights.
 
@@ -108,7 +108,9 @@ Todas as entidades financeiras principais usam `userId`. Qualquer query financei
 
 Server Actions devem expor ao cliente apenas erros esperados e controlados. Erros internos de banco, infraestrutura ou runtime devem cair em mensagens genericas.
 
-O Prisma permanece restrito a codigo server-side. A futura camada `lib/categories/` deve preparar dados e validar propriedade antes que componentes visuais recebam categorias.
+O Prisma permanece restrito a codigo server-side. `lib/categories/` exige `userId`, busca recursos pelo par logico `id + userId`, normaliza nomes e monta a arvore pai/filha em memoria a partir de uma unica consulta. Componentes client-side nao importam o servico nem o Prisma.
+
+A hierarquia v1 aceita somente categorias raiz e filhas. Criacao de netas, troca de pai, exclusao, categorizacao de transacoes e regras automaticas permanecem fora deste bloco.
 
 ## Evolucao prevista
 
