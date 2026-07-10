@@ -6,7 +6,7 @@ type DashboardPeriodFilterProps = {
 };
 
 const filters: { id: DashboardDateFilterId; label: string }[] = [
-  { id: "imported-period", label: "Periodo importado" },
+  { id: "imported-period", label: "Todo o periodo importado" },
   { id: "last-30-days", label: "Ultimos 30 dias" },
   { id: "current-month", label: "Mes atual" },
   { id: "previous-month", label: "Mes anterior" },

@@ -7,13 +7,13 @@ type TransactionsTableProps = {
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   return (
     <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-200">
-      <table className="w-full min-w-[680px] border-collapse text-sm">
+      <table className="w-full min-w-[720px] table-fixed border-collapse text-sm">
         <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
           <tr>
-            <th className="px-4 py-3">Data</th>
+            <th className="w-28 px-4 py-3">Data</th>
             <th className="px-4 py-3">Descricao</th>
-            <th className="px-4 py-3">Tipo</th>
-            <th className="px-4 py-3 text-right">Valor</th>
+            <th className="w-32 px-4 py-3">Tipo</th>
+            <th className="w-40 px-4 py-3 text-right">Valor</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -23,14 +23,14 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                 <td className="whitespace-nowrap px-4 py-3 text-slate-600">
                   {formatDate(transaction.occurredAt)}
                 </td>
-                <td className="max-w-[360px] px-4 py-3">
-                  <span className="block truncate font-medium text-brand-navy">
+                <td className="min-w-0 px-4 py-3">
+                  <span className="block max-w-full truncate font-medium text-brand-navy">
                     {transaction.description}
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+                    className={`inline-flex max-w-full truncate rounded-full px-2.5 py-1 text-xs font-bold ${
                       isExpense(transaction.direction, transaction.amountCents)
                         ? "bg-rose-50 text-rose-700"
                         : "bg-emerald-50 text-emerald-700"
@@ -40,7 +40,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                   </span>
                 </td>
                 <td
-                  className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${
+                  className={`whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums ${
                     isExpense(transaction.direction, transaction.amountCents)
                       ? "text-rose-700"
                       : "text-emerald-700"

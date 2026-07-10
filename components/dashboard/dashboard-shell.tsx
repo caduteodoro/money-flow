@@ -111,7 +111,7 @@ function formatDate(date: Date) {
 
 function formatFilterLabel(filter: DashboardDateFilterId) {
   const labels: Record<DashboardDateFilterId, string> = {
-    "imported-period": "Periodo importado",
+    "imported-period": "Todo o periodo importado",
     "last-30-days": "Ultimos 30 dias",
     "current-month": "Mes atual",
     "previous-month": "Mes anterior",
@@ -119,3 +119,4 @@ function formatFilterLabel(filter: DashboardDateFilterId) {
 
   return labels[filter];
 }
+

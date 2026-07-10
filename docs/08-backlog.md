@@ -125,6 +125,12 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 - BCK-009: avaliar regra do filtro "Mês atual".
 - BCK-010: avaliar rótulo "Todo o período importado".
 
+### Decisões Da Sprint 4 - Bloco 1
+
+- BCK-008: o dashboard passa a exibir o intervalo real considerado pelo filtro ativo, usando as datas já calculadas pela camada `lib/dashboard`.
+- BCK-009: neste bloco, "Mês atual" usa o mês atual do sistema/calendário, não o mês mais recente disponível nos dados importados.
+- BCK-010: o rótulo visível do filtro `imported-period` passa a ser "Todo o período importado", sem alterar o valor interno do filtro.
+
 ### UX De Tabela
 
 - BCK-007: melhorar responsividade/legibilidade da tabela.
