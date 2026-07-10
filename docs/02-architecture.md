@@ -55,7 +55,7 @@ O `middleware.ts` protege:
 - `/categories`
 - `/settings`
 
-Essa lista expressa a politica de protecao. A rota `/categories` ainda nao possui pagina implementada.
+Essa lista expressa a politica de protecao. A rota `/categories` possui uma pagina server-side autenticada.
 
 As paginas internas tambem validam a sessao no servidor para evitar confiar apenas na presenca do cookie.
 
@@ -111,6 +111,8 @@ Server Actions devem expor ao cliente apenas erros esperados e controlados. Erro
 O Prisma permanece restrito a codigo server-side. `lib/categories/` exige `userId`, busca recursos pelo par logico `id + userId`, normaliza nomes e monta a arvore pai/filha em memoria a partir de uma unica consulta. Componentes client-side nao importam o servico nem o Prisma.
 
 A hierarquia v1 aceita somente categorias raiz e filhas. Criacao de netas, troca de pai, exclusao, categorizacao de transacoes e regras automaticas permanecem fora deste bloco.
+
+`app/categories` contem a pagina protegida e Server Actions. `components/categories` contem a apresentacao e os formularios interativos. As Actions obtêm `userId` exclusivamente por `requireCurrentUser`, encaminham somente entradas necessarias ao servico e revalidam `/categories` apos sucesso.
 
 ## Evolucao prevista
 

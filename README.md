@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Blocos 1 e 3 concluidos; tela e categorizacao ainda pendentes**.
+Status atual: **Sprint 4 em andamento - Blocos 1 e 3 concluidos; tela de categorias implementada e em validacao manual**.
 
 ## Problema
 
@@ -49,7 +49,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Regras automaticas de categorizacao.
 - Revisao final de privacidade do MVP.
 
-Os modelos `Category` e `CategoryRule` ja existem no schema. A camada server-side `lib/categories/` implementa listagem, criacao de raiz/filha e edicao de nome com isolamento por usuario. Ainda nao ha tela `/categories`, Server Actions publicas, categorizacao manual ou regras automaticas.
+Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` usa a camada `lib/categories/` para listar, criar categorias raiz/filha e editar nomes com isolamento por usuario. Categorizacao manual e regras automaticas ainda nao foram implementadas.
 
 O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 
@@ -273,7 +273,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem tela ou fluxo client-side de categorias, apesar da camada server-side existente.
+- Tela de categorias em validacao manual; ainda sem categorizacao de transacoes.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

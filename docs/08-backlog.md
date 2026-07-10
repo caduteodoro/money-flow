@@ -85,7 +85,8 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-018 | Feature | Camada `lib/categories/` | Implementar tipos, listagem e mutações server-side com isolamento por `userId`. | P1 | Sprint 4 | M | Alto | Alto | BCK-016 e BCK-017 | Concluído |
 | BCK-019 | Teste | Autorização de categorias | Cobrir acesso, edição e associação de recursos de outro usuário. | P0 | Sprint 4 | M | Alto | Alto | BCK-018 e runner de testes | Backlog |
 | BCK-020 | Teste | Validar hardening CSV | Cobrir mensagens controladas, erro interno genérico, contadores reais e deduplicação concorrente. | P1 | Sprint 4 | M | Alto | Médio | BCK-011 | Concluído |
-| BCK-021 | UX | Corrigir link Categorias | Fazer a sidebar apontar para `/categories` somente quando a rota funcional existir. | P1 | Sprint 4 | P | Médio | Baixo | Bloco 4 | Backlog |
+| BCK-021 | UX | Corrigir link Categorias | Fazer a sidebar apontar para `/categories` somente quando a rota funcional existir. | P1 | Sprint 4 | P | Médio | Baixo | Bloco 4 | Concluído |
+| BCK-022 | Feature | Tela de categorias | Disponibilizar listagem hierárquica, estado vazio, criação de raiz/filha e edição de nome pela camada segura. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Em andamento |
 
 ## Por Sprint Sugerida
 
@@ -233,15 +234,16 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 |----|----------|--------------------|--------|
 | BCK-009 | "Mês atual" deve seguir o mês do sistema ou o mês mais recente dos dados importados? | Validado: usa o mês atual do sistema/calendário. | Concluído |
 | BCK-010 | O rótulo "Período importado" deve virar "Todo o período importado"? | Validado: usa "Todo o período importado". | Concluído |
-| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-022 quando a lista for colada. | Ideia |
+| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-023 quando a lista for colada. | Ideia |
 
 ## Observações
 
 - Testes manuais do Bloco 1: PASSOU para login, filtros, período real, estados vazios, tabela responsiva, preview/importação/reimportação CSV, CSV inválido, histórico e dashboard pós-importação.
-- Bloco 3: camada `lib/categories/` concluída por revisão estática e validações técnicas; constraints compostas, testes automatizados, UI, categorização manual e regras continuam pendentes.
+- Bloco 3: camada `lib/categories/` concluída por revisão estática e validações técnicas; constraints compostas, testes automatizados, categorização manual e regras continuam pendentes.
+- Bloco 4: tela `/categories` implementada e tecnicamente validada; BCK-022 permanece em andamento até os testes manuais de dois usuários.
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
-- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-022`.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-023`.

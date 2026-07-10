@@ -113,7 +113,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
 - Ainda nao ha parser OFX.
-- A modelagem e o servico server-side de categorias existem, mas ainda nao ha tela ou mutacoes publicas.
+- A modelagem, o servico server-side e a rota protegida de categorias existem; categorizacao de transacoes ainda nao foi implementada.
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
@@ -128,3 +128,5 @@ Antes de producao, avaliar criptografia de campos sensiveis e uma arquitetura qu
 Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
 
 O servico impede associacoes cruzadas nas operacoes atuais, mas constraints compostas e unicidade robusta de categorias raiz ainda precisam ser avaliadas no banco antes de producao.
+
+A pagina e todas as Server Actions exigem sessao. IDs de categoria e pai vindos do navegador sao revalidados com o `userId` da sessao, e a resposta nao distingue recurso inexistente de recurso pertencente a outro usuario. Nenhum nome de categoria ou dado financeiro e enviado a audit logs.
