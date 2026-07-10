@@ -10,6 +10,7 @@ import type {
   StatementParser,
   StatementParseWarning,
 } from "@/lib/parsers/statement-parser";
+import { StatementParserError } from "@/lib/parsers/statement-parser";
 
 const REQUIRED_HEADERS = ["data", "valor", "identificador", "descricao"];
 
@@ -33,7 +34,7 @@ export const nubankCsvParser: StatementParser = {
     const headerRow = rows[0];
 
     if (!headerRow) {
-      throw new Error("CSV vazio.");
+      throw new StatementParserError("CSV vazio.");
     }
 
     const headerIndex = buildHeaderIndex(headerRow.values);
@@ -70,7 +71,7 @@ export const nubankCsvParser: StatementParser = {
     }
 
     if (transactions.length === 0) {
-      throw new Error("CSV sem transacoes validas.");
+      throw new StatementParserError("CSV sem transacoes validas.");
     }
 
     return {
@@ -92,7 +93,7 @@ function buildHeaderIndex(headers: string[]) {
 
   for (const requiredHeader of REQUIRED_HEADERS) {
     if (!index.has(requiredHeader)) {
-      throw new Error("Estrutura do CSV nao reconhecida.");
+    throw new StatementParserError("Estrutura do CSV nao reconhecida.");
     }
   }
 
@@ -174,7 +175,7 @@ function parseCsvRows(content: string) {
   }
 
   if (inQuotes) {
-    throw new Error("CSV com aspas nao fechadas.");
+    throw new StatementParserError("CSV com aspas nao fechadas.");
   }
 
   if (currentValue !== "" || currentRow.length > 0) {

@@ -63,9 +63,9 @@ Durante a confirmacao, o servico reprocessa o arquivo recebido e nao confia no p
 
 ## Erros esperados
 
-Erros de validacao de CSV usam mensagens controladas, por exemplo arquivo vazio, tamanho acima do limite, extensao invalida, MIME type nao reconhecido, UTF-8 invalido, bytes nulos ou estrutura nao reconhecida.
+Erros de validacao de CSV usam `StatementImportError`; erros seguros do parser usam `StatementParserError`. Isso permite mensagens controladas para arquivo vazio, tamanho acima do limite, extensao invalida, MIME type nao reconhecido, UTF-8 invalido, bytes nulos ou estrutura nao reconhecida.
 
-Erros internos de banco, runtime ou infraestrutura nao devem ser expostos integralmente na UI. Nesses casos, a Server Action retorna mensagem generica.
+Erros inesperados do parser, banco, runtime ou infraestrutura nao sao convertidos a partir de `error.message` em texto publico. Nesses casos, a Server Action retorna mensagem generica.
 
 ## Audit log
 

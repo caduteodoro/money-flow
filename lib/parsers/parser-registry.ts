@@ -1,5 +1,5 @@
 import { nubankCsvParser } from "@/lib/parsers/nubank-csv-parser";
-import type { StatementParser, StatementParserInput } from "@/lib/parsers/statement-parser";
+import { StatementParserError, type StatementParser, type StatementParserInput } from "@/lib/parsers/statement-parser";
 
 const statementParsers: StatementParser[] = [nubankCsvParser];
 
@@ -15,7 +15,7 @@ export function parseStatement(input: StatementParserInput) {
   const parser = detectStatementParser(input);
 
   if (!parser) {
-    throw new Error("Formato de extrato nao reconhecido.");
+    throw new StatementParserError("Formato de extrato nao reconhecido.");
   }
 
   return parser.parse(input);

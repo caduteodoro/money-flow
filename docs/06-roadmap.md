@@ -58,14 +58,18 @@ Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico fica
 
 Status: concluida no escopo planejado para dashboard real do MVP.
 
-## Preparacao para Sprint 4
+## Sprint 4 - estado por blocos
 
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
 - Importacao passou a diferenciar erro esperado de CSV de erro interno.
 - Contadores de importacao passaram a refletir a quantidade realmente inserida pelo banco.
 - Documentada a regra de integridade de categorias: toda mutacao futura deve validar `userId` e evitar nomes duplicados entre categorias irmas, incluindo categorias raiz.
 
-Status: em andamento.
+Status:
+
+- Bloco 1: concluido; reconciliacao, hardening CSV, validacoes tecnicas e testes manuais aprovados.
+- Bloco 2: modelo preparatorio existente e revisao tecnica realizada; qualquer correcao de schema depende de decisao e migration futura.
+- Blocos 3 a 6: nao iniciados.
 
 ## Sprint 4
 

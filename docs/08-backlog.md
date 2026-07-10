@@ -71,14 +71,21 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-004 | Feature | Saldo acumulado | Calcular e exibir evolução de saldo acumulado ao longo do tempo, deixando claro se o saldo é estimado a partir das transações importadas. | P2 | Pós-MVP | M | Alto | Alto | Decisão de produto sobre saldo estimado vs. saldo bancário real | Ideia |
 | BCK-005 | Feature | Calendário financeiro | Criar visualização por calendário para localizar dias de maior concentração de entradas e saídas. | P3 | Futuro | G | Médio | Médio | Mais volume de dados; definição de visualização responsiva | Ideia |
 | BCK-006 | Feature | Ofensores do mês | Destacar principais categorias, descrições ou despesas que mais impactaram o mês, sem tom julgador. | P2 | Pós-MVP | M | Médio | Médio | Categorias; cuidado de linguagem; possível dependência de BCK-001 | Ideia |
-| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Ajustar tabela de transações para melhor leitura em telas menores e em desktop com sidebar, preservando densidade e clareza. | P1 | Sprint 4 | M | Alto | Baixo | Design responsivo da área autenticada | Backlog |
+| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Ajustar tabela de transações para melhor leitura em telas menores e em desktop com sidebar, preservando densidade e clareza. | P1 | Sprint 4 | M | Alto | Baixo | Design responsivo da área autenticada | Concluído |
 | BCK-008 | UX | Exibir período real calculado | Mostrar de forma explícita o intervalo real considerado pelos filtros e KPIs, reduzindo ambiguidade para usuários com dados importados fora do mês atual. | P1 | Sprint 4 | P | Alto | Baixo | Definição da semântica dos filtros de data | Concluído |
-| BCK-009 | Pesquisa | Avaliar regra do filtro "Mês atual" | Decidir se "Mês atual" deve usar o mês do sistema ou o mês mais recente disponível nos dados importados. | P1 | Discovery | P | Alto | Médio | Alinhamento de produto sobre expectativa do usuário | Ideia |
-| BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | P2 | Discovery | P | Médio | Baixo | Decisão de texto e consistência com filtros | Ideia |
+| BCK-009 | Pesquisa | Avaliar regra do filtro "Mês atual" | Decidir se "Mês atual" deve usar o mês do sistema ou o mês mais recente disponível nos dados importados. | P1 | Discovery | P | Alto | Médio | Alinhamento de produto sobre expectativa do usuário | Concluído |
+| BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | P2 | Discovery | P | Médio | Baixo | Decisão de texto e consistência com filtros | Concluído |
 | BCK-011 | Tech Debt | Suíte automatizada de testes | Adicionar testes para parser CSV, normalização, dedupe, filtros de data e fluxos sensíveis de sessão/importação. | P1 | Sprint 4 | M | Alto | Médio | Definir runner de testes sem inflar dependências | Backlog |
 | BCK-012 | Tech Debt | Migration segura para bancos com dados | Revisar migrations antigas que assumem banco vazio, especialmente `StatementImport.updatedAt` obrigatório sem default. | P1 | Sprint 4 | P | Alto | Médio | Ambiente local com Postgres e histórico de migrations | Backlog |
 | BCK-013 | Segurança | Guardrails de categorias por usuário | Antes da UI de categorias, criar serviços que validem `userId` em categoria, regra e transação, evitando associações cruzadas. | P1 | Sprint 4 | M | Alto | Médio | Sprint 4: categorias e regras | Backlog |
 | BCK-014 | UX | Navegação mobile autenticada | Criar navegação responsiva para área autenticada, já que a sidebar atual aparece apenas em telas grandes. | P2 | Sprint 4 | M | Médio | Baixo | Layout autenticado | Backlog |
+| BCK-015 | Tech Debt | Reconciliar Bloco 1 | Integrar conscientemente dashboard local e contribuição remota, preservando estados vazios, período e tabela responsiva. | P1 | Sprint 4 | P | Alto | Médio | PR #1 e alterações locais | Concluído |
+| BCK-016 | Data Model | Unicidade de categorias raiz | Definir proteção para nomes raiz duplicados quando `parentId` for `NULL`. | P1 | Sprint 4 | P | Alto | Alto | Decisão de schema e migration | Refinado |
+| BCK-017 | Segurança | Bloquear relacionamentos entre usuários | Impedir pai, categoria, regra ou transação de usuários diferentes no serviço e avaliar constraints compostas. | P0 | Sprint 4 | M | Alto | Alto | Revisão do modelo | Refinado |
+| BCK-018 | Feature | Camada `lib/categories/` | Implementar tipos, listagem e mutações server-side com isolamento por `userId`. | P1 | Sprint 4 | M | Alto | Alto | BCK-016 e BCK-017 | Backlog |
+| BCK-019 | Teste | Autorização de categorias | Cobrir acesso, edição e associação de recursos de outro usuário. | P0 | Sprint 4 | M | Alto | Alto | BCK-018 e runner de testes | Backlog |
+| BCK-020 | Teste | Validar hardening CSV | Cobrir mensagens controladas, erro interno genérico, contadores reais e deduplicação concorrente. | P1 | Sprint 4 | M | Alto | Médio | BCK-011 | Concluído |
+| BCK-021 | UX | Corrigir link Categorias | Fazer a sidebar apontar para `/categories` somente quando a rota funcional existir. | P1 | Sprint 4 | P | Médio | Baixo | Bloco 4 | Backlog |
 
 ## Por Sprint Sugerida
 
@@ -192,7 +199,7 @@ Item provável de interface/dashboard. Não deve alterar queries Prisma, schema,
 **Esforço estimado:** M  
 **Impacto:** Alto  
 **Risco:** Baixo  
-**Status:** Backlog
+**Status:** Concluído
 
 #### Problema
 
@@ -204,9 +211,9 @@ Melhorar a leitura da tabela sem esconder informações essenciais e sem transfo
 
 #### Critérios De Aceite
 
-- [ ] A tabela permanece legível em mobile e desktop.
-- [ ] Valores, datas e descrições não se sobrepõem.
-- [ ] A solução preserva privacidade e não expõe descrições completas fora do contexto autenticado.
+- [x] A tabela permanece legível em mobile e desktop.
+- [x] Valores, datas e descrições não se sobrepõem.
+- [x] A solução preserva privacidade e não expõe descrições completas fora do contexto autenticado.
 
 #### Observações Técnicas
 
@@ -224,14 +231,16 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 
 | ID | Pergunta | Decisão necessária | Status |
 |----|----------|--------------------|--------|
-| BCK-009 | "Mês atual" deve seguir o mês do sistema ou o mês mais recente dos dados importados? | Definir semântica do filtro para evitar surpresa em datasets antigos. | Ideia |
-| BCK-010 | O rótulo "Período importado" deve virar "Todo o período importado"? | Validar clareza do texto e consistência com a navegação do dashboard. | Ideia |
-| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-015 quando a lista for colada. | Ideia |
+| BCK-009 | "Mês atual" deve seguir o mês do sistema ou o mês mais recente dos dados importados? | Validado: usa o mês atual do sistema/calendário. | Concluído |
+| BCK-010 | O rótulo "Período importado" deve virar "Todo o período importado"? | Validado: usa "Todo o período importado". | Concluído |
+| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-022 quando a lista for colada. | Ideia |
 
 ## Observações
+
+- Testes manuais do Bloco 1: PASSOU para login, filtros, período real, estados vazios, tabela responsiva, preview/importação/reimportação CSV, CSV inválido, histórico e dashboard pós-importação.
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
-- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-015`.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-022`.

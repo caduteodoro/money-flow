@@ -113,7 +113,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
 - Ainda nao ha parser OFX.
-- Ainda nao ha categorias.
+- A modelagem de categorias existe, mas ainda nao ha servico, mutacoes ou tela funcional.
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
@@ -122,3 +122,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 ## Criptografia futura
 
 Antes de producao, avaliar criptografia de campos sensiveis e uma arquitetura que impeca operadores da plataforma de visualizar transacoes individuais. A modelagem atual ja separa `userId` e evita telas administrativas sobre dados financeiros.
+
+## Categorias da Sprint 4
+
+As futuras mutacoes devem consultar categoria, pai, regra e transacao com o mesmo `userId` autenticado. IDs enviados pelo cliente nao bastam, e nenhuma associacao cruzada entre usuarios pode ser aceita mesmo quando a chave estrangeira for valida.

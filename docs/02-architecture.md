@@ -26,6 +26,7 @@
 - `parsers`: contratos, registry, normalizacao e parser CSV inicial.
 - `imports`: validacao de arquivo, preview e persistencia inicial de importacao.
 - `dashboard`: filtros de periodo, queries por `userId`, KPIs financeiros, series para graficos e insights basicos.
+- `categories`: camada server-side planejada para listagem e mutacoes seguras; ainda nao implementada.
 - `security`: sanitizacao, hashing, validacoes e auditoria futura.
 - `insights`: area reservada para evolucoes futuras de analytics e insights.
 
@@ -53,6 +54,8 @@ O `middleware.ts` protege:
 - `/transactions`
 - `/categories`
 - `/settings`
+
+Essa lista expressa a politica de protecao. A rota `/categories` ainda nao possui pagina implementada.
 
 As paginas internas tambem validam a sessao no servidor para evitar confiar apenas na presenca do cookie.
 
@@ -87,6 +90,8 @@ A Sprint 3 move o dashboard de mock para dados reais usando `lib/dashboard`:
 
 Os componentes em `components/dashboard` recebem dados prontos e fazem apenas apresentacao e formatacao visual. A logica financeira nao deve ser duplicada na UI.
 
+O Bloco 1 da Sprint 4 reconcilia o rotulo "Todo o periodo importado", a exibicao de intervalo, estados vazios distintos e a tabela responsiva sem alterar as regras financeiras.
+
 Dados atuais do dashboard:
 
 - KPIs: entradas, saidas em valor absoluto, saldo, gasto medio diario, maior saida e quantidade de transacoes.
@@ -102,6 +107,8 @@ Dados atuais do dashboard:
 Todas as entidades financeiras principais usam `userId`. Qualquer query financeira deve aplicar isolamento por usuario, incluindo dashboard, importacoes, transacoes, categorias e regras futuras. Uploads sao tratados como entrada nao confiavel e nao devem ser logados com conteudo bruto.
 
 Server Actions devem expor ao cliente apenas erros esperados e controlados. Erros internos de banco, infraestrutura ou runtime devem cair em mensagens genericas.
+
+O Prisma permanece restrito a codigo server-side. A futura camada `lib/categories/` deve preparar dados e validar propriedade antes que componentes visuais recebam categorias.
 
 ## Evolucao prevista
 

@@ -51,12 +51,15 @@ O MVP nao salva o CSV bruto no banco.
 
 `Category` e `CategoryRule` ja existem no schema como base da Sprint 4, mas ainda nao ha telas ou mutacoes publicas para categorias.
 
+A modelagem e preparatoria, nao uma funcionalidade concluida. Ainda faltam `lib/categories/`, rota `/categories`, categorizacao manual e aplicacao de regras.
+
 Regras para a Sprint 4:
 
 - Criar categorias somente por servicos que recebam o `userId` autenticado.
 - Ao atribuir `categoryId` a uma transacao, validar que a transacao e a categoria pertencem ao mesmo `userId`.
 - Ao criar `CategoryRule`, validar que a regra e a categoria pertencem ao mesmo `userId`.
 - Evitar nomes duplicados entre categorias irmas. Como `parentId` pode ser `NULL`, nao confiar apenas em `@@unique([userId, name, parentId])` para categorias raiz no PostgreSQL; a regra precisa ser aplicada no servico ou reforcada por indice/migration especifica antes de liberar a UI.
+- Validar que pai, categoria, regra e transacao pertencem ao mesmo usuario. As chaves estrangeiras atuais validam IDs, mas nao impedem por si so relacionamentos cruzados entre usuarios.
 
 ## Enums
 

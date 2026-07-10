@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 3 concluida - Dashboard real do MVP; preparacao para Sprint 4 iniciada**.
+Status atual: **Sprint 4 em andamento - Bloco 1 concluido e modelo de categorias revisado tecnicamente**.
 
 ## Problema
 
@@ -34,7 +34,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Historico de importacoes com mes ou periodo do extrato.
 - Dashboard real baseado nas transacoes importadas pelo usuario autenticado.
 - KPIs financeiros reais: entradas, saidas, saldo, gasto medio diario, maior saida e quantidade de transacoes.
-- Filtros de periodo: periodo importado, ultimos 30 dias, mes atual e mes anterior.
+- Filtros de periodo: todo o periodo importado, ultimos 30 dias, mes atual e mes anterior.
 - Exibicao do intervalo real considerado pelo filtro ativo.
 - Graficos simples de evolucao financeira e entradas vs saidas.
 - Insights basicos calculados localmente, sem IA externa.
@@ -48,6 +48,10 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Categorias pai/filha editaveis.
 - Regras automaticas de categorizacao.
 - Revisao final de privacidade do MVP.
+
+Os modelos `Category` e `CategoryRule` ja existem no schema como preparacao. Categorias ainda nao sao funcionais: nao ha `lib/categories/`, tela `/categories` ou mutacoes publicas.
+
+O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 
 ## Stack
 
@@ -72,6 +76,7 @@ A aplicacao usa o App Router do Next.js para telas publicas e internas. A camada
 - `lib/parsers`: contratos, registry, normalizacao e parser CSV inicial.
 - `lib/imports`: validacao, preview e persistencia inicial de importacao.
 - `lib/dashboard`: filtros de periodo, queries por `userId`, KPIs, series para graficos e insights basicos.
+- `lib/categories`: camada server-side planejada para a Sprint 4; ainda nao implementada.
 - `lib/security`: validacoes, sanitizacao e controles futuros.
 - `lib/insights`: area reservada para evolucoes futuras de insights.
 
@@ -268,7 +273,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem categorias reais.
+- Sem fluxo funcional de categorias, apesar da modelagem preparatoria existente.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import { generateDedupeKey, generateFileHash } from "@/lib/parsers/normalization";
 import { parseStatement } from "@/lib/parsers/parser-registry";
-import type { NormalizedStatementTransaction } from "@/lib/parsers/statement-parser";
+import { StatementParserError, type NormalizedStatementTransaction } from "@/lib/parsers/statement-parser";
 
 const MAX_CSV_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_CSV_MIME_TYPES = new Set([
@@ -354,11 +354,11 @@ function parseUploadedStatement(fileContent: string, input: StatementUploadInput
       throw error;
     }
 
-    if (error instanceof Error) {
+    if (error instanceof StatementParserError) {
       throw new StatementImportError(error.message);
     }
 
-    throw new StatementImportError("Formato de extrato nao reconhecido.");
+    throw error;
   }
 }
 

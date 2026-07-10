@@ -1,5 +1,12 @@
 export type StatementParserFormat = "CSV";
 
+export class StatementParserError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StatementParserError";
+  }
+}
+
 export type StatementTransactionDirection = "INCOME" | "EXPENSE" | "TRANSFER" | "REVERSAL";
 
 export type StatementParserInput = {
