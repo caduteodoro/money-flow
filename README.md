@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Blocos 1 e 3 concluidos; tela de categorias implementada e em validacao manual**.
+Status atual: **Sprint 4 em andamento - Blocos 1, 3 e 4 concluidos**.
 
 ## Problema
 
@@ -273,7 +273,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Tela de categorias em validacao manual; ainda sem categorizacao de transacoes.
+- Sem categorizacao manual, identificacao de transacoes nao categorizadas, regras automaticas ou analytics por categoria.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

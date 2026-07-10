@@ -70,7 +70,7 @@ Status:
 - Bloco 1: concluido; reconciliacao, hardening CSV, validacoes tecnicas e testes manuais aprovados.
 - Bloco 2: modelo preparatorio existente e revisao tecnica realizada; hardening do banco depende de decisao e migration futura.
 - Bloco 3: concluido; camada server-side segura para listar, criar e renomear categorias pai/filha.
-- Bloco 4: implementado e tecnicamente validado; testes manuais de interface e isolamento ainda pendentes.
+- Bloco 4: concluido e validado manualmente, incluindo criacao, hierarquia, edicao, duplicidade, sessao e isolamento entre usuarios.
 - Blocos 5 e 6: nao iniciados.
 
 ## Sprint 4
