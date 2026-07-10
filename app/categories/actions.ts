@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import type { CategoryActionState } from "@/app/categories/category-action-state";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import {
   createCategory,
@@ -9,14 +10,6 @@ import {
   updateCategory,
   type CategoryServiceResult,
 } from "@/lib/categories";
-
-export type CategoryActionState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  fieldErrors?: Record<string, string[]>;
-};
-
-export const initialCategoryActionState: CategoryActionState = { status: "idle" };
 
 export async function createCategoryAction(
   _previousState: CategoryActionState,

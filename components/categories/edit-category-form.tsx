@@ -5,9 +5,9 @@ import { useFormStatus } from "react-dom";
 import { Loader2, Save } from "lucide-react";
 
 import {
-  initialCategoryActionState,
   updateCategoryAction,
 } from "@/app/categories/actions";
+import { initialCategoryActionState } from "@/app/categories/category-action-state";
 import { CategoryActionMessage } from "@/components/categories/action-message";
 import { Button } from "@/components/ui/button";
 

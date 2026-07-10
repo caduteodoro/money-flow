@@ -1,4 +1,4 @@
-import type { CategoryActionState } from "@/app/categories/actions";
+import type { CategoryActionState } from "@/app/categories/category-action-state";
 
 export function CategoryActionMessage({ state }: { state: CategoryActionState }) {
   if (!state.message) {
