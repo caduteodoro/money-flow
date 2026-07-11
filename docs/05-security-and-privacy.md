@@ -1,5 +1,7 @@
 # 05 - Seguranca e privacidade
 
+O threat model da auditoria da Sprint 5 está registrado em [`docs/11-security-threat-model.md`](11-security-threat-model.md). O documento separa controles comprovados, riscos preliminares e pontos ainda não verificados; sua publicação não significa que os riscos já foram corrigidos.
+
 ## Principios
 
 - Privacidade por padrao.
