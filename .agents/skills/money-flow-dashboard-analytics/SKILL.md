@@ -1,29 +1,45 @@
-# money-flow-dashboard-analytics
+---
+name: money-flow-dashboard-analytics
+description: Use ao criar ou revisar KPIs, filtros, tabelas, gráficos, insights, períodos e cálculos financeiros do dashboard do Money Flow.
+---
+
+# Money Flow Dashboard Analytics
 
 ## Quando usar
 
-Use esta skill ao criar ou revisar dashboard, KPIs, gráficos, filtros, tabelas, insights ou cálculos financeiros.
+Use em mudanças ou revisões de dashboard, KPIs, filtros, períodos, tabelas, gráficos, insights e cálculos financeiros.
 
 ## Objetivo
 
-Garantir que o Money Flow entregue analytics financeiros úteis, claros e agradáveis.
+Entregar analytics corretos, interpretáveis, úteis e isolados por usuário.
 
-## Checklist de revisão
+## Instruções
 
-- KPIs principais estão visíveis?
-- Gráficos têm tooltips e contexto?
-- Filtros de data são claros?
-- Tabelas permitem leitura rápida?
-- Insights são úteis e bem-humorados sem julgar o usuário?
-- Gasto médio diário está planejado?
-- Despesas recorrentes estão planejadas?
-- Evolução mensal está clara?
-- Futuras análises preditivas estão no roadmap?
-- Cálculos usam apenas dados do usuário autenticado?
+- Confirme a definição de cada métrica e o sinal de entradas/saídas.
+- Verifique filtros, limites de período, timezone e estados vazios.
+- Garanta que tabelas e gráficos usem os mesmos dados e intervalos.
+- Diferencie saldo calculado de saldo bancário real.
+- Avalie legibilidade, responsividade, contexto e risco de interpretação.
+- Mantenha cálculos no domínio server-side e dados preparados para a UI.
+
+## Checklist
+
+- Queries e agregações filtram por `userId`?
+- KPIs usam convenções monetárias coerentes?
+- O intervalo real considerado está visível?
+- Filtros vazios diferem de ausência total de dados?
+- Gráficos, tabelas e insights são consistentes entre si?
+- Textos informam sem julgar o usuário?
 
 ## Saída esperada
 
-- Recomendações de UX/BI.
-- Lista de KPIs e gráficos.
-- Riscos de interpretação.
-- Melhorias de clareza para usuários finais.
+- Definições e revisão dos cálculos.
+- Riscos de interpretação e inconsistências.
+- Recomendações de UX/BI e validações necessárias.
+
+## Limites
+
+- Não crie analytics antes de suas dependências de dados estarem prontas.
+- Não altere regras financeiras sem documentar o impacto.
+- Não exponha dados de outro usuário ou dados financeiros em logs.
+- Não introduza previsão ou IA externa sem escopo explícito.

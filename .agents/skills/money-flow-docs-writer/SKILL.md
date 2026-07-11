@@ -1,34 +1,45 @@
-# money-flow-docs-writer
+---
+name: money-flow-docs-writer
+description: Use ao criar ou atualizar README, arquitetura, modelo de dados, segurança, roadmap, backlog e documentação de sprints do Money Flow.
+---
+
+# Money Flow Docs Writer
 
 ## Quando usar
 
-Use esta skill ao criar, revisar ou atualizar documentação do Money Flow.
+Use ao criar, revisar ou atualizar documentação do produto, arquitetura, dados, segurança, importações, roadmap, backlog ou sprints.
 
 ## Objetivo
 
-Manter a documentação clara, atualizada e coerente com o estado real do produto, especialmente:
+Manter documentos claros, consistentes e fiéis ao estado real do Money Flow.
 
-- `README.md`
-- `docs/01-product-vision.md`
-- `docs/02-architecture.md`
-- `docs/03-data-model.md`
-- `docs/04-bank-statement-imports.md`
-- `docs/05-security-and-privacy.md`
-- `docs/06-roadmap.md`
-- `docs/07-prompt-engineering.md`
+## Instruções
 
-## Checklist de revisão
+- Leia os documentos relacionados e o código que comprova o estado atual.
+- Atualize `README.md` e arquivos relevantes em `docs/` de forma incremental.
+- Diferencie implementado, em validação, planejado e fora do escopo.
+- Registre decisões de arquitetura, segurança, dados e limitações conhecidas.
+- Preserve avisos de privacidade e proibição de extratos reais.
+- Evite duplicar detalhes quando uma referência entre documentos for suficiente.
 
-- O status da sprint está correto?
-- O README explica problema, solução, stack e execução local?
-- O roadmap está atualizado?
-- Limitações e mocks estão marcados como planejados?
-- Segurança e privacidade aparecem de forma explícita?
-- Não há promessa de funcionalidade ainda não implementada como se já existisse?
-- Há aviso para nunca versionar extratos reais?
+## Checklist
+
+- Status da sprint e roadmap estão corretos?
+- Arquitetura e modelo refletem o código existente?
+- Segurança, privacidade e limitações estão explícitas?
+- Funcionalidades planejadas não parecem concluídas?
+- Backlog e débitos técnicos permanecem separados das entregas?
+- Instruções locais continuam reproduzíveis?
 
 ## Saída esperada
 
-- Lista objetiva de ajustes feitos ou recomendados.
-- Arquivos de documentação atualizados.
-- Pendências documentais para a próxima sprint.
+- Documentos atualizados ou recomendações objetivas.
+- Lista de mudanças e pendências documentais.
+- Estado de validação claramente indicado.
+
+## Limites
+
+- Não marque funcionalidade como concluída sem evidência e validação exigida.
+- Não prometa datas, deploy ou capacidades inexistentes.
+- Não inclua segredos, caminhos pessoais ou dados financeiros reais.
+- Não reescreva documentos inteiros quando uma atualização localizada bastar.

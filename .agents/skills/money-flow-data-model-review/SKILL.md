@@ -1,29 +1,45 @@
-# money-flow-data-model-review
+---
+name: money-flow-data-model-review
+description: Use ao revisar Prisma, schema, migrations, relacionamentos, índices, categorias, transações, importações, deduplicação e integridade de dados do Money Flow.
+---
+
+# Money Flow Data Model Review
 
 ## Quando usar
 
-Use esta skill ao alterar `prisma/schema.prisma`, migrations, queries, deduplicação, categorias, importações ou dados usados por dashboards.
+Use ao alterar ou avaliar schema Prisma, migrations, queries, categorias, transações, importações, deduplicação ou dados de analytics.
 
 ## Objetivo
 
-Revisar a modelagem de dados para garantir consistência, evolução segura e boa base analítica.
+Preservar consistência, isolamento, evolução segura e suporte às consultas reais do produto.
 
-## Checklist de revisão
+## Instruções
 
-- Relacionamentos pertencem ao usuário correto?
-- Índices atendem queries previstas?
-- Deduplicação usa chave estável por usuário?
-- Categorias pai/filha estão modeladas corretamente?
-- Histórico de importação preserva status, contadores e erros?
-- Audit logs registram eventos sem dados sensíveis?
-- Modelo suporta CSV no MVP?
-- Modelo está preparado para OFX?
-- Dados sustentam KPIs, filtros e gráficos?
-- Tipos monetários evitam erro de ponto flutuante?
+- Leia o schema, migrations e serviços afetados antes de recomendar mudanças.
+- Confirme propriedade por `userId` em entidades, relações e queries.
+- Avalie integridade referencial, unicidade, nulabilidade, cascatas e concorrência.
+- Relacione índices às queries e ordenações existentes.
+- Verifique deduplicação por usuário e uso de inteiros para valores monetários.
+- Explique impacto em dados existentes, migrations e rollback.
+
+## Checklist
+
+- Relações impedem ou mitigam vínculos entre usuários?
+- Índices atendem filtros e ordenações reais?
+- Chaves de deduplicação são estáveis e isoladas por usuário?
+- Categorias pai/filha e regras preservam integridade?
+- Importações mantêm status e contadores coerentes?
+- O modelo sustenta CSV, KPIs e evolução futura para OFX?
 
 ## Saída esperada
 
-- Revisão do schema.
-- Riscos e trade-offs.
-- Ajustes recomendados.
-- Impacto esperado em migrations e queries.
+- Estado atual do modelo.
+- Riscos e trade-offs com evidências.
+- Ajustes recomendados e impactos em queries/migrations.
+- Limitações conhecidas que devem permanecer documentadas.
+
+## Limites
+
+- Não altere `schema.prisma` nem crie migration sem autorização explícita.
+- Não presuma banco vazio ou descarte dados existentes.
+- Não declare integridade resolvida quando ela existir apenas na camada de serviço.
