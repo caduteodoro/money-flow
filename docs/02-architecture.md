@@ -27,6 +27,7 @@
 - `imports`: validacao de arquivo, preview e persistencia inicial de importacao.
 - `dashboard`: filtros de periodo, queries por `userId`, KPIs financeiros, series para graficos e insights basicos.
 - `categories`: tipos, normalizacao, validacao Zod, erros controlados, listagem hierarquica e mutacoes seguras.
+- `transactions`: listagem limitada para categorizacao e atribuicao manual segura de categoria.
 - `security`: sanitizacao, hashing, validacoes e auditoria futura.
 - `insights`: area reservada para evolucoes futuras de analytics e insights.
 
@@ -111,6 +112,8 @@ Server Actions devem expor ao cliente apenas erros esperados e controlados. Erro
 O Prisma permanece restrito a codigo server-side. `lib/categories/` exige `userId`, busca recursos pelo par logico `id + userId`, normaliza nomes e monta a arvore pai/filha em memoria a partir de uma unica consulta. Componentes client-side nao importam o servico nem o Prisma.
 
 A hierarquia v1 aceita somente categorias raiz e filhas. Criacao de netas, troca de pai, exclusao, categorizacao de transacoes e regras automaticas permanecem fora deste bloco.
+
+`app/transactions` implementa a rota protegida de categorizacao manual. A pagina recebe dados preparados pelo servico server-side, e a Server Action forma a fronteira entre a UI e o dominio. Antes da mutacao, o servico revalida separadamente transacao e categoria pelo par `id + userId`; o update tambem inclui `userId`.
 
 `app/categories` contem a pagina protegida e Server Actions. `components/categories` contem a apresentacao e os formularios interativos. As Actions obtêm `userId` exclusivamente por `requireCurrentUser`, encaminham somente entradas necessarias ao servico e revalidam `/categories` apos sucesso.
 

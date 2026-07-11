@@ -60,6 +60,13 @@ Status: concluida no escopo planejado para dashboard real do MVP.
 
 ## Sprint 4 - estado por blocos
 
+- Bloco 1: concluido.
+- Bloco 2: revisado; hardening adicional do banco pendente.
+- Bloco 3: concluido.
+- Bloco 4: concluido.
+- Bloco 5: implementado, em validacao de navegador.
+- Bloco 6: nao iniciado.
+
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
 - Importacao passou a diferenciar erro esperado de CSV de erro interno.
 - Contadores de importacao passaram a refletir a quantidade realmente inserida pelo banco.

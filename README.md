@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Blocos 1, 3 e 4 concluidos**.
+Status atual: **Sprint 4 em andamento - Blocos 1, 3 e 4 concluidos; Bloco 5 em validacao**.
 
 ## Problema
 
@@ -42,6 +42,8 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Estado vazio separado para usuarios sem transacoes e filtros sem movimento no periodo.
 - Importacao com mensagens controladas para erros esperados de CSV e contadores baseados no que o banco realmente inseriu.
 - UI polish e ajuste responsivo dos KPIs para zoom 100%.
+- Rota protegida `/transactions` para listagem e categorizacao manual com categorias do proprio usuario.
+- Identificacao e filtro de transacoes sem categoria.
 
 ## Funcionalidades planejadas do MVP
 
@@ -49,7 +51,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Regras automaticas de categorizacao.
 - Revisao final de privacidade do MVP.
 
-Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` usa a camada `lib/categories/` para listar, criar categorias raiz/filha e editar nomes com isolamento por usuario. Categorizacao manual e regras automaticas ainda nao foram implementadas.
+Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` usa a camada `lib/categories/` para listar, criar categorias raiz/filha e editar nomes com isolamento por usuario. A categorizacao manual esta implementada e em validacao; regras automaticas ainda nao foram implementadas.
 
 O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 
@@ -273,7 +275,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem categorizacao manual, identificacao de transacoes nao categorizadas, regras automaticas ou analytics por categoria.
+- Sem regras automaticas ou analytics por categoria; categorizacao manual ainda aguarda validacao de navegador.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

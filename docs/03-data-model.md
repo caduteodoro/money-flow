@@ -40,6 +40,11 @@ O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao co
 
 `Transaction` guarda:
 
+- `categoryId` opcional; `NULL` representa uma transacao sem categoria.
+- `categorizationSource`; uma atribuicao pela rota de transacoes grava `USER_MANUAL`.
+
+O vinculo manual aceita categoria raiz ou filha e altera apenas `categoryId`, `categorizationSource` e o `updatedAt` automatico. O banco ainda nao possui constraints compostas que garantam que transacao e categoria tenham o mesmo `userId`; essa integridade e aplicada no servico e permanece como hardening pendente.
+
 - `occurredAt`, `postedAt`, `amountCents`, `currency` e `direction`.
 - `description` para uso do proprio usuario autenticado.
 - `normalizedDescription` e `descriptionHash` para comparacao e deduplicacao.

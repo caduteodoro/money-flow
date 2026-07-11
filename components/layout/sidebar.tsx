@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { BarChart3, FileUp, Home, Layers3, Settings } from "lucide-react";
+import { BarChart3, FileUp, Home, Layers3, ListChecks, Settings } from "lucide-react";
 
 const navItems = [
   { id: "dashboard", href: "/dashboard", label: "Dashboard", icon: Home },
   { id: "imports", href: "/import", label: "Importacoes", icon: FileUp },
+  { id: "transactions", href: "/transactions", label: "Transacoes", icon: ListChecks },
   { id: "categories", href: "/categories", label: "Categorias", icon: Layers3 },
   { id: "reports", href: "/dashboard", label: "Relatorios", icon: BarChart3 },
   { id: "settings", href: "/dashboard", label: "Ajustes", icon: Settings },
 ];
 
 type SidebarProps = {
-  activeItem?: "dashboard" | "imports" | "categories" | "reports" | "settings";
+  activeItem?: "dashboard" | "imports" | "transactions" | "categories" | "reports" | "settings";
 };
 
 export function Sidebar({ activeItem = "dashboard" }: SidebarProps) {

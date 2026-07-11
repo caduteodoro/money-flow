@@ -125,6 +125,8 @@ Antes de producao, avaliar criptografia de campos sensiveis e uma arquitetura qu
 
 ## Categorias da Sprint 4
 
+Na categorizacao manual, IDs recebidos do navegador nao sao confiaveis. A transacao e a categoria sao buscadas separadamente com `id + userId`, sendo o `userId` obtido exclusivamente da sessao. Recursos inexistentes e pertencentes a outro usuario recebem a mesma resposta generica. A mutacao altera apenas categoria e origem de categorizacao; descricao, valor e demais dados financeiros nao sao alterados nem registrados em logs.
+
 Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
 
 O servico impede associacoes cruzadas nas operacoes atuais, mas constraints compostas e unicidade robusta de categorias raiz ainda precisam ser avaliadas no banco antes de producao.
