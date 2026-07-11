@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Blocos 1, 3, 4 e 5 concluidos**.
+Status atual: **Sprint 4 em andamento - Blocos 1, 3, 4 e 5 concluidos; Bloco 6 implementado e em validacao**.
 
 ## Problema
 
@@ -44,14 +44,15 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - UI polish e ajuste responsivo dos KPIs para zoom 100%.
 - Rota protegida `/transactions` para listagem e categorizacao manual com categorias do proprio usuario.
 - Identificacao e filtro de transacoes sem categoria.
+- Regras v1 por texto contido na descricao normalizada, aplicadas explicitamente pelo usuario somente a transacoes sem categoria.
 
 ## Funcionalidades planejadas do MVP
 
 - Categorias pai/filha editaveis.
-- Regras automaticas de categorizacao.
+- Fechamento e validacao manual das regras automaticas v1.
 - Revisao final de privacidade do MVP.
 
-Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` usa a camada `lib/categories/` para listar, criar categorias raiz/filha e editar nomes com isolamento por usuario. A categorizacao manual foi implementada e validada; regras automaticas e o fechamento da Sprint 4 ainda estao pendentes.
+Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` permite gerenciar categorias e regras v1. A aplicacao das regras depende de acao explicita; autoexecucao apos importacao permanece fora do escopo.
 
 O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 
@@ -275,7 +276,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Sem rate limiting.
 - Sem login social.
-- Sem regras automaticas, analytics ou graficos por categoria.
+- Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
 - Hardening adicional do banco ainda pendente.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.

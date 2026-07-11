@@ -28,6 +28,7 @@
 - `dashboard`: filtros de periodo, queries por `userId`, KPIs financeiros, series para graficos e insights basicos.
 - `categories`: tipos, normalizacao, validacao Zod, erros controlados, listagem hierarquica e mutacoes seguras.
 - `transactions`: listagem limitada para categorizacao e atribuicao manual segura de categoria.
+- `category-rules`: validacao, listagem, criacao, ativacao e aplicacao explicita de regras v1.
 - `security`: sanitizacao, hashing, validacoes e auditoria futura.
 - `insights`: area reservada para evolucoes futuras de analytics e insights.
 
@@ -116,6 +117,8 @@ A hierarquia v1 aceita somente categorias raiz e filhas. Criacao de netas, troca
 `app/transactions` implementa a rota protegida de categorizacao manual. A pagina recebe dados preparados pelo servico server-side, e a Server Action forma a fronteira entre a UI e o dominio. Antes da mutacao, o servico revalida separadamente transacao e categoria pelo par `id + userId`; o update tambem inclui `userId`.
 
 `app/categories` contem a pagina protegida e Server Actions. `components/categories` contem a apresentacao e os formularios interativos. As Actions obtêm `userId` exclusivamente por `requireCurrentUser`, encaminham somente entradas necessarias ao servico e revalidam `/categories` apos sucesso.
+
+As regras automaticas v1 tambem ficam em `/categories`. Actions autenticadas separam UI e dominio. A precedencia e `priority` crescente, depois `createdAt` e `id` crescentes. A primeira regra cujo texto normalizado esteja contido em `normalizedDescription` vence. A aplicacao consulta e atualiza somente transacoes com `categoryId = NULL`; o filtro final preserva categorizacao manual concorrente. A v1 prioriza clareza com updates seguros por transacao, sem SQL bruto ou autoexecucao na importacao.
 
 ## Evolucao prevista
 

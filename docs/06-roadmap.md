@@ -65,7 +65,7 @@ Status: concluida no escopo planejado para dashboard real do MVP.
 - Bloco 3: concluido.
 - Bloco 4: concluido.
 - Bloco 5: concluido e validado manualmente.
-- Bloco 6: nao iniciado.
+- Bloco 6: implementado; validacao manual e fechamento da sprint pendentes.
 
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
 - Importacao passou a diferenciar erro esperado de CSV de erro interno.

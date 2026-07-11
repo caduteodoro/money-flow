@@ -1,16 +1,19 @@
 import { CategoriesEmptyState } from "@/components/categories/categories-empty-state";
 import { CategoryList } from "@/components/categories/category-list";
 import { CreateCategoryForm } from "@/components/categories/create-category-form";
+import { CategoryRuleSection } from "@/components/category-rules/category-rule-section";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { listUserCategories } from "@/lib/categories";
+import { listUserCategoryRules } from "@/lib/category-rules";
 
 export default async function CategoriesPage() {
   const user = await requireCurrentUser();
-  const result = await listUserCategories(user.id);
+  const [result, rulesResult] = await Promise.all([listUserCategories(user.id), listUserCategoryRules(user.id)]);
   const categories = result.ok ? result.data : [];
+  const options = categories.flatMap((parent) => [{ id: parent.id, label: parent.name }, ...parent.children.map((child) => ({ id: child.id, label: `  └─ ${child.name}` }))]);
 
   return (
     <div className="min-h-screen bg-brand-surface">
@@ -24,7 +27,7 @@ export default async function CategoriesPage() {
               Organize suas transacoes com categorias e subcategorias.
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Crie categorias principais e um nivel de subcategorias. A categorizacao das transacoes entra no proximo bloco.
+              Crie categorias principais, subcategorias e regras simples para organizar suas transacoes.
             </p>
           </section>
 
@@ -49,6 +52,8 @@ export default async function CategoriesPage() {
           ) : (
             <CategoryList categories={categories} />
           )}
+          <CategoryRuleSection rules={rulesResult.ok ? rulesResult.data : []} options={options} />
+          {!rulesResult.ok ? <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{rulesResult.message}</p> : null}
         </div>
       </main>
     </div>
