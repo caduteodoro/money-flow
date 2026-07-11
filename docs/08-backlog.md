@@ -87,9 +87,9 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-020 | Teste | Validar hardening CSV | Cobrir mensagens controladas, erro interno genérico, contadores reais e deduplicação concorrente. | P1 | Sprint 4 | M | Alto | Médio | BCK-011 | Concluído |
 | BCK-021 | UX | Corrigir link Categorias | Fazer a sidebar apontar para `/categories` somente quando a rota funcional existir. | P1 | Sprint 4 | P | Médio | Baixo | Bloco 4 | Concluído |
 | BCK-022 | Feature | Tela de categorias | Disponibilizar listagem hierárquica, estado vazio, criação de raiz/filha e edição de nome pela camada segura. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Concluído |
-| BCK-023 | Feature | Categorização manual | Permitir atribuir e trocar categoria raiz ou filha em transações do usuário. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Em validação |
-| BCK-024 | UX | Transações sem categoria | Criar rota `/transactions`, identificação e filtro simples de itens sem categoria. | P1 | Sprint 4 | M | Alto | Baixo | BCK-023 | Em validação |
-| BCK-025 | Segurança | Autorização da categorização | Revalidar transação e categoria por `userId` e impedir associações entre usuários. | P0 | Sprint 4 | M | Alto | Alto | BCK-023 | Em validação |
+| BCK-023 | Feature | Categorização manual | Permitir atribuir e trocar categoria raiz ou filha em transações do usuário, registrando `USER_MANUAL`. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Concluído |
+| BCK-024 | UX | Transações sem categoria | Criar rota `/transactions`, identificação e filtro simples de itens sem categoria. | P1 | Sprint 4 | M | Alto | Baixo | BCK-023 | Concluído |
+| BCK-025 | Segurança | Autorização da categorização | Revalidar transação e categoria por `userId` e impedir associações entre usuários. | P0 | Sprint 4 | M | Alto | Alto | BCK-023 | Concluído |
 
 ## Por Sprint Sugerida
 

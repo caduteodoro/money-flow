@@ -64,7 +64,7 @@ Status: concluida no escopo planejado para dashboard real do MVP.
 - Bloco 2: revisado; hardening adicional do banco pendente.
 - Bloco 3: concluido.
 - Bloco 4: concluido.
-- Bloco 5: implementado, em validacao de navegador.
+- Bloco 5: concluido e validado manualmente.
 - Bloco 6: nao iniciado.
 
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
