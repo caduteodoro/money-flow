@@ -6,9 +6,9 @@
 - **Data da avaliação:** 11 de julho de 2026.
 - **Commit-base:** `dddb1c2`.
 - **Escopo:** autenticação, sessões, autorização, importação CSV, categorias, regras, transações, dashboard, audit logs, Prisma, PostgreSQL, configuração e dependências.
-- **Metodologia:** inspeção estática do código e da documentação, inventário de pontos de entrada e fronteiras de confiança, matriz de isolamento por `userId` e auditorias não destrutivas com `npm audit --omit=dev` e `npm audit`.
+- **Metodologia:** inspeção estática do código e da documentação, inventário de pontos de entrada e fronteiras de confiança, matriz de isolamento por `userId`, auditorias não destrutivas com `npm audit --omit=dev` e `npm audit` e validações locais controladas da Atividade 1.3.
 
-Esta avaliação não incluiu pentest, tráfego de uma build de produção, inspeção de infraestrutura, banco com dados reais, backups ou testes dinâmicos. Severidades preliminares podem mudar após validação. Nenhum dado financeiro real, segredo ou identificador pessoal foi usado.
+As validações adicionais usaram uma build de produção local, requisições sintéticas sem sessão válida e inspeção das dependências instaladas. A avaliação não incluiu pentest, infraestrutura de produção, banco descartável, dados reais, backups ou testes dinâmicos com contas autenticadas. Severidades preliminares podem mudar após validação. Nenhum dado financeiro real, segredo ou identificador pessoal foi usado.
 
 ## Contexto e arquitetura
 
@@ -79,7 +79,7 @@ O middleware verifica apenas a presença do cookie nas rotas protegidas; ele nã
 
 ## Matriz de riscos
 
-Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer validação**, **Informativo** e **Planejado para pré-produção**.
+Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer validação**, **Mitigado pelo framework no ambiente testado**, **Informativo** e **Planejado para pré-produção**.
 
 ### SEC-001 - Ausência de rate limiting em autenticação
 
@@ -189,39 +189,39 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 ### SEC-008 - Advisory transitivo de PostCSS
 
 - **Categoria:** dependências e XSS.
-- **Status da evidência:** Requer validação.
+- **Status da evidência:** Confirmado quanto ao advisory; sem caminho explorável identificado.
 - **Cenário:** entrada não confiável alcança uma operação vulnerável de stringify de CSS.
-- **Evidência técnica:** `npm audit --omit=dev` e `npm audit` reportaram `postcss < 8.5.10` via Next.js, com severidade moderada.
+- **Evidência técnica:** Next.js 15.5.19 resolve PostCSS 8.4.31 em sua cadeia, enquanto a dependência direta instalada resolve PostCSS 8.5.15. `npm audit --omit=dev` e `npm audit` reportaram o advisory de severidade moderada no grafo de produção.
 - **Impacto:** XSS se existir caminho de exploração.
-- **Probabilidade:** não confirmada; não foi encontrado CSS controlado pelo usuário.
+- **Probabilidade:** baixa no contexto observado; não foi encontrado caminho de entrada do usuário para geração ou stringify de CSS.
 - **Severidade atual:** média segundo o advisory, condicionada ao contexto.
 - **Aplicabilidade:** não há exploração comprovada no Money Flow.
 - **Controle existente:** nenhum caminho de CSS dinâmico não confiável foi identificado.
 - **Risco residual:** a versão vulnerável permanece no grafo de produção.
-- **Recomendação:** avaliar atualização compatível; não aplicar correção forçada sem análise.
-- **Validação futura:** confirmar versão resolvida e procurar caminho real até o stringify vulnerável.
+- **Recomendação:** acompanhar a dependência e avaliar atualização por caminho compatível; não aplicar correção forçada sem análise.
+- **Validação futura:** reavaliar o caminho de exploração ao alterar geração de estilos ou atualizar o framework. Não foram executados `npm audit fix`, atualização forçada ou override.
 
 ### SEC-009 - CSRF e validação de Origin das Server Actions
 
 - **Categoria:** integridade de requisições.
-- **Status da evidência:** Requer validação.
+- **Status da evidência:** Mitigado pelo framework no ambiente testado; validação do proxy/deployment pendente.
 - **Cenário:** origem externa tenta executar mutação autenticada.
-- **Evidência técnica:** cookie usa `SameSite=Lax`; não há controle explícito de CSRF no código da aplicação.
+- **Evidência técnica:** o handler de Server Actions do Next.js 15.5.19 compara `Origin` com `Host` ou `X-Forwarded-Host`. Uma requisição same-origin alcançou a camada de autenticação, enquanto uma requisição sintética com Origin divergente foi rejeitada como Server Action inválida.
 - **Impacto:** alteração de recursos do usuário.
-- **Probabilidade:** não confirmada; depende dos controles do Next.js e da configuração de produção.
-- **Severidade atual:** média preliminar.
-- **Aplicabilidade:** nenhuma exploração foi demonstrada.
-- **Controle existente:** `SameSite=Lax`, sessão server-side e mecanismos internos do framework.
-- **Risco residual:** comportamento de Origin/Host não foi testado.
-- **Recomendação:** validar antes de adicionar mecanismo próprio.
-- **Validação futura:** requisições cross-origin reais contra cada Action mutável.
+- **Probabilidade:** baixa no fluxo local testado; depende da preservação correta dos headers no deployment.
+- **Severidade atual:** baixa no ambiente testado, condicionada ao deployment.
+- **Aplicabilidade:** o teste local comprovou a mitigação do fluxo exercitado, não uma garantia para a infraestrutura futura.
+- **Controle existente:** comparação nativa de origem do framework, `SameSite=Lax` como controle complementar e sessão server-side.
+- **Risco residual:** proxy ou plataforma que reescreva incorretamente `Host`, `Origin` ou `X-Forwarded-Host` pode alterar a eficácia do controle.
+- **Recomendação:** validar o comportamento no deployment antes de adicionar mecanismo próprio.
+- **Validação futura:** repetir requisições same-origin e cross-origin reais atrás do proxy escolhido.
 
 ### SEC-010 - Conteúdo dos logs de erro do Prisma
 
 - **Categoria:** logging e exposição de dados.
 - **Status da evidência:** Requer validação.
 - **Cenário:** erro do driver registra parâmetros ou contexto sensível.
-- **Evidência técnica:** Prisma registra `error` em produção e `error/warn` em desenvolvimento; a saída real não foi capturada.
+- **Evidência técnica:** a configuração estática registra `error/warn` em desenvolvimento e `error` em produção. Nenhum erro real do Prisma foi provocado para evitar afetar os dados locais existentes; parâmetros, contexto e stack trace permanecem inconclusivos.
 - **Impacto:** exposição operacional de metadados ou dados financeiros.
 - **Probabilidade:** não confirmada.
 - **Severidade atual:** média preliminar.
@@ -229,14 +229,14 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 - **Controle existente:** mensagens internas são convertidas em respostas genéricas em vários serviços.
 - **Risco residual:** resposta controlada não garante log controlado.
 - **Recomendação:** testar redaction em ambiente controlado.
-- **Validação futura:** provocar erros fictícios representativos e inspecionar logs.
+- **Validação futura:** provocar erros fictícios representativos e inspecionar logs em banco ou ambiente descartável com dados sintéticos.
 
 ### SEC-011 - Gestão limitada de sessões antigas
 
 - **Categoria:** sessão.
 - **Status da evidência:** Confirmado.
 - **Cenário:** sessão roubada continua válida depois de um novo login ou logout em outro dispositivo.
-- **Evidência técnica:** cada login cria sessão; logout invalida apenas o token atual; validade é de 30 dias.
+- **Evidência técnica:** estaticamente, cada login cria sessão independente, logout remove somente a sessão correspondente ao cookie atual, apenas `tokenHash` é persistido e a expiração é configurada para 30 dias. Dinamicamente, um cookie sintético inválido não autenticou o usuário.
 - **Impacto:** prolongamento de acesso indevido.
 - **Probabilidade:** baixa no estágio atual.
 - **Severidade atual:** baixa.
@@ -244,22 +244,22 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 - **Controle existente:** token forte, cookie seguro e expiração.
 - **Risco residual:** sem listagem ou revogação global.
 - **Recomendação:** avaliar gestão de dispositivos e revogação em eventos sensíveis.
-- **Validação futura:** testar múltiplas sessões e logout independente.
+- **Validação futura:** testar dois logins reais simultâneos, logout independente, sessão persistida expirada e efeito sobre as demais sessões. Nenhum cenário de sessão roubada foi executado.
 
 ### SEC-012 - Headers de segurança não configurados explicitamente
 
 - **Categoria:** defesa em profundidade.
-- **Status da evidência:** Requer validação.
+- **Status da evidência:** Parcialmente confirmado.
 - **Cenário:** ausência de CSP, proteção contra framing ou outras políticas amplia outro defeito.
-- **Evidência técnica:** `next.config.ts` contém apenas `reactStrictMode`.
+- **Evidência técnica:** na build de produção local não foram observados `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors` ou `X-Frame-Options`. Login e cadastro retornaram `Cache-Control: private, no-cache, no-store`; rotas protegidas redirecionaram sem sessão.
 - **Impacto:** redução de defesa em profundidade.
 - **Probabilidade:** baixa isoladamente.
 - **Severidade atual:** baixa.
-- **Aplicabilidade:** headers reais da build/deployment não foram inspecionados.
+- **Aplicabilidade:** a ausência foi confirmada na aplicação testada. HSTS não foi conclusivamente avaliado porque o teste ocorreu em HTTP e depende de HTTPS/deployment; cache de página autenticada permanece pendente.
 - **Controle existente:** escape padrão do React e ausência de `dangerouslySetInnerHTML`.
 - **Risco residual:** políticas de navegador não confirmadas.
-- **Recomendação:** definir headers após inventariar recursos e ambiente.
-- **Validação futura:** inspecionar respostas de uma build de produção.
+- **Recomendação:** avaliar os headers como hardening e defesa em profundidade. CSP exige decisão compatível com os recursos do frontend; nem todo header deve ser adotado sem análise.
+- **Validação futura:** inspecionar HSTS e headers finais no deployment e o cache de páginas com sessão sintética válida.
 
 ### SEC-013 - CSV Injection sem caminho explorável atual
 
@@ -290,6 +290,8 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 
 As proteções dos fluxos atuais estão comprovadas na aplicação. O banco não garante sozinho que todos os lados de relações financeiras pertençam ao mesmo usuário. Qualquer migration futura exige inspeção dos dados existentes, proposta de rollback e aprovação explícita.
 
+A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; buscas e updates sensíveis usam `id + userId`; transação e categoria são validadas separadamente; categoria e regra precisam pertencer ao mesmo usuário; e importações, dashboard e agregações filtram por `userId`. Os serviços avaliados usam respostas controladas para recurso inexistente ou alheio. Permanecem pendentes teste dinâmico com dois usuários, concorrência, tentativa de inserção cruzada diretamente no banco, constraints compostas e validação da integridade estrutural. SEC-005 e SEC-006 não estão corrigidos.
+
 ## Rate limiting: candidatos e requisitos de decisão
 
 | Operação | Abuso a mitigar | Prioridade preliminar |
@@ -317,15 +319,29 @@ A implementação não foi escolhida. A decisão depende da topologia de deploym
 
 ## Pontos pendentes de validação
 
-- Proteção CSRF e validação de Origin/Host das Server Actions.
-- Headers efetivos de uma build de produção.
-- Conteúdo real dos logs do Prisma em erros representativos.
-- Confiabilidade do proxy e de `x-forwarded-for`/`x-real-ip`.
-- Privilégios do usuário PostgreSQL.
-- Política e operação de backups, retenção e descarte.
-- Caminho explorável do advisory de PostCSS no contexto real.
+### Validação local futura em ambiente descartável
+
 - Testes dinâmicos de autorização com dois usuários.
+- Dois logins simultâneos, logout independente e sessão persistida expirada.
+- Conteúdo real dos logs do Prisma em erros representativos.
+- Cache de páginas autenticadas.
 - Concorrência em categorias, regras e importações.
+
+### Validação de deployment e pré-produção
+
+- Proxy e preservação de `Host`, `Origin` e `X-Forwarded-Host`.
+- Confiabilidade de `x-forwarded-for`/`x-real-ip`.
+- TLS, HSTS e headers finais.
+- Múltiplas instâncias e armazenamento distribuído.
+- Política e operação de backups, retenção e descarte.
+- Privilégios do usuário PostgreSQL.
+- Logs e observabilidade da plataforma.
+
+O advisory de PostCSS continua acompanhado, sem caminho explorável identificado no contexto atual.
+
+## Observações informativas das validações
+
+A build local executada em `127.0.0.1:3100` gerou redirects para `http://localhost:3100/login`. Isso não demonstrou vulnerabilidade. O comportamento deve ser conferido futuramente na configuração de host e proxy do deployment, sem atribuição de severidade adicional enquanto não houver evidência de impacto.
 
 ## Critérios de decisão
 
@@ -333,6 +349,8 @@ A implementação não foi escolhida. A decisão depende da topologia de deploym
 - Riscos altos não entram automaticamente como implementação imediata; severidade, contexto e capacidade devem orientar o planejamento.
 - SEC-001 é prioridade de desenho técnico antes da implementação de rate limiting.
 - SEC-002 é requisito relevante antes de produção, não declaração de incidente ou bloqueio do desenvolvimento local.
+- SEC-009 está mitigado pelo framework no ambiente testado, mas a conclusão depende da configuração do proxy/deployment.
+- SEC-008 permanece no grafo de produção; ausência de caminho explorável identificado não elimina o advisory.
 - Qualquer migration de hardening exige inspeção de dados, proposta técnica, impacto, rollback e aprovação explícita.
 - Achados preliminares podem subir, cair ou ser encerrados após testes.
 
