@@ -7,6 +7,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "vitest run --passWithNoTests",
+    "test:integration": "node tests/helpers/assert-test-database.mjs && vitest run tests/integration --passWithNoTests",
+    "test:integration:db:up": "node tests/helpers/assert-test-database.mjs && docker compose -f docker-compose.test.yml up -d postgres-test",
+    "test:integration:db:down": "node tests/helpers/assert-test-database.mjs && docker compose -f docker-compose.test.yml down --remove-orphans",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -34,6 +38,7 @@
     "postcss": "^8.4.49",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.10"
   }
 }

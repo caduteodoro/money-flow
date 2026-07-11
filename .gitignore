@@ -6,6 +6,7 @@ build/
 .vercel/
 .turbo/
 .env
+.env.test
 .env*.local
 *.log
 coverage/
