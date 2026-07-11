@@ -58,6 +58,8 @@ O MVP nao salva o CSV bruto no banco.
 
 `CategoryRule` e usada na v1 com `userId`, `categoryId`, `matchText`, `priority`, `isActive` e timestamps. Menor prioridade numerica vence; empates usam `createdAt` e `id`. A aplicacao grava `Transaction.categorizationSource = SYSTEM_RULE`.
 
+O uso funcional validado conecta `Category`, `CategoryRule` e `Transaction.categoryId`. Atribuicoes feitas pelo usuario usam `USER_MANUAL`; atribuicoes pela aplicacao explicita das regras usam `SYSTEM_RULE`. Categorias raiz e filhas podem ser destino, regras inativas nao participam e `priority` define a precedencia.
+
 Nao existe coluna de texto normalizado nem unicidade de regras no banco. A normalizacao e a duplicidade logica sao tratadas no servico; concorrencia de criacao duplicada e integridade composta entre usuarios permanecem como hardening pendente.
 
 A camada `lib/categories/` protege listagem, criacao e renomeacao por `userId`, valida propriedade do pai e limita a hierarquia v1 a dois niveis. A UI `/categories` usa exclusivamente essa camada segura. Ainda faltam categorizacao manual e aplicacao de regras.

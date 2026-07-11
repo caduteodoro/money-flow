@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 4 em andamento - Blocos 1, 3, 4 e 5 concluidos; Bloco 6 implementado e em validacao**.
+Status atual: **Sprint 4 concluida funcionalmente - fechamento tecnico em validacao final**.
 
 ## Problema
 
@@ -45,14 +45,21 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Rota protegida `/transactions` para listagem e categorizacao manual com categorias do proprio usuario.
 - Identificacao e filtro de transacoes sem categoria.
 - Regras v1 por texto contido na descricao normalizada, aplicadas explicitamente pelo usuario somente a transacoes sem categoria.
+- Categorias pai/filha com criacao e edicao na tela protegida `/categories`.
+- Categorizacao manual e identificacao de transacoes sem categoria.
+- Regras automaticas v1 com criacao, listagem, ativacao, desativacao e prioridade.
+- Protecao por `userId` entre categorias, regras e transacoes.
 
 ## Funcionalidades planejadas do MVP
 
 - Categorias pai/filha editaveis.
-- Fechamento e validacao manual das regras automaticas v1.
+- Analytics e graficos por categoria.
+- Execucao automatica de regras apos importacao.
+- Hardening adicional do banco e suite automatizada de testes.
+- Itens planejados para a Sprint 5.
 - Revisao final de privacidade do MVP.
 
-Os modelos `Category` e `CategoryRule` ja existem no schema. A rota protegida `/categories` permite gerenciar categorias e regras v1. A aplicacao das regras depende de acao explicita; autoexecucao apos importacao permanece fora do escopo.
+Os modelos `Category` e `CategoryRule` sustentam a rota protegida `/categories`, que permite gerenciar categorias e regras v1. A categorizacao manual e as regras automaticas foram validadas manualmente. A aplicacao das regras depende de acao explicita; autoexecucao apos importacao permanece fora do escopo.
 
 O Bloco 1 foi validado por regressao tecnica e pelos testes manuais de autenticacao, filtros, estados vazios, responsividade e importacao CSV ficticia.
 

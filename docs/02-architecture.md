@@ -120,6 +120,8 @@ A hierarquia v1 aceita somente categorias raiz e filhas. Criacao de netas, troca
 
 As regras automaticas v1 tambem ficam em `/categories`. Actions autenticadas separam UI e dominio. A precedencia e `priority` crescente, depois `createdAt` e `id` crescentes. A primeira regra cujo texto normalizado esteja contido em `normalizedDescription` vence. A aplicacao consulta e atualiza somente transacoes com `categoryId = NULL`; o filtro final preserva categorizacao manual concorrente. A v1 prioriza clareza com updates seguros por transacao, sem SQL bruto ou autoexecucao na importacao.
 
+O modulo `lib/category-rules` concentra o dominio e o acesso Prisma. As Server Actions de regras obtêm o usuario pela sessao, acionam o servico e revalidam apenas as rotas afetadas. A validacao manual final confirmou criacao, ativacao, precedencia, isolamento e preservacao de categorias manuais.
+
 ## Evolucao prevista
 
 Sprint 4 foca em categorias, categoria pai/filha, edicao/criacao de categorias, regras automaticas e transacoes nao categorizadas. Antes de expor mutacoes de categoria, validar no servico que categoria, regra e transacao pertencem ao mesmo `userId`. Rate limiting, MFA, recuperacao de senha, criptografia forte, OFX e modo de privacidade avancado ficam para fases futuras.

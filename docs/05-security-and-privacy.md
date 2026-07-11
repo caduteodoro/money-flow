@@ -129,6 +129,8 @@ Na categorizacao manual, IDs recebidos do navegador nao sao confiaveis. A transa
 
 Regras v1 aplicam isolamento triplo: regra e categoria precisam pertencer ao usuario, e somente transacoes do mesmo `userId` com `categoryId = NULL` sao atualizadas. O filtro final impede sobrescrever categorizacao manual concorrente. O resultado exposto contem apenas contadores agregados; descricoes e valores nao sao registrados em logs.
 
+Os testes manuais com dois usuarios confirmaram que listagem, alteracao e aplicacao permanecem isoladas por `userId`. A verificacao agregada confirmou origens `SYSTEM_RULE` e `USER_MANUAL` coexistindo sem exposicao de descricoes, valores ou identificadores financeiros.
+
 Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
 
 O servico impede associacoes cruzadas nas operacoes atuais, mas constraints compostas e unicidade robusta de categorias raiz ainda precisam ser avaliadas no banco antes de producao.

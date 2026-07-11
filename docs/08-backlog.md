@@ -90,9 +90,11 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-023 | Feature | Categorização manual | Permitir atribuir e trocar categoria raiz ou filha em transações do usuário, registrando `USER_MANUAL`. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Concluído |
 | BCK-024 | UX | Transações sem categoria | Criar rota `/transactions`, identificação e filtro simples de itens sem categoria. | P1 | Sprint 4 | M | Alto | Baixo | BCK-023 | Concluído |
 | BCK-025 | Segurança | Autorização da categorização | Revalidar transação e categoria por `userId` e impedir associações entre usuários. | P0 | Sprint 4 | M | Alto | Alto | BCK-023 | Concluído |
-| BCK-026 | Feature | Regras automáticas v1 | Criar, listar, ativar e desativar regras `CONTAINS` com prioridade determinística. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Em validação |
-| BCK-027 | Feature | Aplicação explícita de regras | Aplicar regras ativas apenas a transações sem categoria e registrar `SYSTEM_RULE`. | P1 | Sprint 4 | M | Alto | Alto | BCK-026 | Em validação |
-| BCK-028 | Segurança | Isolamento de regras | Validar regra, categoria e transação por `userId`, preservando categorização manual. | P0 | Sprint 4 | M | Alto | Alto | BCK-027 | Em validação |
+| BCK-026 | Feature | Regras automáticas v1 | Criar, listar, ativar e desativar regras `CONTAINS` com prioridade determinística. | P1 | Sprint 4 | M | Alto | Médio | BCK-018 | Concluído |
+| BCK-027 | Feature | Aplicação explícita de regras | Aplicar regras ativas apenas a transações sem categoria e registrar `SYSTEM_RULE`. | P1 | Sprint 4 | M | Alto | Alto | BCK-026 | Concluído |
+| BCK-028 | Segurança | Isolamento de regras | Validar regra, categoria e transação por `userId`, preservando categorização manual. | P0 | Sprint 4 | M | Alto | Alto | BCK-027 | Concluído |
+| BCK-029 | Feature | Autoexecução após importação | Aplicar regras automaticamente ao concluir uma importação. | P2 | Sprint 5 | M | Médio | Médio | Hardening e testes automatizados | Backlog |
+| BCK-030 | Feature | Editar e excluir regras | Permitir edição completa e exclusão definitiva com autorização por usuário. | P2 | Sprint 5 | M | Médio | Médio | Regras v1 | Backlog |
 
 ## Por Sprint Sugerida
 

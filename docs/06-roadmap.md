@@ -65,7 +65,9 @@ Status: concluida no escopo planejado para dashboard real do MVP.
 - Bloco 3: concluido.
 - Bloco 4: concluido.
 - Bloco 5: concluido e validado manualmente.
-- Bloco 6: implementado; validacao manual e fechamento da sprint pendentes.
+- Bloco 6: concluido e validado manualmente.
+
+Sprint 4 concluida funcionalmente. Permanecem separados como debitos tecnicos: hardening adicional do banco, constraints compostas e suite automatizada de testes. Analytics por categoria e execucao automatica apos importacao continuam fora desta entrega.
 
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
 - Importacao passou a diferenciar erro esperado de CSV de erro interno.
