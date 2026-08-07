@@ -141,20 +141,20 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 - **Recomendação:** manter a resposta neutra e avaliar verificação de e-mail ou convite somente em evolução futura compatível com o produto.
 - **Validação futura:** medir diferenças temporais em ambiente representativo e reavaliar o fluxo quando houver verificação de e-mail ou convite.
 
-### SEC-005 - Isolamento relacional não garantido integralmente pelo banco
+### SEC-005 - Isolamento relacional não garantido integralmente pelo banco (mitigado)
 
 - **Categoria:** autorização e integridade do modelo.
-- **Status da evidência:** Parcialmente confirmado.
+- **Status da evidência:** Mitigado.
 - **Cenário:** novo serviço, script ou falha futura cria associação entre usuários.
-- **Evidência técnica:** FKs de categoria pai, regra/categoria, transação/categoria, conta e importação não incorporam `userId`.
+- **Evidência técnica:** duas migrations adicionaram chaves candidatas `id + userId` em `Category`, `BankAccount` e `StatementImport` e substituíram por FKs compostas as seis relações de pai, regra/categoria, transação/categoria, transação/conta, transação/importação e importação/conta.
 - **Impacto:** corrupção de integridade e potencial exposição cruzada.
-- **Probabilidade:** baixa nos fluxos atuais, que revalidam propriedade.
-- **Severidade atual:** média.
-- **Aplicabilidade:** risco estrutural; não há exploração comprovada pelas Actions atuais.
-- **Controle existente:** filtros e mutações por `id + userId` na camada de serviço.
-- **Risco residual:** acesso direto ou novo caminho pode contornar o serviço.
-- **Recomendação:** propor constraints compostas somente após inspeção de dados, impacto, rollback e aprovação.
-- **Validação futura:** tentar relações cruzadas diretamente em banco de teste.
+- **Probabilidade:** baixa; os fluxos revalidam propriedade e o PostgreSQL rejeita associação cruzada.
+- **Severidade atual:** baixa, residual.
+- **Aplicabilidade:** defesa estrutural comprovada em PostgreSQL 16 e Prisma 5.22.
+- **Controle existente:** filtros e mutações por `id + userId` na aplicação, cinco FKs compostas com `NO ACTION` e uma FK composta com `CASCADE`.
+- **Risco residual:** futuras exclusões funcionais de destinos opcionais precisam desvincular referências explicitamente pelo mesmo usuário; privilégios capazes de desabilitar constraints permanecem risco operacional.
+- **Recomendação:** preservar os filtros da aplicação e os testes diretos das constraints em toda mudança relacional futura.
+- **Validação realizada:** diagnóstico com zero anomalias; seis tentativas cruzadas rejeitadas; cascata, exclusão de usuário, atomicidade, recriação desde zero, drift e rollback aprovados em banco descartável.
 
 ### SEC-006 - Unicidade de categorias raiz depende da aplicação
 
@@ -281,16 +281,16 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 | Domínio | Operações observadas | Proteção na aplicação | Proteção estrutural no banco | Risco residual |
 |---|---|---|---|---|
 | Usuário e sessão | Login, criar, validar e invalidar sessão | Sessão obtida do cookie; token validado server-side | Hash único e FK da sessão para usuário | Tentativas ilimitadas e gestão limitada de sessões |
-| Importações | Preview, confirmação e histórico | `userId` da sessão; conta validada por `id + userId`; histórico por usuário | FKs simples; índices por usuário | Relações não incorporam `userId`; abuso de recursos |
-| Transações | Listagem e categorização | Leitura por usuário; transação e categoria por `id + userId`; update por usuário | Dedupe composto; FK de categoria simples | Integridade entre usuários depende do serviço |
-| Categorias | Listagem, criação e edição | Pai/recurso por `id + userId`; limite de hierarquia no serviço | FK de pai simples; unique com `parentId` anulável | Relação cruzada e duplicidade raiz não impedidas integralmente no banco |
-| Regras | Listagem, criação, ativação e aplicação | Regra, categoria e transação filtradas por usuário; update só sem categoria | FK de categoria simples | Novo caminho fora do serviço pode criar associação cruzada |
+| Importações | Preview, confirmação e histórico | `userId` da sessão; conta validada por `id + userId`; histórico por usuário | FK composta importação/conta; índices por usuário | Abuso de recursos permanece fora deste controle |
+| Transações | Listagem e categorização | Leitura por usuário; transação e categoria por `id + userId`; update por usuário | Dedupe e FKs compostas para categoria, conta e importação | Filtros da aplicação ainda são necessários para confidencialidade |
+| Categorias | Listagem, criação e edição | Pai/recurso por `id + userId`; limite de hierarquia no serviço | FK composta de pai; unique com `parentId` anulável | Duplicidade raiz de `SEC-006` permanece pendente |
+| Regras | Listagem, criação, ativação e aplicação | Regra, categoria e transação filtradas por usuário; update só sem categoria | FK composta regra/categoria com cascata | Filtros da aplicação ainda são necessários para autorização |
 | Dashboard | Count, aggregate e consulta do período | Todas as queries observadas filtram por `userId` | Índices por usuário e data | Dados do próprio usuário são enviados ao navegador por necessidade funcional |
 | Audit logs | Autenticação e importação | ID do usuário quando disponível; metadados minimizados | FK anulável e índices | Retenção, acesso operacional e logs do Prisma não verificados |
 
-As proteções dos fluxos atuais estão comprovadas na aplicação. O banco não garante sozinho que todos os lados de relações financeiras pertençam ao mesmo usuário. Qualquer migration futura exige inspeção dos dados existentes, proposta de rollback e aprovação explícita.
+As proteções dos fluxos atuais estão comprovadas na aplicação. Desde a Atividade 5.1, o banco também garante que as seis relações multiusuário existentes tenham o mesmo `userId`; mudanças relacionais futuras continuam exigindo inspeção dos dados, rollback e aprovação explícita.
 
-A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; buscas e updates sensíveis usam `id + userId`; transação e categoria são validadas separadamente; categoria e regra precisam pertencer ao mesmo usuário; e importações, dashboard e agregações filtram por `userId`. Os serviços avaliados usam respostas controladas para recurso inexistente ou alheio. Permanecem pendentes teste dinâmico com dois usuários, concorrência, tentativa de inserção cruzada diretamente no banco, constraints compostas e validação da integridade estrutural. SEC-005 e SEC-006 não estão corrigidos.
+A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; os Blocos 2 e 4 acrescentaram testes dinâmicos de autorização. A Atividade 5.1 comprovou diretamente no PostgreSQL a rejeição das seis inserções cruzadas e os comportamentos de exclusão. `SEC-005` está mitigado; concorrência e unicidade de categorias raiz permanecem em `SEC-006`.
 
 ## Rate limiting: controles atuais e candidatos restantes
 
@@ -321,7 +321,6 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 
 ### Validação local futura em ambiente descartável
 
-- Testes dinâmicos de autorização com dois usuários.
 - Conteúdo real dos logs do Prisma em erros representativos.
 - Cache de páginas autenticadas.
 - Concorrência em categorias, regras e importações.

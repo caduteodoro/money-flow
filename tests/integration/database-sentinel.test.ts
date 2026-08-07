@@ -13,6 +13,8 @@ const expectedMigrations = [
   "20260628225732_add_import_summary_counts",
   "20260629000807_add_statement_import_period",
   "20260807120000_add_rate_limit_buckets",
+  "20260807150000_add_relational_tenant_keys",
+  "20260807151000_enforce_relational_tenant_fks",
 ];
 
 afterAll(async () => {

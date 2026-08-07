@@ -123,9 +123,19 @@ Matriz de regressao do checkpoint:
 | Token, cookie e expiracao | somente hash persistido; flags preservadas; validade fixa de 30 dias; expirada rejeitada | PostgreSQL | PASS |
 | Regressao | 44 testes unitarios e 41 de integracao; lint, TypeScript, Prisma e build | Automatizada/PostgreSQL | PASS |
 
-O `SEC-004` esta **MITIGADO**, nao encerrado: o canal direto por texto, estrutura, destino, sessao e cookie foi removido. Permanecem diferencas internas inevitaveis de persistencia/auditoria, potencial canal temporal nao medido e inferencia possivel por tentativa posterior de login. O `SEC-001` permanece mitigado parcialmente. O `SEC-009` continua mitigado pelo framework no ambiente local e pendente de validacao no proxy/deployment. Cloudflare permanece planejada em `BCK-031`, sem implementacao. A Sprint 5 continua aberta e o Bloco 5 nao foi iniciado.
+O `SEC-004` esta **MITIGADO**, nao encerrado: o canal direto por texto, estrutura, destino, sessao e cookie foi removido. Permanecem diferencas internas inevitaveis de persistencia/auditoria, potencial canal temporal nao medido e inferencia possivel por tentativa posterior de login. O `SEC-001` permanece mitigado parcialmente. O `SEC-009` continua mitigado pelo framework no ambiente local e pendente de validacao no proxy/deployment. Cloudflare permanece planejada em `BCK-031`, sem implementacao. A Sprint 5 continuava aberta e, naquele checkpoint, o Bloco 5 ainda nao havia sido iniciado.
 
 Revisao de seguranca: nenhum achado bloqueante, alto ou medio foi introduzido. A falha silenciosa de revogacao foi corrigida; como riscos baixos/informativos permanecem a gestao limitada de sessoes antigas (`SEC-011`), a possibilidade de enumeracao por tempo ou login posterior (`SEC-004`) e a protecao de abuso apenas por identidade (`SEC-001`).
+
+### Atividade 5.1 - integridade relacional multiusuario
+
+O `SEC-005` foi mitigado com FKs compostas que repetem `userId` nos dois lados de seis relacoes: hierarquia de categorias, regra/categoria, tres destinos opcionais de transacao e conta bancaria da importacao. `Category`, `BankAccount` e `StatementImport` receberam chaves candidatas `id + userId` para sustentar as referencias.
+
+As cinco relacoes opcionais usam `ON DELETE NO ACTION`; o banco nao tenta zerar o `userId` da origem. A relacao obrigatoria `CategoryRule(categoryId, userId) -> Category(id, userId)` preserva `ON DELETE CASCADE`. Exclusoes funcionais futuras dos destinos opcionais deverao desvincular referencias explicitamente e pelo mesmo usuario antes de remover o destino.
+
+O diagnostico `READ ONLY` no desenvolvimento retornou zero orfaos e zero associacoes cruzadas nas seis relacoes. As duas migrations foram validadas com Prisma 5.22 e PostgreSQL 16, sem drift. Testes diretos confirmaram relacoes validas, opcionais nulos, rejeicao `P2003` das seis tentativas cruzadas, cinco bloqueios `NO ACTION`, cascata restrita ao mesmo usuario, rollback transacional e exclusao direta de um usuario completo sem alterar outro tenant. O ensaio de rollback restaurou primeiro as FKs simples e removeu depois os indices compostos.
+
+`SEC-006`, `BCK-016` e `SEC-007` permanecem pendentes e fora desta entrega. Os filtros `id + userId` da aplicacao continuam obrigatorios para autorizacao e respostas publicas seguras; as constraints nao os substituem.
 
 ## Audit logs
 
@@ -221,6 +231,6 @@ Os testes manuais com dois usuarios confirmaram que listagem, alteracao e aplica
 
 Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
 
-O servico impede associacoes cruzadas nas operacoes atuais, mas constraints compostas e unicidade robusta de categorias raiz ainda precisam ser avaliadas no banco antes de producao.
+O servico impede associacoes cruzadas nas operacoes atuais, e as seis FKs compostas da Atividade 5.1 reforcam essa propriedade no banco. A unicidade robusta de categorias raiz permanece pendente em `SEC-006`/`BCK-016`.
 
 A pagina e todas as Server Actions exigem sessao. IDs de categoria e pai vindos do navegador sao revalidados com o `userId` da sessao, e a resposta nao distingue recurso inexistente de recurso pertencente a outro usuario. Nenhum nome de categoria ou dado financeiro e enviado a audit logs.

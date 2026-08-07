@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - cadastro neutro e revogacao segura de sessao do Bloco 4 validados tecnicamente**.
+Status atual: **Sprint 5 em andamento - integridade relacional multiusuario do Bloco 5 validada tecnicamente**.
 
 ## Problema
 
@@ -49,6 +49,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Categorizacao manual e identificacao de transacoes sem categoria.
 - Regras automaticas v1 com criacao, listagem, ativacao, desativacao e prioridade.
 - Protecao por `userId` entre categorias, regras e transacoes.
+- FKs compostas impedem no PostgreSQL associacoes entre usuarios nas seis relacoes financeiras e de categorias existentes.
 - Suite de integracao para isolamento multi-tenant de categorias, regras e transacoes, com PostgreSQL descartavel.
 
 ## Funcionalidades planejadas do MVP
@@ -56,7 +57,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Categorias pai/filha editaveis.
 - Analytics e graficos por categoria.
 - Execucao automatica de regras apos importacao.
-- Hardening adicional do banco e suite automatizada de testes.
+- Hardening restante de unicidade de categorias raiz, privacidade e retencao.
 - Itens planejados para a Sprint 5.
 - Revisao final de privacidade do MVP.
 
@@ -288,14 +289,14 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Rate limiting persistente por identidade implementado no login e no cadastro; ainda sem proteção por IP ou borda confiável.
 - Sem login social.
 - Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
-- Hardening adicional do banco ainda pendente.
+- A integridade relacional multiusuario esta protegida no banco; unicidade de categorias raiz e retencao/exclusao continuam pendentes.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.
 - Sem PWA.
 - Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
-- A suite automatizada cobre a sentinela do banco, autorização de categorias, regras e transações, preservação de `USER_MANUAL`, rate limiting, cadastro neutro, login posterior, sessões simultâneas, expiração e logout com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
+- A suite automatizada cobre a sentinela do banco, FKs compostas multiusuario, autorização de categorias, regras e transações, preservação de `USER_MANUAL`, rate limiting, cadastro neutro, login posterior, sessões simultâneas, expiração e logout com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
 - Nao ha logout global, gerenciamento de dispositivos, rotacao de token ou renovacao deslizante.
 - Algumas migrations antigas assumem banco local sem dados preexistentes.
 

@@ -50,7 +50,7 @@ O nome do arquivo e tratado apenas como metadado de exibicao. A validacao nao co
 - `categoryId` opcional; `NULL` representa uma transacao sem categoria.
 - `categorizationSource`; uma atribuicao pela rota de transacoes grava `USER_MANUAL`.
 
-O vinculo manual aceita categoria raiz ou filha e altera apenas `categoryId`, `categorizationSource` e o `updatedAt` automatico. O banco ainda nao possui constraints compostas que garantam que transacao e categoria tenham o mesmo `userId`; essa integridade e aplicada no servico e permanece como hardening pendente.
+O vinculo manual aceita categoria raiz ou filha e altera apenas `categoryId`, `categorizationSource` e o `updatedAt` automatico. Alem da validacao do servico, a FK composta `Transaction(categoryId, userId) -> Category(id, userId)` impede que a relacao atravesse usuarios.
 
 - `occurredAt`, `postedAt`, `amountCents`, `currency` e `direction`.
 - `description` para uso do proprio usuario autenticado.
@@ -67,7 +67,7 @@ O MVP nao salva o CSV bruto no banco.
 
 O uso funcional validado conecta `Category`, `CategoryRule` e `Transaction.categoryId`. Atribuicoes feitas pelo usuario usam `USER_MANUAL`; atribuicoes pela aplicacao explicita das regras usam `SYSTEM_RULE`. Categorias raiz e filhas podem ser destino, regras inativas nao participam e `priority` define a precedencia.
 
-Nao existe coluna de texto normalizado nem unicidade de regras no banco. A normalizacao e a duplicidade logica sao tratadas no servico; concorrencia de criacao duplicada e integridade composta entre usuarios permanecem como hardening pendente.
+Nao existe coluna de texto normalizado nem unicidade de regras no banco. A normalizacao e a duplicidade logica continuam tratadas no servico, e a concorrencia de criacao duplicada permanece como hardening pendente separado em `SEC-006`. A propriedade entre regra e categoria agora tambem e garantida por FK composta.
 
 A camada `lib/categories/` protege listagem, criacao e renomeacao por `userId`, valida propriedade do pai e limita a hierarquia v1 a dois niveis. A UI `/categories` usa exclusivamente essa camada segura. Ainda faltam categorizacao manual e aplicacao de regras.
 
@@ -77,9 +77,24 @@ Regras para a Sprint 4:
 - Ao atribuir `categoryId` a uma transacao, validar que a transacao e a categoria pertencem ao mesmo `userId`.
 - Ao criar `CategoryRule`, validar que a regra e a categoria pertencem ao mesmo `userId`.
 - Evitar nomes duplicados entre categorias irmas. Como `parentId` pode ser `NULL`, nao confiar apenas em `@@unique([userId, name, parentId])` para categorias raiz no PostgreSQL; a regra precisa ser aplicada no servico ou reforcada por indice/migration especifica antes de liberar a UI.
-- Validar que pai, categoria, regra e transacao pertencem ao mesmo usuario. As chaves estrangeiras atuais validam IDs, mas nao impedem por si so relacionamentos cruzados entre usuarios.
+- Validar na aplicacao que pai, categoria, regra e transacao pertencem ao mesmo usuario, mantendo respostas publicas controladas; as FKs compostas fornecem uma segunda garantia no banco.
 
-O servico aplica essas protecoes no codigo, mas o banco ainda nao garante integralmente a unicidade de categorias raiz nem a propriedade composta das relacoes. Indices/constraints adicionais e uma migration segura continuam pendentes de autorizacao.
+O servico e o banco protegem a propriedade composta das relacoes. A unicidade robusta de categorias raiz permanece pendente e nao foi alterada pela Atividade 5.1.
+
+## Integridade relacional multiusuario
+
+As migrations `20260807150000_add_relational_tenant_keys` e `20260807151000_enforce_relational_tenant_fks` adicionam chaves candidatas `id + userId` em `Category`, `BankAccount` e `StatementImport` e protegem seis relacoes:
+
+- `Category(parentId, userId) -> Category(id, userId)`;
+- `CategoryRule(categoryId, userId) -> Category(id, userId)`;
+- `Transaction(categoryId, userId) -> Category(id, userId)`;
+- `Transaction(bankAccountId, userId) -> BankAccount(id, userId)`;
+- `Transaction(statementImportId, userId) -> StatementImport(id, userId)`;
+- `StatementImport(bankAccountId, userId) -> BankAccount(id, userId)`.
+
+As cinco relacoes opcionais usam `ON DELETE NO ACTION`. Uma exclusao funcional futura deve primeiro desvincular explicitamente apenas referencias do mesmo usuario. A relacao obrigatoria entre `CategoryRule` e `Category` preserva `ON DELETE CASCADE`; como a FK inclui `userId`, a cascata nao pode alcancar regra de outro usuario.
+
+As migrations sao transacionais e nao alteram dados. O diagnostico anterior a aplicacao deve retornar zero relacoes orfas ou entre usuarios. O rollback restaura primeiro as seis FKs simples historicas e somente depois remove os tres indices compostos auxiliares.
 
 ## Enums
 
