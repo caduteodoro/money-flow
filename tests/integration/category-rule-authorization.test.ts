@@ -23,6 +23,7 @@ import {
   toggleCategoryRuleAction,
 } from "@/app/categories/rule-actions";
 import { listUserCategoryRules } from "@/lib/category-rules";
+import { categoryFixture } from "@/tests/helpers/category-fixture";
 
 const prisma = new PrismaClient();
 const userAId = authenticatedUser.current.id;
@@ -57,8 +58,16 @@ beforeAll(async () => {
 
   await prisma.category.createMany({
     data: [
-      { id: categoryAId, userId: userAId, name: "Synthetic Rule Category A" },
-      { id: categoryBId, userId: userBId, name: "Synthetic Rule Category B" },
+      categoryFixture({
+        id: categoryAId,
+        userId: userAId,
+        name: "Synthetic Rule Category A",
+      }),
+      categoryFixture({
+        id: categoryBId,
+        userId: userBId,
+        name: "Synthetic Rule Category B",
+      }),
     ],
   });
 

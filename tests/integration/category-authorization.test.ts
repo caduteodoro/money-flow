@@ -19,6 +19,7 @@ import {
   updateCategoryAction,
 } from "@/app/categories/actions";
 import { listUserCategories } from "@/lib/categories";
+import { categoryFixture } from "@/tests/helpers/category-fixture";
 
 const prisma = new PrismaClient();
 const userAId = authenticatedUser.current.id;
@@ -49,8 +50,8 @@ beforeAll(async () => {
 
   await prisma.category.createMany({
     data: [
-      { id: categoryAId, userId: userAId, name: categoryAName },
-      { id: categoryBId, userId: userBId, name: categoryBName },
+      categoryFixture({ id: categoryAId, userId: userAId, name: categoryAName }),
+      categoryFixture({ id: categoryBId, userId: userBId, name: categoryBName }),
     ],
   });
 });

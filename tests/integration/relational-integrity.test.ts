@@ -6,6 +6,11 @@ import {
 } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import {
+  categoryFixture,
+  categoryNameFields,
+} from "@/tests/helpers/category-fixture";
+
 const prisma = new PrismaClient();
 
 const ids = {
@@ -203,35 +208,39 @@ beforeAll(async () => {
 
   await prisma.category.createMany({
     data: [
-      { id: ids.parentA, userId: ids.userA, name: "Synthetic Parent A" },
-      {
+      categoryFixture({
+        id: ids.parentA,
+        userId: ids.userA,
+        name: "Synthetic Parent A",
+      }),
+      categoryFixture({
         id: ids.childA,
         userId: ids.userA,
         parentId: ids.parentA,
         name: "Synthetic Child A",
-      },
-      { id: ids.categoryB, userId: ids.userB, name: userBPrivateMarker },
-      {
+      }),
+      categoryFixture({ id: ids.categoryB, userId: ids.userB, name: userBPrivateMarker }),
+      categoryFixture({
         id: ids.noActionParent,
         userId: ids.userA,
         name: "Synthetic NO ACTION Parent",
-      },
-      {
+      }),
+      categoryFixture({
         id: ids.noActionChild,
         userId: ids.userA,
         parentId: ids.noActionParent,
         name: "Synthetic NO ACTION Child",
-      },
-      {
+      }),
+      categoryFixture({
         id: ids.noActionTransactionCategory,
         userId: ids.userA,
         name: "Synthetic NO ACTION Transaction Category",
-      },
-      {
+      }),
+      categoryFixture({
         id: ids.cascadeCategory,
         userId: ids.userA,
         name: "Synthetic Cascade Category",
-      },
+      }),
     ],
   });
 
@@ -444,12 +453,12 @@ describe("tenant-scoped relational integrity", () => {
       sourceId: ids.invalidParent,
       execute: () =>
         prisma.category.create({
-          data: {
+          data: categoryFixture({
             id: ids.invalidParent,
             userId: ids.userA,
             parentId: ids.categoryB,
             name: "Synthetic Invalid Parent",
-          },
+          }),
         }),
       count: () => prisma.category.count({ where: { id: ids.invalidParent } }),
     },
@@ -625,7 +634,7 @@ describe("tenant-scoped relational integrity", () => {
       prisma.$transaction(async (tx) => {
         await tx.category.update({
           where: { id: ids.noActionParent },
-          data: { name: "Synthetic name that must roll back" },
+          data: categoryNameFields("Synthetic name that must roll back"),
         });
         await tx.category.delete({ where: { id: ids.noActionParent } });
       }),
@@ -655,15 +664,19 @@ describe("tenant-scoped relational integrity", () => {
         data: { id: ids.bankC, userId: ids.userC, name: "Synthetic Bank C" },
       });
       await tx.category.create({
-        data: { id: ids.parentC, userId: ids.userC, name: "Synthetic Parent C" },
+        data: categoryFixture({
+          id: ids.parentC,
+          userId: ids.userC,
+          name: "Synthetic Parent C",
+        }),
       });
       await tx.category.create({
-        data: {
+        data: categoryFixture({
           id: ids.childC,
           userId: ids.userC,
           parentId: ids.parentC,
           name: "Synthetic Child C",
-        },
+        }),
       });
       await tx.statementImport.create({
         data: {

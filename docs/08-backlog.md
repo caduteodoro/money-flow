@@ -80,7 +80,7 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-013 | Segurança | Guardrails de categorias por usuário | Antes da UI de categorias, criar serviços que validem `userId` em categoria, regra e transação, evitando associações cruzadas. | P1 | Sprint 4 | M | Alto | Médio | Sprint 4: categorias e regras | Concluído |
 | BCK-014 | UX | Navegação mobile autenticada | Criar navegação responsiva para área autenticada, já que a sidebar atual aparece apenas em telas grandes. | P2 | Sprint 4 | M | Médio | Baixo | Layout autenticado | Backlog |
 | BCK-015 | Tech Debt | Reconciliar Bloco 1 | Integrar conscientemente dashboard local e contribuição remota, preservando estados vazios, período e tabela responsiva. | P1 | Sprint 4 | P | Alto | Médio | PR #1 e alterações locais | Concluído |
-| BCK-016 | Data Model | Unicidade de categorias raiz | Definir proteção para nomes raiz duplicados quando `parentId` for `NULL`. | P1 | Sprint 4 | P | Alto | Alto | Decisão de schema e migration | Refinado |
+| BCK-016 | Data Model | Unicidade estrutural de categorias | Impedir atomicamente nomes equivalentes no mesmo escopo com chave comparativa, unicidade de filhos e indice parcial de raizes. | P1 | Sprint 5 | M | Alto | Alto | PostgreSQL 16; Prisma 5.22; migration e testes concorrentes | Concluído |
 | BCK-017 | Segurança | Bloquear relacionamentos entre usuários | Impedir no serviço e no banco relações cruzadas entre pai, categoria, regra, transação, conta e importação. | P0 | Sprint 5 | M | Alto | Alto | Diagnóstico dos dados; Prisma 5.22; PostgreSQL 16 | Concluído |
 | BCK-018 | Feature | Camada `lib/categories/` | Implementar tipos, listagem e mutações server-side com isolamento por `userId`. | P1 | Sprint 4 | M | Alto | Alto | BCK-016 e BCK-017 | Concluído |
 | BCK-019 | Teste | Autorização de categorias | Cobrir acesso, edição e associação de recursos de outro usuário. | P0 | Sprint 4 | M | Alto | Alto | BCK-018 e runner de testes | Concluído |
@@ -327,7 +327,7 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 ## Observações
 
 - Testes manuais do Bloco 1: PASSOU para login, filtros, período real, estados vazios, tabela responsiva, preview/importação/reimportação CSV, CSV inválido, histórico e dashboard pós-importação.
-- Bloco 3 da Sprint 4: camada `lib/categories/` concluída por revisão estática e validações técnicas; as entregas posteriores concluíram testes, categorização, regras e as constraints compostas de `BCK-017`. A unicidade de categorias raiz de `BCK-016` continua pendente.
+- Bloco 3 da Sprint 4: camada `lib/categories/` concluída por revisão estática e validações técnicas; as entregas posteriores concluíram testes, categorização, regras, as constraints compostas de `BCK-017` e a unicidade estrutural de `BCK-016`.
 - Bloco 4: PASSOU nos testes manuais de estado vazio, raiz/filha, duplicidade, mesmo nome sob pais diferentes, edição, limite de hierarquia, dois usuários, sessão e responsividade. O erro de export incompatível em arquivo `"use server"` também foi corrigido e validado.
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.

@@ -156,20 +156,20 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 - **Recomendação:** preservar os filtros da aplicação e os testes diretos das constraints em toda mudança relacional futura.
 - **Validação realizada:** diagnóstico com zero anomalias; seis tentativas cruzadas rejeitadas; cascata, exclusão de usuário, atomicidade, recriação desde zero, drift e rollback aprovados em banco descartável.
 
-### SEC-006 - Unicidade de categorias raiz depende da aplicação
+### SEC-006 - Unicidade estrutural de categorias (mitigado)
 
 - **Categoria:** integridade e concorrência.
-- **Status da evidência:** Parcialmente confirmado.
-- **Cenário:** criações concorrentes geram categorias raiz equivalentes.
-- **Evidência técnica:** `@@unique([userId, name, parentId])` inclui `parentId` anulável; a normalização comparativa ocorre no serviço.
+- **Status da evidência:** Mitigado; Atividade 5.2 concluída.
+- **Cenário:** criações ou renomeações concorrentes geravam categorias equivalentes no mesmo escopo.
+- **Evidência técnica:** `Category.comparisonKey` guarda a chave canônica; filhos usam unique `userId + comparisonKey + parentId` e raízes usam índice único parcial `userId + comparisonKey` com `parentId IS NULL`.
 - **Impacto:** árvore ambígua e regras inconsistentes.
-- **Probabilidade:** baixa a média sob concorrência.
-- **Severidade atual:** média.
-- **Aplicabilidade:** risco de integridade, não acesso horizontal comprovado.
-- **Controle existente:** busca de nomes equivalentes na aplicação.
-- **Risco residual:** a verificação pode sofrer TOCTOU e a constraint não cobre de forma robusta raízes com `NULL`.
-- **Recomendação:** avaliar índice/constraint apropriado sem presumir banco vazio.
-- **Validação futura:** duas criações concorrentes do mesmo nome raiz.
+- **Probabilidade:** baixa, residual para escritores privilegiados fora dos caminhos revisados.
+- **Severidade atual:** baixa, residual.
+- **Aplicabilidade:** garantia estrutural comprovada em PostgreSQL 16 e Prisma 5.22.
+- **Controle existente:** precheck por chave no serviço, escrita conjunta de nome/chave e decisão atômica nos dois índices.
+- **Risco residual:** futuros escritores diretos precisam gerar a chave canônica; o índice parcial não aparece declarativamente no schema do Prisma 5.22 e depende da migration versionada.
+- **Recomendação:** preservar a migration, a função canônica e os testes diretos/concorrentes em toda nova escrita de categoria.
+- **Validação realizada:** diagnóstico sem duplicidades, paridade TypeScript/SQL, bloqueio seguro de migration, criação e renomeação concorrentes, SQL/Prisma diretos, recriação desde zero e rollback descartável.
 
 ### SEC-007 - Retenção e exclusão de dados não implementadas
 
@@ -283,14 +283,14 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 | Usuário e sessão | Login, criar, validar e invalidar sessão | Sessão obtida do cookie; token validado server-side | Hash único e FK da sessão para usuário | Tentativas ilimitadas e gestão limitada de sessões |
 | Importações | Preview, confirmação e histórico | `userId` da sessão; conta validada por `id + userId`; histórico por usuário | FK composta importação/conta; índices por usuário | Abuso de recursos permanece fora deste controle |
 | Transações | Listagem e categorização | Leitura por usuário; transação e categoria por `id + userId`; update por usuário | Dedupe e FKs compostas para categoria, conta e importação | Filtros da aplicação ainda são necessários para confidencialidade |
-| Categorias | Listagem, criação e edição | Pai/recurso por `id + userId`; limite de hierarquia no serviço | FK composta de pai; unique com `parentId` anulável | Duplicidade raiz de `SEC-006` permanece pendente |
+| Categorias | Listagem, criação e edição | Pai/recurso por `id + userId`; limite de hierarquia e chave canônica no serviço | FK composta de pai; unique de filhos e índice parcial de raízes | Escritores privilegiados devem manter `comparisonKey` coerente |
 | Regras | Listagem, criação, ativação e aplicação | Regra, categoria e transação filtradas por usuário; update só sem categoria | FK composta regra/categoria com cascata | Filtros da aplicação ainda são necessários para autorização |
 | Dashboard | Count, aggregate e consulta do período | Todas as queries observadas filtram por `userId` | Índices por usuário e data | Dados do próprio usuário são enviados ao navegador por necessidade funcional |
 | Audit logs | Autenticação e importação | ID do usuário quando disponível; metadados minimizados | FK anulável e índices | Retenção, acesso operacional e logs do Prisma não verificados |
 
 As proteções dos fluxos atuais estão comprovadas na aplicação. Desde a Atividade 5.1, o banco também garante que as seis relações multiusuário existentes tenham o mesmo `userId`; mudanças relacionais futuras continuam exigindo inspeção dos dados, rollback e aprovação explícita.
 
-A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; os Blocos 2 e 4 acrescentaram testes dinâmicos de autorização. A Atividade 5.1 comprovou diretamente no PostgreSQL a rejeição das seis inserções cruzadas e os comportamentos de exclusão. `SEC-005` está mitigado; concorrência e unicidade de categorias raiz permanecem em `SEC-006`.
+A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; os Blocos 2 e 4 acrescentaram testes dinâmicos de autorização. A Atividade 5.1 comprovou diretamente no PostgreSQL a rejeição das seis inserções cruzadas e os comportamentos de exclusão. A Atividade 5.2 comprovou a unicidade estrutural sob concorrência; `SEC-005` e `SEC-006` estão mitigados.
 
 ## Rate limiting: controles atuais e candidatos restantes
 
@@ -323,7 +323,7 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 
 - Conteúdo real dos logs do Prisma em erros representativos.
 - Cache de páginas autenticadas.
-- Concorrência em categorias, regras e importações.
+- Concorrência em regras e importações.
 
 ### Validação de deployment e pré-produção
 

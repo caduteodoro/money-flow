@@ -15,6 +15,7 @@ vi.mock("@/lib/auth/current-user", () => ({
 
 import { assignTransactionCategoryAction } from "@/app/transactions/actions";
 import { listUserTransactionsForCategorization } from "@/lib/transactions";
+import { categoryFixture } from "@/tests/helpers/category-fixture";
 
 const prisma = new PrismaClient();
 const userAId = authenticatedUser.current.id;
@@ -74,8 +75,16 @@ beforeAll(async () => {
   });
   await prisma.category.createMany({
     data: [
-      { id: categoryAId, userId: userAId, name: "Synthetic Transaction Category A" },
-      { id: categoryBId, userId: userBId, name: "SYNTHETIC-B-PRIVATE-CATEGORY-91F4" },
+      categoryFixture({
+        id: categoryAId,
+        userId: userAId,
+        name: "Synthetic Transaction Category A",
+      }),
+      categoryFixture({
+        id: categoryBId,
+        userId: userBId,
+        name: "SYNTHETIC-B-PRIVATE-CATEGORY-91F4",
+      }),
     ],
   });
   await prisma.transaction.createMany({

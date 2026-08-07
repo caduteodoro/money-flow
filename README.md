@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - integridade relacional multiusuario do Bloco 5 validada tecnicamente**.
+Status atual: **Sprint 5 em andamento - integridade relacional e unicidade estrutural de categorias do Bloco 5 validadas tecnicamente**.
 
 ## Problema
 
@@ -50,6 +50,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Regras automaticas v1 com criacao, listagem, ativacao, desativacao e prioridade.
 - Protecao por `userId` entre categorias, regras e transacoes.
 - FKs compostas impedem no PostgreSQL associacoes entre usuarios nas seis relacoes financeiras e de categorias existentes.
+- Chave comparativa canonica e indices unicos impedem categorias equivalentes no mesmo nivel, inclusive sob concorrencia.
 - Suite de integracao para isolamento multi-tenant de categorias, regras e transacoes, com PostgreSQL descartavel.
 
 ## Funcionalidades planejadas do MVP
@@ -57,7 +58,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Categorias pai/filha editaveis.
 - Analytics e graficos por categoria.
 - Execucao automatica de regras apos importacao.
-- Hardening restante de unicidade de categorias raiz, privacidade e retencao.
+- Hardening restante de privacidade e retencao.
 - Itens planejados para a Sprint 5.
 - Revisao final de privacidade do MVP.
 
@@ -289,7 +290,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Rate limiting persistente por identidade implementado no login e no cadastro; ainda sem proteção por IP ou borda confiável.
 - Sem login social.
 - Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
-- A integridade relacional multiusuario esta protegida no banco; unicidade de categorias raiz e retencao/exclusao continuam pendentes.
+- A integridade relacional multiusuario e a unicidade estrutural de categorias estao protegidas no banco; retencao/exclusao continuam pendentes.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
 - Sem Open Finance.

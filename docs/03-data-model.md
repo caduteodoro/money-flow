@@ -67,7 +67,7 @@ O MVP nao salva o CSV bruto no banco.
 
 O uso funcional validado conecta `Category`, `CategoryRule` e `Transaction.categoryId`. Atribuicoes feitas pelo usuario usam `USER_MANUAL`; atribuicoes pela aplicacao explicita das regras usam `SYSTEM_RULE`. Categorias raiz e filhas podem ser destino, regras inativas nao participam e `priority` define a precedencia.
 
-Nao existe coluna de texto normalizado nem unicidade de regras no banco. A normalizacao e a duplicidade logica continuam tratadas no servico, e a concorrencia de criacao duplicada permanece como hardening pendente separado em `SEC-006`. A propriedade entre regra e categoria agora tambem e garantida por FK composta.
+`Category.comparisonKey` persiste a chave canonica usada na comparacao de nomes. A chave remove espacos nas extremidades, reduz sequencias de whitespace a um espaco e aplica lowercase `pt-BR`; acentos permanecem significativos. O nome visivel continua separado e preservado depois da normalizacao de entrada ja existente. Nao existe unicidade estrutural de regras no banco.
 
 A camada `lib/categories/` protege listagem, criacao e renomeacao por `userId`, valida propriedade do pai e limita a hierarquia v1 a dois niveis. A UI `/categories` usa exclusivamente essa camada segura. Ainda faltam categorizacao manual e aplicacao de regras.
 
@@ -76,10 +76,19 @@ Regras para a Sprint 4:
 - Criar categorias somente por servicos que recebam o `userId` autenticado.
 - Ao atribuir `categoryId` a uma transacao, validar que a transacao e a categoria pertencem ao mesmo `userId`.
 - Ao criar `CategoryRule`, validar que a regra e a categoria pertencem ao mesmo `userId`.
-- Evitar nomes duplicados entre categorias irmas. Como `parentId` pode ser `NULL`, nao confiar apenas em `@@unique([userId, name, parentId])` para categorias raiz no PostgreSQL; a regra precisa ser aplicada no servico ou reforcada por indice/migration especifica antes de liberar a UI.
+- Gravar `name` e `comparisonKey` juntos em toda criacao ou renomeacao. O precheck do servico fornece feedback antecipado, enquanto os indices do PostgreSQL decidem atomicamente a unicidade.
 - Validar na aplicacao que pai, categoria, regra e transacao pertencem ao mesmo usuario, mantendo respostas publicas controladas; as FKs compostas fornecem uma segunda garantia no banco.
 
-O servico e o banco protegem a propriedade composta das relacoes. A unicidade robusta de categorias raiz permanece pendente e nao foi alterada pela Atividade 5.1.
+O servico e o banco protegem a propriedade composta das relacoes. A Atividade 5.2 acrescentou unicidade estrutural para raizes e filhos sem alterar as FKs da Atividade 5.1.
+
+## Unicidade estrutural de categorias
+
+A migration `20260807160000_enforce_category_name_uniqueness` adiciona e preenche `comparisonKey`, interrompe com rollback integral se encontrar equivalencias preexistentes e torna o campo obrigatorio. Depois cria:
+
+- `Category_child_userId_comparisonKey_parentId_key`, unico por usuario, chave e pai para categorias filhas;
+- `Category_root_userId_comparisonKey_key`, indice unico parcial por usuario e chave quando `parentId IS NULL`.
+
+Uma raiz e uma filha podem compartilhar nome. Filhos de pais distintos e usuarios distintos tambem podem. Somente nomes equivalentes no mesmo escopo sao rejeitados. O indice parcial de raiz e SQL manual porque o Prisma 5.22 nao o representa declarativamente; a migration versionada e a fonte de verdade dessa garantia.
 
 ## Integridade relacional multiusuario
 

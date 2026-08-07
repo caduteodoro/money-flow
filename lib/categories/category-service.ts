@@ -20,6 +20,12 @@ import {
 import { prisma } from "@/lib/db/prisma";
 
 type CategoryRecord = Omit<CategoryNode, "children">;
+type DuplicateContext = {
+  userId: string;
+  parentId: string | null;
+  comparisonKey: string;
+  excludedCategoryId?: string;
+};
 
 const categorySelect = {
   id: true,
@@ -57,8 +63,15 @@ export async function createCategory(
     return validationFailure(parsed.error);
   }
 
+  const comparisonKey = normalizeCategoryNameForComparison(parsed.data.name);
+  const duplicateContext = {
+    userId: parsed.data.userId,
+    parentId: null,
+    comparisonKey,
+  } satisfies DuplicateContext;
+
   try {
-    if (await hasDuplicateName(parsed.data.userId, null, parsed.data.name)) {
+    if (await hasDuplicateName(duplicateContext)) {
       return categoryFailure("DUPLICATE_NAME");
     }
 
@@ -67,13 +80,14 @@ export async function createCategory(
         userId: parsed.data.userId,
         parentId: null,
         name: parsed.data.name,
+        comparisonKey,
       },
       select: categorySelect,
     });
 
     return { ok: true, data: toCategoryNode(category) };
   } catch (error) {
-    return handleMutationError(error);
+    return handleMutationError(error, duplicateContext);
   }
 }
 
@@ -86,6 +100,9 @@ export async function createChildCategory(
     return validationFailure(parsed.error);
   }
 
+  const comparisonKey = normalizeCategoryNameForComparison(parsed.data.name);
+  let duplicateContext: DuplicateContext | undefined;
+
   try {
     const parent = await findCategoryForUser(parsed.data.userId, parsed.data.parentCategoryId);
 
@@ -97,7 +114,13 @@ export async function createChildCategory(
       return categoryFailure("INVALID_PARENT");
     }
 
-    if (await hasDuplicateName(parsed.data.userId, parent.id, parsed.data.name)) {
+    duplicateContext = {
+      userId: parsed.data.userId,
+      parentId: parent.id,
+      comparisonKey,
+    };
+
+    if (await hasDuplicateName(duplicateContext)) {
       return categoryFailure("DUPLICATE_NAME");
     }
 
@@ -106,13 +129,16 @@ export async function createChildCategory(
         userId: parsed.data.userId,
         parentId: parent.id,
         name: parsed.data.name,
+        comparisonKey,
       },
       select: categorySelect,
     });
 
     return { ok: true, data: toCategoryNode(category) };
   } catch (error) {
-    return handleMutationError(error);
+    return duplicateContext
+      ? handleMutationError(error, duplicateContext)
+      : categoryFailure("UNEXPECTED_ERROR");
   }
 }
 
@@ -125,6 +151,9 @@ export async function updateCategory(
     return validationFailure(parsed.error);
   }
 
+  const comparisonKey = normalizeCategoryNameForComparison(parsed.data.name);
+  let duplicateContext: DuplicateContext | undefined;
+
   try {
     const category = await findCategoryForUser(parsed.data.userId, parsed.data.categoryId);
 
@@ -132,14 +161,14 @@ export async function updateCategory(
       return categoryFailure("CATEGORY_NOT_FOUND");
     }
 
-    if (
-      await hasDuplicateName(
-        parsed.data.userId,
-        category.parentId,
-        parsed.data.name,
-        category.id,
-      )
-    ) {
+    duplicateContext = {
+      userId: parsed.data.userId,
+      parentId: category.parentId,
+      comparisonKey,
+      excludedCategoryId: category.id,
+    };
+
+    if (await hasDuplicateName(duplicateContext)) {
       return categoryFailure("DUPLICATE_NAME");
     }
 
@@ -148,7 +177,7 @@ export async function updateCategory(
         id: category.id,
         userId: parsed.data.userId,
       },
-      data: { name: parsed.data.name },
+      data: { name: parsed.data.name, comparisonKey },
     });
 
     if (updateResult.count !== 1) {
@@ -161,7 +190,9 @@ export async function updateCategory(
       ? { ok: true, data: toCategoryNode(updatedCategory) }
       : categoryFailure("CATEGORY_NOT_FOUND");
   } catch (error) {
-    return handleMutationError(error);
+    return duplicateContext
+      ? handleMutationError(error, duplicateContext)
+      : categoryFailure("UNEXPECTED_ERROR");
   }
 }
 
@@ -172,25 +203,23 @@ async function findCategoryForUser(userId: string, categoryId: string) {
   });
 }
 
-async function hasDuplicateName(
-  userId: string,
-  parentId: string | null,
-  name: string,
-  excludedCategoryId?: string,
-) {
-  const siblings = await prisma.category.findMany({
+async function hasDuplicateName({
+  userId,
+  parentId,
+  comparisonKey,
+  excludedCategoryId,
+}: DuplicateContext) {
+  const sibling = await prisma.category.findFirst({
     where: {
       userId,
       parentId,
+      comparisonKey,
       ...(excludedCategoryId ? { id: { not: excludedCategoryId } } : {}),
     },
-    select: { name: true },
+    select: { id: true },
   });
-  const comparableName = normalizeCategoryNameForComparison(name);
 
-  return siblings.some(
-    (sibling) => normalizeCategoryNameForComparison(sibling.name) === comparableName,
-  );
+  return sibling !== null;
 }
 
 function buildCategoryTree(categories: CategoryRecord[]): CategoryNode[] {
@@ -225,14 +254,37 @@ function validationFailure<T>(error: { flatten(): { fieldErrors: Record<string, 
   return categoryFailure<T>("VALIDATION_ERROR", error.flatten().fieldErrors);
 }
 
-function handleMutationError<T>(error: unknown): CategoryServiceResult<T> {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-    const target = Array.isArray(error.meta?.target) ? error.meta.target : [];
+async function handleMutationError<T>(
+  error: unknown,
+  duplicateContext: DuplicateContext,
+): Promise<CategoryServiceResult<T>> {
+  if (!isCategoryNameUniqueConstraintError(error, duplicateContext.parentId)) {
+    return categoryFailure("UNEXPECTED_ERROR");
+  }
 
-    if (target.includes("userId") && target.includes("name") && target.includes("parentId")) {
+  try {
+    if (await hasDuplicateName(duplicateContext)) {
       return categoryFailure("DUPLICATE_NAME");
     }
+  } catch {
+    return categoryFailure("UNEXPECTED_ERROR");
   }
 
   return categoryFailure("UNEXPECTED_ERROR");
+}
+
+function isCategoryNameUniqueConstraintError(error: unknown, parentId: string | null) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+    return false;
+  }
+
+  const target = Array.isArray(error.meta?.target) ? error.meta.target : [];
+  const expectedTarget = parentId === null
+    ? ["userId", "comparisonKey"]
+    : ["userId", "comparisonKey", "parentId"];
+
+  return (
+    target.length === expectedTarget.length &&
+    expectedTarget.every((field) => target.includes(field))
+  );
 }

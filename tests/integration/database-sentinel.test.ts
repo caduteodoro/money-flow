@@ -15,6 +15,7 @@ const expectedMigrations = [
   "20260807120000_add_rate_limit_buckets",
   "20260807150000_add_relational_tenant_keys",
   "20260807151000_enforce_relational_tenant_fks",
+  "20260807160000_enforce_category_name_uniqueness",
 ];
 
 afterAll(async () => {

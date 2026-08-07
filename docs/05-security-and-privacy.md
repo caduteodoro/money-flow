@@ -135,7 +135,17 @@ As cinco relacoes opcionais usam `ON DELETE NO ACTION`; o banco nao tenta zerar 
 
 O diagnostico `READ ONLY` no desenvolvimento retornou zero orfaos e zero associacoes cruzadas nas seis relacoes. As duas migrations foram validadas com Prisma 5.22 e PostgreSQL 16, sem drift. Testes diretos confirmaram relacoes validas, opcionais nulos, rejeicao `P2003` das seis tentativas cruzadas, cinco bloqueios `NO ACTION`, cascata restrita ao mesmo usuario, rollback transacional e exclusao direta de um usuario completo sem alterar outro tenant. O ensaio de rollback restaurou primeiro as FKs simples e removeu depois os indices compostos.
 
-`SEC-006`, `BCK-016` e `SEC-007` permanecem pendentes e fora desta entrega. Os filtros `id + userId` da aplicacao continuam obrigatorios para autorizacao e respostas publicas seguras; as constraints nao os substituem.
+Na entrega historica da Atividade 5.1, `SEC-006`, `BCK-016` e `SEC-007` ainda estavam pendentes. A Atividade 5.2 mitigou posteriormente `SEC-006` e concluiu `BCK-016`; `SEC-007` continua pendente. Os filtros `id + userId` da aplicacao continuam obrigatorios para autorizacao e respostas publicas seguras; as constraints nao os substituem.
+
+### Atividade 5.2 - unicidade estrutural de categorias
+
+O `SEC-006` foi mitigado com `Category.comparisonKey`, unicidade composta de filhos por `userId + comparisonKey + parentId` e indice unico parcial de raizes por `userId + comparisonKey` quando `parentId IS NULL`. A chave usa exatamente a semantica existente: trim, colapso de whitespace ECMAScript e lowercase `pt-BR`, sem remover acentos. O nome visivel permanece separado.
+
+O diagnostico `READ ONLY` no desenvolvimento encontrou zero grupos de raizes ou filhos duplicados por igualdade exata, caixa ou espacos. A paridade TypeScript/SQL foi total em 14 casos sinteticos e nos 6 nomes existentes. O backfill preservou 6 categorias e as 165 referencias de transacoes, 3 de regras e 3 de hierarquia; as 6 FKs compostas da Atividade 5.1 permaneceram ativas.
+
+Criacoes e renomeacoes continuam fazendo precheck, mas o PostgreSQL decide a disputa final. Um `P2002` so vira a mensagem publica controlada de duplicidade quando o alvo corresponde ao indice esperado e uma colisao real ainda existe no mesmo escopo; outros erros permanecem genericos. Testes com escritas liberadas simultaneamente provaram uma unica persistencia para raizes, filhos e renomeacao, sem alteracao parcial do registro rejeitado.
+
+O indice parcial de raizes usa SQL manual porque o Prisma 5.22 nao o representa no schema. `prisma validate`, `generate` e `migrate diff` permaneceram aprovados; o diff ignora esse indice, portanto a migration versionada deve ser preservada. O rollback descartavel restaurou primeiro o indice anterior e so depois removeu as novas garantias e a coluna. Detalhes e riscos residuais estao em [`docs/14-sprint-5-category-uniqueness.md`](14-sprint-5-category-uniqueness.md).
 
 ## Audit logs
 
@@ -231,6 +241,6 @@ Os testes manuais com dois usuarios confirmaram que listagem, alteracao e aplica
 
 Toda consulta do servico de categorias exige `userId`. Pai e categoria sao buscados por `id + userId`; nao existe listagem global, e recurso inexistente ou pertencente a outro usuario retorna a mesma mensagem generica. IDs enviados pelo cliente nao bastam.
 
-O servico impede associacoes cruzadas nas operacoes atuais, e as seis FKs compostas da Atividade 5.1 reforcam essa propriedade no banco. A unicidade robusta de categorias raiz permanece pendente em `SEC-006`/`BCK-016`.
+O servico impede associacoes cruzadas nas operacoes atuais, e as seis FKs compostas da Atividade 5.1 reforcam essa propriedade no banco. A Atividade 5.2 tambem impede atomicamente categorias equivalentes no mesmo escopo; `SEC-006` esta mitigado e `BCK-016` concluido.
 
 A pagina e todas as Server Actions exigem sessao. IDs de categoria e pai vindos do navegador sao revalidados com o `userId` da sessao, e a resposta nao distingue recurso inexistente de recurso pertencente a outro usuario. Nenhum nome de categoria ou dado financeiro e enviado a audit logs.

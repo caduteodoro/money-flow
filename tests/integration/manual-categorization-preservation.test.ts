@@ -19,6 +19,7 @@ vi.mock("@/lib/auth/current-user", () => ({
 
 import { applyCategoryRulesAction } from "@/app/categories/rule-actions";
 import { applyCategoryRulesToUncategorizedTransactions } from "@/lib/category-rules";
+import { categoryFixture } from "@/tests/helpers/category-fixture";
 
 const prisma = new PrismaClient();
 const userId = authenticatedUser.current.id;
@@ -48,11 +49,11 @@ beforeAll(async () => {
     },
   });
   await prisma.category.create({
-    data: {
+    data: categoryFixture({
       id: automaticCategoryId,
       userId,
       name: "Synthetic Automatic Category B",
-    },
+    }),
   });
   await prisma.categoryRule.create({
     data: {
