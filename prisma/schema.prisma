@@ -198,3 +198,16 @@ model AuditLog {
   @@index([userId, createdAt])
   @@index([action, createdAt])
 }
+
+model RateLimitBucket {
+  scope       String
+  keyDigest   String
+  windowStart DateTime
+  expiresAt   DateTime
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@id([scope, keyDigest, windowStart])
+  @@index([expiresAt])
+}
