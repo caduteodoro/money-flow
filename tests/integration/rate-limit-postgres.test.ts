@@ -16,6 +16,8 @@ const scopes = [
   "integration-rate-limit:persistence",
   "integration-rate-limit:cleanup-expired",
   "integration-rate-limit:cleanup-live",
+  "integration-rate-limit:reset-a",
+  "integration-rate-limit:reset-b",
 ];
 const secret = "synthetic-integration-secret-at-least-32-bytes";
 const now = new Date("2026-08-07T12:00:10.000Z");
@@ -104,6 +106,18 @@ describe("PostgreSQL rate limit store", () => {
     expect(removed).toBe(1);
     expect(await prisma.rateLimitBucket.count({ where: { scope: scopes[6] } })).toBe(0);
     expect(await prisma.rateLimitBucket.count({ where: { scope: scopes[7] } })).toBe(1);
+  });
+
+  it("resets only the requested scope and digest pairs", async () => {
+    const store = new PostgresRateLimitStore(prisma);
+    const digestA = "7".repeat(64);
+    const digestB = "8".repeat(64);
+    await checkRateLimit(store, { scope: scopes[8], keyDigest: digestA, limit: 2, windowMs: 60_000, now });
+    await checkRateLimit(store, { scope: scopes[9], keyDigest: digestB, limit: 2, windowMs: 60_000, now });
+
+    await expect(store.reset([{ scope: scopes[8], keyDigest: digestA }])).resolves.toBe(1);
+    await expect(prisma.rateLimitBucket.count({ where: { scope: scopes[8], keyDigest: digestA } })).resolves.toBe(0);
+    await expect(prisma.rateLimitBucket.count({ where: { scope: scopes[9], keyDigest: digestB } })).resolves.toBe(1);
   });
 
   it("fails open explicitly when PostgreSQL storage is unavailable", async () => {

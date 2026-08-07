@@ -13,6 +13,12 @@ export interface RateLimitConsumeResult {
 
 export interface RateLimitStore {
   consume(input: RateLimitConsumeInput): Promise<RateLimitConsumeResult>;
+  reset(keys: RateLimitResetKey[]): Promise<number>;
+}
+
+export interface RateLimitResetKey {
+  scope: string;
+  keyDigest: string;
 }
 
 export class RateLimitStorageUnavailableError extends Error {

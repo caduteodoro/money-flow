@@ -15,6 +15,10 @@ class MemoryRateLimitStore implements RateLimitStore {
     this.buckets.set(key, count);
     return { consumed: true, count };
   }
+
+  async reset() {
+    return 0;
+  }
 }
 
 const baseInput = {
@@ -80,8 +84,8 @@ describe("rate limit core", () => {
   });
 
   it("fails open only for the explicit storage-unavailable error", async () => {
-    const unavailable: RateLimitStore = { consume: async () => { throw new RateLimitStorageUnavailableError(); } };
-    const broken: RateLimitStore = { consume: async () => { throw new Error("contract bug"); } };
+    const unavailable: RateLimitStore = { consume: async () => { throw new RateLimitStorageUnavailableError(); }, reset: async () => 0 };
+    const broken: RateLimitStore = { consume: async () => { throw new Error("contract bug"); }, reset: async () => 0 };
 
     await expect(checkRateLimit(unavailable, { ...baseInput, now: new Date("2026-08-07T12:00:00.000Z") })).resolves.toMatchObject({
       status: "storage_unavailable",

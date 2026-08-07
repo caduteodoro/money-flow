@@ -7,9 +7,11 @@ import { verifyPassword } from "@/lib/auth/password";
 import { hashSensitiveValue } from "@/lib/auth/request-metadata";
 import { createUserSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
+import { applyLoginRateLimit, resetLoginRateLimit } from "@/lib/security/rate-limit/login-rate-limit";
 
 type LoginActionState = {
   message: string | null;
+  retryAfterSeconds?: number;
   fieldErrors?: {
     email?: string[];
     password?: string[];
@@ -17,6 +19,7 @@ type LoginActionState = {
 };
 
 const invalidCredentialsMessage = "Nao foi possivel entrar com essas credenciais.";
+const rateLimitMessage = "Muitas tentativas. Aguarde antes de tentar novamente.";
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Informe um e-mail valido."),
@@ -37,6 +40,14 @@ export async function loginAction(
   }
 
   const { email, password } = parsed.data;
+  const rateLimit = await applyLoginRateLimit(email);
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimitMessage,
+      retryAfterSeconds: rateLimit.retryAfterSeconds,
+    };
+  }
+
   const user = await prisma.user.findUnique({
     where: { email },
     select: {
@@ -61,6 +72,7 @@ export async function loginAction(
     };
   }
 
+  await resetLoginRateLimit(email);
   await createUserSession(user.id);
   await recordAuthAuditLog({
     action: AUTH_AUDIT_ACTIONS.userLogin,

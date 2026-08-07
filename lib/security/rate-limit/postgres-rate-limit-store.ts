@@ -1,6 +1,6 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 
-import type { RateLimitConsumeInput, RateLimitConsumeResult, RateLimitStore } from "./rate-limit-types";
+import type { RateLimitConsumeInput, RateLimitConsumeResult, RateLimitResetKey, RateLimitStore } from "./rate-limit-types";
 import { RateLimitStorageUnavailableError } from "./rate-limit-types";
 
 interface PostgresRateLimitStoreOptions {
@@ -60,6 +60,19 @@ export class PostgresRateLimitStore implements RateLimitStore {
           LIMIT ${batchSize}
         )
       `);
+    } catch (error) {
+      if (isStorageUnavailable(error)) throw new RateLimitStorageUnavailableError({ cause: error });
+      throw error;
+    }
+  }
+
+  async reset(keys: RateLimitResetKey[]): Promise<number> {
+    if (keys.length === 0) return 0;
+    try {
+      const result = await this.client.rateLimitBucket.deleteMany({
+        where: { OR: keys.map(({ scope, keyDigest }) => ({ scope, keyDigest })) },
+      });
+      return result.count;
     } catch (error) {
       if (isStorageUnavailable(error)) throw new RateLimitStorageUnavailableError({ cause: error });
       throw error;
