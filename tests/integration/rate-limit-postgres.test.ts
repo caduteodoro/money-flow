@@ -132,4 +132,19 @@ describe("PostgreSQL rate limit store", () => {
     await unavailableClient.$disconnect();
     expect(decision).toMatchObject({ status: "storage_unavailable", allowed: true });
   });
+
+  it("does not fail open for an invalid database configuration", async () => {
+    const invalidClient = new PrismaClient({ datasourceUrl: "not-a-valid-database-url" });
+    try {
+      await expect(checkRateLimit(new PostgresRateLimitStore(invalidClient), {
+        scope: "integration-rate-limit:invalid-configuration",
+        keyDigest: "1".repeat(64),
+        limit: 1,
+        windowMs: 60_000,
+        now,
+      })).rejects.toThrow();
+    } finally {
+      await invalidClient.$disconnect();
+    }
+  });
 });

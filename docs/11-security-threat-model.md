@@ -84,7 +84,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 ### SEC-001 - Rate limiting parcial em autenticação
 
 - **Categoria:** autenticação e disponibilidade.
-- **Status da evidência:** Parcialmente confirmado.
+- **Status da evidência:** Parcialmente confirmado — mitigado parcialmente.
 - **Cenário:** cliente automatiza login, cadastro ou geração de audit logs.
 - **Evidência técnica:** `loginAction` aplica 5 tentativas por minuto e 10 por 15 minutos; `registerAction` aplica 3 tentativas por 15 minutos e 5 por hora. Ambas derivam buckets persistentes por HMAC da identidade normalizada antes de banco e bcrypt.
 - **Impacto:** tentativa de tomada de conta, uso intensivo de bcrypt e crescimento de banco/logs.

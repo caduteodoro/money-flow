@@ -10,6 +10,7 @@
 - `Category`: categoria editavel, com suporte a hierarquia futura.
 - `CategoryRule`: regra automatica de categorizacao futura.
 - `AuditLog`: registro de acoes importantes sem dados financeiros sensiveis em claro.
+- `RateLimitBucket`: contador efêmero de janela fixa identificado por scope, digest HMAC e início da janela.
 
 ## Regras de isolamento
 
@@ -96,6 +97,18 @@ O servico aplica essas protecoes no codigo, mas o banco ainda nao garante integr
 - `PROCESSING`
 - `COMPLETED`
 - `FAILED`
+
+## Rate limiting
+
+`RateLimitBucket` não pertence a `User` e não armazena e-mail, IP ou outro identificador bruto. Sua chave primária composta é `scope + keyDigest + windowStart`, que também sustenta o `ON CONFLICT` usado pelo consumo atômico. `expiresAt` possui índice próprio para limpeza lazy em lotes.
+
+- `scope`: separa operação e política, incluindo janelas curta e prolongada.
+- `keyDigest`: HMAC-SHA-256 derivado do identificador já normalizado.
+- `windowStart` e `expiresAt`: limites UTC determinísticos da janela fixa.
+- `count`: capacidade efetivamente consumida, sem ultrapassar o limite configurado.
+- `createdAt` e `updatedAt`: rastreiam criação e último consumo do bucket.
+
+O reset filtra pelo prefixo indexável da chave primária (`scope + keyDigest`) e não depende de relação ou cascata com dados financeiros. A migration `20260807120000_add_rate_limit_buckets` cria somente essa tabela e o índice de expiração.
 
 ## Observacoes para proximas sprints
 

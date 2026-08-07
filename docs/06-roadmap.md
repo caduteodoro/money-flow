@@ -99,6 +99,8 @@ Status:
 - Documentacao final do MVP.
 - Preparacao para OFX.
 
+Estado atual: Bloco 3 concluído tecnicamente com fundação persistente do rate limiter e proteção por identidade no login e cadastro. A Sprint 5 permanece aberta; proteção por origem/borda, outros vetores de abuso, revisão de privacidade e atividades posteriores continuam pendentes.
+
 ## Futuro pos-MVP
 
 - MFA.

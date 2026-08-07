@@ -13,6 +13,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { hashSensitiveValue } from "@/lib/auth/request-metadata";
 import { applyLoginRateLimit, LOGIN_RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit/login-rate-limit";
 import { createRateLimitKeyDigest } from "@/lib/security/rate-limit/rate-limit-key";
+import { applyRegisterRateLimit, REGISTER_RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit/register-rate-limit";
 import { assertTestDatabaseEnvironment } from "../helpers/assert-test-database.mjs";
 
 const prisma = new PrismaClient();
@@ -39,8 +40,15 @@ function bucketPairs(email: string) {
   }));
 }
 
+function registerBucketPairs(email: string) {
+  return REGISTER_RATE_LIMIT_POLICIES.map(({ scope }) => ({
+    scope,
+    keyDigest: createRateLimitKeyDigest({ scope, normalizedIdentifier: email, secret }),
+  }));
+}
+
 async function removeFixtures() {
-  await prisma.rateLimitBucket.deleteMany({ where: { OR: identities.flatMap(bucketPairs) } });
+  await prisma.rateLimitBucket.deleteMany({ where: { OR: identities.flatMap((email) => [...bucketPairs(email), ...registerBucketPairs(email)]) } });
   await prisma.session.deleteMany({ where: { userId } });
   await prisma.auditLog.deleteMany({ where: {
     OR: [
@@ -78,7 +86,7 @@ describe("login rate limiting with real PostgreSQL", () => {
   it("does not consume buckets for structurally invalid forms", async () => {
     const result = await loginAction({ message: null }, form("invalid-email"));
     expect(result).toMatchObject({ message: "Revise os campos para continuar." });
-    expect(await prisma.rateLimitBucket.count({ where: { OR: identities.flatMap(bucketPairs) } })).toBe(0);
+    expect(await prisma.rateLimitBucket.count({ where: { OR: identities.flatMap((email) => [...bucketPairs(email), ...registerBucketPairs(email)]) } })).toBe(0);
   });
 
   it("normalizes identity, allows five attempts, blocks the sixth, and recovers in a new burst window", async () => {
@@ -129,8 +137,13 @@ describe("login rate limiting with real PostgreSQL", () => {
     await loginAction({ message: null }, form(userEmail));
     await loginAction({ message: null }, form(userEmail));
     await loginAction({ message: null }, form(otherEmail));
+    await applyRegisterRateLimit(userEmail);
     const otherBucketsBefore = await prisma.rateLimitBucket.findMany({
       where: { OR: bucketPairs(otherEmail) },
+      orderBy: [{ scope: "asc" }, { windowStart: "asc" }],
+    });
+    const registrationBucketsBefore = await prisma.rateLimitBucket.findMany({
+      where: { OR: registerBucketPairs(userEmail) },
       orderBy: [{ scope: "asc" }, { windowStart: "asc" }],
     });
 
@@ -140,6 +153,10 @@ describe("login rate limiting with real PostgreSQL", () => {
       where: { OR: bucketPairs(otherEmail) },
       orderBy: [{ scope: "asc" }, { windowStart: "asc" }],
     })).resolves.toEqual(otherBucketsBefore);
+    await expect(prisma.rateLimitBucket.findMany({
+      where: { OR: registerBucketPairs(userEmail) },
+      orderBy: [{ scope: "asc" }, { windowStart: "asc" }],
+    })).resolves.toEqual(registrationBucketsBefore);
     expect(await prisma.session.count({ where: { userId } })).toBe(1);
     expect(await prisma.auditLog.count({ where: { userId, action: "USER_LOGIN" } })).toBe(1);
     expect(runtime.cookieSet).toHaveBeenCalledOnce();

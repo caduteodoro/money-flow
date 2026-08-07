@@ -81,7 +81,12 @@ export class PostgresRateLimitStore implements RateLimitStore {
 }
 
 function isStorageUnavailable(error: unknown): boolean {
-  if (error instanceof Prisma.PrismaClientInitializationError) return true;
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
-  return /^P10(?:0[0-9]|1[0-7])$/.test(error.code) || error.code === "P2024";
+  const unavailableCodes = new Set(["P1001", "P1002", "P1008", "P1017", "P2024"]);
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    if (error.errorCode !== undefined) return unavailableCodes.has(error.errorCode);
+    // Prisma 5 can omit P1001 from errorCode. Match only its stable connection
+    // failure text; other initialization/configuration errors still propagate.
+    return error.message.includes("Can't reach database server");
+  }
+  return error instanceof Prisma.PrismaClientKnownRequestError && unavailableCodes.has(error.code);
 }

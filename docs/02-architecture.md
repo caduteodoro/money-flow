@@ -29,7 +29,7 @@
 - `categories`: tipos, normalizacao, validacao Zod, erros controlados, listagem hierarquica e mutacoes seguras.
 - `transactions`: listagem limitada para categorizacao e atribuicao manual segura de categoria.
 - `category-rules`: validacao, listagem, criacao, ativacao e aplicacao explicita de regras v1.
-- `security`: sanitizacao, hashing, validacoes e auditoria futura.
+- `security`: núcleo de rate limiting, composição de políticas, HMAC e adapter PostgreSQL.
 - `insights`: area reservada para evolucoes futuras de analytics e insights.
 
 `prisma/` guarda o schema e migrations do banco.
@@ -68,6 +68,8 @@ As paginas internas tambem validam a sessao no servidor para evitar confiar apen
 `Session` contem `userId`, `tokenHash`, `expiresAt`, timestamps, `userAgent` opcional e `ipHash` opcional. `tokenHash` e unico, com indices por `userId` e `expiresAt`.
 
 `AuditLog` registra eventos importantes sem senha, token ou dados financeiros sensiveis em claro.
+
+`RateLimitBucket` persiste contadores de janelas fixas por `scope`, digest HMAC e início da janela, sem relação com `User` nem identificador bruto.
 
 ## Importacao CSV
 
@@ -122,6 +124,14 @@ As regras automaticas v1 tambem ficam em `/categories`. Actions autenticadas sep
 
 O modulo `lib/category-rules` concentra o dominio e o acesso Prisma. As Server Actions de regras obtêm o usuario pela sessao, acionam o servico e revalidam apenas as rotas afetadas. A validacao manual final confirmou criacao, ativacao, precedencia, isolamento e preservacao de categorias manuais.
 
+### Rate limiting
+
+`lib/security/rate-limit` mantém o núcleo independente de framework, a derivação HMAC-SHA-256, a composição de políticas e o adapter PostgreSQL. O consumo usa um `INSERT ... ON CONFLICT ... DO UPDATE ... WHERE count < limit` parametrizado, preservando o limite sob concorrência sem sequência `SELECT → UPDATE`.
+
+Login e cadastro derivam a chave do e-mail normalizado, mas usam scopes independentes. A action consulta o limiter antes de usuário, bcrypt ou persistência de autenticação. Login válido remove somente seus buckets de login; cadastro não executa reset. Somente indisponibilidade reconhecida do storage gera `fail-open`; erros de entrada, configuração e programação propagam.
+
+Não existem buckets por IP, confiança em headers encaminhados, HTTP 429 ou proteção de borda implementada. Essas camadas futuras não substituem autenticação, autorização ou isolamento por `userId`.
+
 ## Evolucao prevista
 
-Sprint 4 foca em categorias, categoria pai/filha, edicao/criacao de categorias, regras automaticas e transacoes nao categorizadas. Antes de expor mutacoes de categoria, validar no servico que categoria, regra e transacao pertencem ao mesmo `userId`. Rate limiting, MFA, recuperacao de senha, criptografia forte, OFX e modo de privacidade avancado ficam para fases futuras.
+Sprint 4 entregou categorias, categoria pai/filha, edição/criação, regras automáticas e transações não categorizadas. O Bloco 3 da Sprint 5 implementou rate limiting por identidade para login e cadastro. MFA, recuperação de senha, proteção por origem/borda, criptografia forte, OFX e modo de privacidade avançado permanecem futuros.

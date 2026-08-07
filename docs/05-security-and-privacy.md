@@ -57,6 +57,45 @@ Login e cadastro aplicam janelas fixas persistidas no PostgreSQL antes da consul
 
 Como camada futura e complementar, avaliar Cloudflare Access, WAF/rate limiting, Turnstile e proteção do servidor de origem. Esses recursos não substituem autenticação, autorização por `userId`, validações server-side ou rate limiting por identidade dentro da aplicação.
 
+### Checkpoint do Bloco 3 da Sprint 5
+
+O Bloco 3 parte de `10b78ba` e compreende os commits `6ca1890` (fundação persistente), `a5d7940` (login) e `c82fcf1` (cadastro). A implementação acumulada inclui uma migration, núcleo independente de framework, HMAC, composição de políticas, adapter PostgreSQL, integração nas duas Server Actions e testes unitários/integração.
+
+| Fluxo | Rajada curta | Insistência prolongada | Reset após sucesso |
+|---|---:|---:|---|
+| Login | 5 por 1 minuto | 10 por 15 minutos | Sim, somente buckets de login da identidade |
+| Cadastro | 3 por 15 minutos | 5 por 1 hora | Não |
+
+Matriz de regressão do checkpoint:
+
+| Área | Arquivo e cenário | Tipo | Resultado | Lacuna |
+|---|---|---|---|---|
+| Validação estrutural | `login-rate-limit.test.ts` e `register-rate-limit.test.ts`: formulário inválido não consome | PostgreSQL | PASS | Nenhuma |
+| Normalização | mesmas suítes: caixa e espaços convergem para a mesma identidade | PostgreSQL | PASS | Nenhuma |
+| Privacidade | `rate-limit-key.test.ts` e suítes de integração: HMAC e ausência de e-mail/segredo | Unitário/PostgreSQL | PASS | Nenhuma |
+| Janela curta | `login-rate-limit.test.ts` e `register-rate-limit.test.ts`: limite, bloqueio e recuperação | Unitário/PostgreSQL | PASS | Nenhuma |
+| Janela prolongada | mesmas suítes: limite, bloqueio e recuperação | Unitário/PostgreSQL | PASS | Nenhuma |
+| Composição | suítes unitárias de login/cadastro: qualquer bloqueio vence | Unitário | PASS | Nenhuma |
+| Retry | `login-rate-limit.test.ts`: maior espera; integrações: esperas reais das actions | Unitário/PostgreSQL | PASS | Nenhuma |
+| Fail-open | `rate-limit-core.test.ts` e `rate-limit-postgres.test.ts`: indisponível permite, inesperado propaga | Unitário/PostgreSQL | PASS | Nenhuma |
+| Configuração | `rate-limit-key.test.ts` e `rate-limit-postgres.test.ts`: segredo/URL inválidos propagam | Unitário/PostgreSQL | PASS | Nenhuma |
+| Login | `login-rate-limit.test.ts`: sucesso limpa somente buckets próprios de login | PostgreSQL | PASS | Nenhuma |
+| Cadastro | `register-rate-limit.test.ts`: sucesso e duplicidade preservam buckets | PostgreSQL | PASS | Nenhuma |
+| Isolamento | suítes de políticas/actions: scopes, identidades e reset independentes | Unitário/PostgreSQL | PASS | Nenhuma |
+| Concorrência | `rate-limit-postgres.test.ts`: 10 permissões em 25 consumos concorrentes | PostgreSQL | PASS | Nenhuma |
+| Auditoria | suítes de action/integração: bloqueios sem evento; sucessos preservados | Unitário/PostgreSQL | PASS | Nenhuma |
+| Sessão | integrações de login/cadastro: sessão e cookie após sucesso | PostgreSQL | PASS | Nenhuma |
+| PostgreSQL | sentinela e `rate-limit-postgres.test.ts`: migration, persistência, client e expiração | PostgreSQL | PASS | Nenhuma |
+| Regressão geral | suíte completa, lint, TypeScript e build | Automatizada | PASS | Nenhuma material |
+
+O `SEC-001` está **mitigado parcialmente**: login e cadastro possuem defesa interna por identidade, mas não há proteção por origem ou borda e abuso distribuído/múltiplos e-mails continua possível. O `SEC-004` permanece pendente. O `BCK-031` permanece como ideia em discovery e Cloudflare não está implementada.
+
+Achados do checkpoint:
+
+- **MÉDIO, corrigido no Bloco 3:** a classificação inicial aceitava qualquer `PrismaClientInitializationError` como indisponibilidade, podendo converter erro de configuração em `fail-open`. O adapter passou a aceitar somente falhas transitórias explicitamente reconhecidas e o caso P1001 sem código emitido pelo Prisma 5; URL inválida agora propaga e possui teste de regressão.
+- **INFORMATIVO, risco residual:** a proteção é somente por identidade. Ataques distribuídos, múltiplos e-mails e operações fora de login/cadastro permanecem possíveis; relação com `SEC-001` e `BCK-031`.
+- **INFORMATIVO, risco residual:** não há observabilidade operacional específica para liberações por indisponibilidade ou falhas auxiliares de cleanup. Um subsistema novo ficou fora do escopo deste bloco.
+
 ## Audit logs
 
 Eventos atuais:
