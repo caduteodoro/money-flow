@@ -50,13 +50,13 @@ export async function applyCategoryRulesToUncategorizedTransactions(userId: stri
   if (!parsed.success) return validationFailure(parsed.error);
   try {
     const rules = await prisma.categoryRule.findMany({ where: { userId: parsed.data.userId, isActive: true, category: { userId: parsed.data.userId } }, select: { id: true, categoryId: true, matchText: true }, orderBy: [{ priority: "asc" }, { createdAt: "asc" }, { id: "asc" }] });
-    const transactions = await prisma.transaction.findMany({ where: { userId: parsed.data.userId, categoryId: null }, select: { id: true, normalizedDescription: true } });
+    const transactions = await prisma.transaction.findMany({ where: { userId: parsed.data.userId, categoryId: null, categorizationSource: { not: CategorizationSource.USER_MANUAL } }, select: { id: true, normalizedDescription: true } });
     let categorizedCount = 0;
     for (const transaction of transactions) {
       const description = transaction.normalizedDescription ? normalizeRuleMatchText(transaction.normalizedDescription) : "";
       const rule = rules.find((candidate) => description.includes(normalizeRuleMatchText(candidate.matchText)));
       if (!rule) continue;
-      const result = await prisma.transaction.updateMany({ where: { id: transaction.id, userId: parsed.data.userId, categoryId: null }, data: { categoryId: rule.categoryId, categorizationSource: CategorizationSource.SYSTEM_RULE } });
+      const result = await prisma.transaction.updateMany({ where: { id: transaction.id, userId: parsed.data.userId, categoryId: null, categorizationSource: { not: CategorizationSource.USER_MANUAL } }, data: { categoryId: rule.categoryId, categorizationSource: CategorizationSource.SYSTEM_RULE } });
       categorizedCount += result.count;
     }
     return { ok: true, data: { processedCount: transactions.length, categorizedCount, unmatchedCount: transactions.length - categorizedCount, activeRuleCount: rules.length } };
