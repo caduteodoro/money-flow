@@ -2,6 +2,8 @@
 
 O threat model da auditoria da Sprint 5 está registrado em [`docs/11-security-threat-model.md`](11-security-threat-model.md). O documento separa controles comprovados, riscos preliminares e pontos ainda não verificados; sua publicação não significa que os riscos já foram corrigidos.
 
+A fundacao de testes automatizados de isolamento do Bloco 2 e suas limitacoes estao registradas em [`docs/12-sprint-5-security-tests-foundation.md`](12-sprint-5-security-tests-foundation.md).
+
 ## Principios
 
 - Privacidade por padrao.
@@ -115,11 +117,11 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
 - Ainda nao ha parser OFX.
-- A modelagem, o servico server-side e a rota protegida de categorias existem; categorizacao de transacoes ainda nao foi implementada.
+- A categorizacao manual e as regras automaticas v1 existem; a suite atual cobre autorizacao de categorias, regras e transacoes, mas nao toda a aplicacao.
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
-- Ainda nao ha suite automatizada de testes versionada.
+- Ainda nao ha cobertura automatizada de integracao para autenticacao, importacoes, audit logs, contas ou dashboard.
 
 ## Criptografia futura
 
