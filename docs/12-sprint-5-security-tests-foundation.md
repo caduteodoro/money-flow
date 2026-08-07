@@ -72,4 +72,6 @@ Categorias, regras e transacoes ja fazem parte da cobertura deste incremento e n
 
 A recomendacao para o proximo incremento de testes e autenticacao e sessoes, por protegerem a origem do `userId` usado por todas as boundaries cobertas. Essa recomendacao nao altera o backlog, nao implementa rate limiting e depende de autorizacao de escopo propria.
 
+Nota de continuidade: o Bloco 4 atendeu posteriormente essa recomendacao com cobertura PostgreSQL de cadastro neutro, login posterior, sessoes simultaneas, expiracao e logout da sessao atual. O escopo e os resultados historicos do Bloco 2 acima permanecem inalterados.
+
 O Bloco 2 fornece uma base reproduzivel e evidencias para os dominios listados, mas nao encerra a Sprint 5 nem substitui revisao de privacidade, checkpoint funcional ou validacoes de pre-producao.

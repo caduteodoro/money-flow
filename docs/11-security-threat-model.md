@@ -79,7 +79,7 @@ O middleware verifica apenas a presença do cookie nas rotas protegidas; ele nã
 
 ## Matriz de riscos
 
-Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer validação**, **Mitigado pelo framework no ambiente testado**, **Informativo** e **Planejado para pré-produção**.
+Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**, **Requer validação**, **Mitigado pelo framework no ambiente testado**, **Informativo** e **Planejado para pré-produção**.
 
 ### SEC-001 - Rate limiting parcial em autenticação
 
@@ -92,7 +92,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 - **Severidade atual:** alta.
 - **Aplicabilidade:** relevante antes de exposição pública; o impacto atual depende do ambiente local.
 - **Controle existente:** janelas fixas atômicas no PostgreSQL, HMAC-SHA-256 sem e-mail bruto nos buckets, bcrypt, resposta neutra durante bloqueios e testes unitários/integração em banco descartável.
-- **Risco residual:** a proteção é por identidade; múltiplos e-mails, origens distribuídas e operações fora de login/cadastro permanecem vetores possíveis. O cadastro ainda expõe P2002 quando não está bloqueado.
+- **Risco residual:** a proteção é por identidade; múltiplos e-mails, origens distribuídas e operações fora de login/cadastro permanecem vetores possíveis. O tratamento neutro de `P2002` mitiga enumeração direta, mas não esses vetores.
 - **Recomendação:** manter controles internos e avaliar borda confiável, limitação por origem e Turnstile antes de testadores externos.
 - **Validação futura:** validar proxy/deployment, múltiplas instâncias, comportamento operacional do `fail-open` e abuso distribuído.
 
@@ -129,17 +129,17 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 ### SEC-004 - Enumeração de e-mail no cadastro
 
 - **Categoria:** autenticação e privacidade.
-- **Status da evidência:** Confirmado.
+- **Status da evidência:** Mitigado.
 - **Cenário:** atacante testa se determinados e-mails já possuem conta.
-- **Evidência técnica:** `registerAction` retorna mensagem específica para violação de unicidade `P2002`.
+- **Evidência técnica:** o Bloco 4 removeu a mensagem e o `fieldErrors.email` específicos. E-mail novo e duplicado usam o mesmo redirect e mensagem no login; cadastro não cria sessão nem cookie. Somente a unique constraint de `User.email` recebe tratamento neutro, e a criação permanece atômica sob concorrência.
 - **Impacto:** confirmação de cadastro e apoio a phishing direcionado.
-- **Probabilidade:** média; o limiter por identidade reduz repetição direta, mas não corrige a enumeração nem abuso distribuído.
+- **Probabilidade:** reduzida no fluxo direto; o limiter por identidade limita repetição, mas não impede inferência temporal, tentativa posterior de login ou abuso distribuído.
 - **Severidade atual:** média.
 - **Aplicabilidade:** relevante em ambiente público; há trade-off de UX.
-- **Controle existente:** normalização, unicidade de e-mail e rate limiting por identidade antes do bcrypt e da criação.
-- **Risco residual:** diferença explícita na resposta.
-- **Recomendação:** decidir conscientemente a política de resposta e combiná-la com rate limiting.
-- **Validação futura:** comparar conteúdo, status e tempo entre e-mail existente e novo.
+- **Controle existente:** normalização, unicidade de e-mail, rate limiting por identidade antes de bcrypt/banco, destino e mensagem equivalentes e ausência de autenticação automática no cadastro.
+- **Risco residual:** persistência e auditoria diferem internamente; tempo não foi caracterizado e um login posterior com a senha escolhida pode revelar que a conta nova foi criada.
+- **Recomendação:** manter a resposta neutra e avaliar verificação de e-mail ou convite somente em evolução futura compatível com o produto.
+- **Validação futura:** medir diferenças temporais em ambiente representativo e reavaliar o fluxo quando houver verificação de e-mail ou convite.
 
 ### SEC-005 - Isolamento relacional não garantido integralmente pelo banco
 
@@ -236,15 +236,15 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 - **Categoria:** sessão.
 - **Status da evidência:** Confirmado.
 - **Cenário:** sessão roubada continua válida depois de um novo login ou logout em outro dispositivo.
-- **Evidência técnica:** estaticamente, cada login cria sessão independente, logout remove somente a sessão correspondente ao cookie atual, apenas `tokenHash` é persistido e a expiração é configurada para 30 dias. Dinamicamente, um cookie sintético inválido não autenticou o usuário.
+- **Evidência técnica:** cada login cria sessão independente, logout remove somente a sessão correspondente ao hash do cookie atual, apenas `tokenHash` é persistido e a expiração é fixa em 30 dias. Testes PostgreSQL comprovam duas sessões simultâneas, logout independente, ausência idempotente e rejeição/remoção de sessão expirada. Erros inesperados na exclusão propagam antes de limpar o cookie ou auditar sucesso.
 - **Impacto:** prolongamento de acesso indevido.
 - **Probabilidade:** baixa no estágio atual.
 - **Severidade atual:** baixa.
 - **Aplicabilidade:** pode aumentar antes de produção.
-- **Controle existente:** token forte, cookie seguro e expiração.
+- **Controle existente:** token forte, cookie seguro, expiração, revogação confirmada da sessão atual e testes PostgreSQL.
 - **Risco residual:** sem listagem ou revogação global.
 - **Recomendação:** avaliar gestão de dispositivos e revogação em eventos sensíveis.
-- **Validação futura:** testar dois logins reais simultâneos, logout independente, sessão persistida expirada e efeito sobre as demais sessões. Nenhum cenário de sessão roubada foi executado.
+- **Validação futura:** avaliar revogação global ou por evento sensível antes de produção. Nenhum cenário com token realmente roubado foi executado.
 
 ### SEC-012 - Headers de segurança não configurados explicitamente
 
@@ -322,7 +322,6 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 ### Validação local futura em ambiente descartável
 
 - Testes dinâmicos de autorização com dois usuários.
-- Dois logins simultâneos, logout independente e sessão persistida expirada.
 - Conteúdo real dos logs do Prisma em erros representativos.
 - Cache de páginas autenticadas.
 - Concorrência em categorias, regras e importações.
@@ -348,6 +347,7 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 - Nenhum risco crítico comprovado bloqueia a continuidade normal do Bloco 1.
 - Riscos altos não entram automaticamente como implementação imediata; severidade, contexto e capacidade devem orientar o planejamento.
 - SEC-001 foi mitigado para login e cadastro por identidade, mas permanece aberto para abuso distribuído, borda e outras operações.
+- SEC-004 foi mitigado pelo cadastro neutro do Bloco 4, sem declaração de resolução total por causa dos canais residuais temporal e de login posterior.
 - SEC-002 é requisito relevante antes de produção, não declaração de incidente ou bloqueio do desenvolvimento local.
 - SEC-009 está mitigado pelo framework no ambiente testado, mas a conclusão depende da configuração do proxy/deployment.
 - SEC-008 permanece no grafo de produção; ausência de caminho explorável identificado não elimina o advisory.
@@ -356,11 +356,11 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 
 ## Plano controlado
 
-As próximas atividades propostas, ainda não concluídas nem automaticamente comprometidas com a Sprint 5, são:
+O plano controlado permanece como referência de sequência. O item 3 foi executado parcialmente pelo Bloco 4, Atividade 4.1; os demais itens não são iniciados automaticamente:
 
 1. Validações manuais de segurança.
 2. Validar rate limiting no deployment e decidir proteção complementar de borda.
-3. Hardening de autenticação e sessão.
+3. Hardening de autenticação e sessão — cadastro neutro e revogação segura concluídos no Bloco 4; gestão global permanece futura.
 4. Análise estrutural do modelo.
 5. Privacidade e retenção.
 6. Dependências e headers.

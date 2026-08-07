@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Prisma } from "@prisma/client";
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db/prisma";
 import {
@@ -16,6 +17,10 @@ export function createSessionToken() {
 
 export function hashSessionToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
+}
+
+function isSessionAlreadyAbsentError(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
 }
 
 export async function createUserSession(userId: string) {
@@ -83,15 +88,21 @@ export async function invalidateCurrentSession() {
   }
 
   const tokenHash = hashSessionToken(token);
-  const session = await prisma.session
-    .delete({
+  let session: { id: string; userId: string } | null = null;
+
+  try {
+    session = await prisma.session.delete({
       where: { tokenHash },
       select: {
         id: true,
         userId: true,
       },
-    })
-    .catch(() => null);
+    });
+  } catch (error) {
+    if (!isSessionAlreadyAbsentError(error)) {
+      throw error;
+    }
+  }
 
   await clearSessionCookie();
 

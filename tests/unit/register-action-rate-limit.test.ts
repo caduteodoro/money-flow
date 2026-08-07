@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const dependencies = vi.hoisted(() => ({
@@ -6,6 +7,7 @@ const dependencies = vi.hoisted(() => ({
   createUser: vi.fn(),
   audit: vi.fn(),
   session: vi.fn(),
+  redirect: vi.fn(),
 }));
 
 vi.mock("@/lib/security/rate-limit/register-rate-limit", () => ({ applyRegisterRateLimit: dependencies.rateLimit }));
@@ -13,7 +15,7 @@ vi.mock("@/lib/auth/password", () => ({ hashPassword: dependencies.hashPassword 
 vi.mock("@/lib/db/prisma", () => ({ prisma: { user: { create: dependencies.createUser } } }));
 vi.mock("@/lib/auth/audit", () => ({ AUTH_AUDIT_ACTIONS: { userRegistered: "USER_REGISTERED" }, recordAuthAuditLog: dependencies.audit }));
 vi.mock("@/lib/auth/session", () => ({ createUserSession: dependencies.session }));
-vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("next/navigation", () => ({ redirect: dependencies.redirect }));
 
 import { registerAction } from "@/app/register/actions";
 
@@ -24,6 +26,14 @@ function form(email: string, password = "synthetic-password") {
   data.set("password", password);
   data.set("confirmPassword", password);
   return data;
+}
+
+function prismaError(code: string, target?: string[]) {
+  return new Prisma.PrismaClientKnownRequestError("synthetic prisma error", {
+    code,
+    clientVersion: "synthetic",
+    meta: target ? { target } : undefined,
+  });
 }
 
 beforeEach(() => {
@@ -49,6 +59,38 @@ describe("registration action rate limit placement", () => {
     expect(order).toEqual(["limit", "bcrypt", "create"]);
   });
 
+  it("uses the neutral public destination after creating and auditing a user without a session", async () => {
+    await registerAction({ message: null }, form("synthetic@example.invalid"));
+
+    expect(dependencies.audit).toHaveBeenCalledWith({ action: "USER_REGISTERED", userId: "synthetic-user" });
+    expect(dependencies.session).not.toHaveBeenCalled();
+    expect(dependencies.redirect).toHaveBeenCalledWith("/login?registration=submitted");
+  });
+
+  it("uses the same destination for the email unique constraint without audit or session", async () => {
+    dependencies.createUser.mockRejectedValue(prismaError("P2002", ["email"]));
+
+    await registerAction({ message: null }, form("synthetic@example.invalid"));
+
+    expect(dependencies.audit).not.toHaveBeenCalled();
+    expect(dependencies.session).not.toHaveBeenCalled();
+    expect(dependencies.redirect).toHaveBeenCalledWith("/login?registration=submitted");
+  });
+
+  it("does not treat another constraint or Prisma error as a duplicate email", async () => {
+    dependencies.createUser.mockRejectedValueOnce(prismaError("P2002", ["unrelatedField"]));
+    await expect(registerAction({ message: null }, form("synthetic@example.invalid"))).rejects.toThrow(
+      "synthetic prisma error",
+    );
+
+    dependencies.createUser.mockRejectedValueOnce(prismaError("P2024"));
+    await expect(registerAction({ message: null }, form("synthetic@example.invalid"))).rejects.toThrow(
+      "synthetic prisma error",
+    );
+
+    expect(dependencies.redirect).not.toHaveBeenCalled();
+  });
+
   it("does not hash, persist, create a session or audit when blocked", async () => {
     dependencies.rateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 42, storageUnavailable: false });
     const result = await registerAction({ message: null }, form("synthetic@example.invalid"));
@@ -57,6 +99,7 @@ describe("registration action rate limit placement", () => {
     expect(dependencies.createUser).not.toHaveBeenCalled();
     expect(dependencies.session).not.toHaveBeenCalled();
     expect(dependencies.audit).not.toHaveBeenCalled();
+    expect(dependencies.redirect).not.toHaveBeenCalled();
   });
 
   it("continues the existing flow after an explicit storage fail-open result", async () => {
@@ -64,6 +107,7 @@ describe("registration action rate limit placement", () => {
     await registerAction({ message: null }, form("synthetic@example.invalid"));
     expect(dependencies.createUser).toHaveBeenCalled();
     expect(dependencies.audit).toHaveBeenCalledWith({ action: "USER_REGISTERED", userId: "synthetic-user" });
-    expect(dependencies.session).toHaveBeenCalledWith("synthetic-user");
+    expect(dependencies.session).not.toHaveBeenCalled();
+    expect(dependencies.redirect).toHaveBeenCalledWith("/login?registration=submitted");
   });
 });

@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - fundacao de testes de seguranca do Bloco 2 validada tecnicamente**.
+Status atual: **Sprint 5 em andamento - cadastro neutro e revogacao segura de sessao do Bloco 4 validados tecnicamente**.
 
 ## Problema
 
@@ -18,9 +18,9 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 
 ## Funcionalidades atuais
 
-- Cadastro de usuario com nome, e-mail, senha e confirmacao.
+- Cadastro de usuario com resposta neutra para e-mail novo ou existente, sem login automatico.
 - Login com mensagem generica para credenciais invalidas.
-- Logout com invalidacao da sessao no banco.
+- Logout com invalidacao confirmada somente da sessao atual antes de limpar o cookie.
 - Sessao propria com cookie HTTP-only.
 - Token de sessao salvo no banco apenas como hash.
 - Rotas internas protegidas por middleware e validacao server-side.
@@ -103,14 +103,17 @@ O MVP usa autenticacao propria, sem OAuth ou login social.
 
 Fluxo:
 
-- Cadastro normaliza e-mail com `trim/lowercase`.
+- Cadastro normaliza e-mail com `trim/lowercase`, tenta a criacao atomicamente e usa a mesma mensagem e destino publico para e-mail novo ou existente.
+- Cadastro nao cria sessao nem cookie; somente um usuario realmente persistido gera `USER_REGISTERED`.
+- Depois do cadastro, o usuario entra pelo fluxo normal de login.
 - Senha e validada no servidor e salva somente como hash bcrypt.
 - Login compara a senha com o hash salvo.
 - Ao autenticar, o servidor gera um token aleatorio com `crypto`.
 - Apenas o hash SHA-256 do token e salvo em `Session.tokenHash`.
 - O token puro e enviado somente em cookie HTTP-only chamado `money_flow_session`.
 - O cookie usa `httpOnly`, `sameSite: "lax"`, `path: "/"`, expiracao de 30 dias e `secure` em producao.
-- Logout apaga a sessao correspondente no banco e remove o cookie.
+- Logout apaga somente a sessao correspondente ao cookie atual e limpa o cookie apenas depois da revogacao ou da confirmacao de que a sessao ja nao existe.
+- Sessoes simultaneas continuam permitidas e mantem validade fixa de 30 dias, sem rotacao ou renovacao deslizante.
 
 ## Como rodar localmente
 
@@ -292,7 +295,8 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem PWA.
 - Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
-- A suite automatizada cobre a sentinela do banco, autorização de categorias, regras e transações, preservação de `USER_MANUAL` e rate limiting de login/cadastro com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
+- A suite automatizada cobre a sentinela do banco, autorização de categorias, regras e transações, preservação de `USER_MANUAL`, rate limiting, cadastro neutro, login posterior, sessões simultâneas, expiração e logout com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
+- Nao ha logout global, gerenciamento de dispositivos, rotacao de token ou renovacao deslizante.
 - Algumas migrations antigas assumem banco local sem dados preexistentes.
 
 ## Fora do escopo atual

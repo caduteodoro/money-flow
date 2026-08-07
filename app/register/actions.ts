@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AUTH_AUDIT_ACTIONS, recordAuthAuditLog } from "@/lib/auth/audit";
 import { hashPassword } from "@/lib/auth/password";
-import { createUserSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { applyRegisterRateLimit } from "@/lib/security/rate-limit/register-rate-limit";
 
@@ -21,6 +20,17 @@ type RegisterActionState = {
 };
 
 const rateLimitMessage = "Muitas tentativas de cadastro. Aguarde antes de tentar novamente.";
+const neutralRegistrationDestination = "/login?registration=submitted";
+
+function isUserEmailUniqueConstraintError(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+    return false;
+  }
+
+  const target = error.meta?.target;
+
+  return Array.isArray(target) && target.length === 1 && target[0] === "email";
+}
 
 const registerSchema = z
   .object({
@@ -58,6 +68,8 @@ export async function registerAction(
 
   const passwordHash = await hashPassword(password);
 
+  let createdUserId: string | null = null;
+
   try {
     const user = await prisma.user.create({
       data: {
@@ -70,23 +82,19 @@ export async function registerAction(
       },
     });
 
+    createdUserId = user.id;
+  } catch (error) {
+    if (!isUserEmailUniqueConstraintError(error)) {
+      throw error;
+    }
+  }
+
+  if (createdUserId) {
     await recordAuthAuditLog({
       action: AUTH_AUDIT_ACTIONS.userRegistered,
-      userId: user.id,
+      userId: createdUserId,
     });
-    await createUserSession(user.id);
-
-    redirect("/dashboard");
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return {
-        message: "Nao foi possivel criar uma conta com este e-mail.",
-        fieldErrors: {
-          email: ["Este e-mail ja esta em uso."],
-        },
-      };
-    }
-
-    throw error;
   }
+
+  redirect(neutralRegistrationDestination);
 }

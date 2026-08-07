@@ -4,12 +4,20 @@ import { LockKeyhole } from "lucide-react";
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
-export default async function LoginPage() {
-  const user = await getCurrentUser();
+type LoginPageProps = {
+  searchParams: Promise<{
+    registration?: string | string[];
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
 
   if (user) {
     redirect("/dashboard");
   }
+
+  const showRegistrationNotice = params.registration === "submitted";
 
   return (
     <main className="grid min-h-screen bg-brand-surface px-5 py-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -32,6 +40,12 @@ export default async function LoginPage() {
               Acesse sua rota financeira com uma sessao segura.
             </p>
           </div>
+
+          {showRegistrationNotice ? (
+            <p className="mb-4 rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-800" role="status">
+              Se os dados puderem ser cadastrados, voce ja podera entrar com suas credenciais.
+            </p>
+          ) : null}
 
           <LoginForm />
 

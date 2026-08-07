@@ -99,7 +99,7 @@ Status:
 - Documentacao final do MVP.
 - Preparacao para OFX.
 
-Estado atual: Bloco 3 concluído tecnicamente com fundação persistente do rate limiter e proteção por identidade no login e cadastro. A Sprint 5 permanece aberta; proteção por origem/borda, outros vetores de abuso, revisão de privacidade e atividades posteriores continuam pendentes.
+Estado atual: Bloco 4 concluído tecnicamente. O Bloco 3 preserva o rate limiting persistente por identidade; a Atividade 4.1 adiciona cadastro neutro sem login automático, revogação segura da sessão atual e regressão de autenticação/sessão. A Sprint 5 permanece aberta; proteção por origem/borda, outros vetores de abuso, revisão de privacidade e atividades posteriores continuam pendentes.
 
 ## Futuro pos-MVP
 

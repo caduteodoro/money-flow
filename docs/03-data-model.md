@@ -21,6 +21,12 @@
 - Queries financeiras devem filtrar explicitamente por `userId`.
 - `Transaction` usa `@@unique([userId, dedupeKey])` para deduplicacao por usuario.
 
+## Sessoes
+
+`Session` persiste somente o SHA-256 do token aleatorio de 32 bytes. `tokenHash` e unico e funciona como chave de localizacao; o token puro permanece apenas no cookie HTTP-only. A FK obrigatoria para `User` usa `onDelete: Cascade`, e os indices por `userId` e `expiresAt` sustentam consulta por usuario e limpeza futura.
+
+Cada login valido cria uma sessao independente com validade fixa de 30 dias. O cadastro nao cria `Session`. O logout deriva o hash do cookie atual e remove somente o registro correspondente; um registro ja ausente e idempotente, enquanto erro inesperado de persistencia propaga antes da limpeza do cookie. Nao ha logout global, rotacao, renovacao deslizante ou mudanca estrutural do modelo no Bloco 4.
+
 ## Importacoes
 
 `StatementImport` guarda metadados do processamento:

@@ -41,10 +41,12 @@
 A Sprint 1 implementa autenticacao propria para o MVP:
 
 - Senhas sao salvas somente como hash bcrypt.
+- Cadastro valido tenta criar o usuario atomicamente e redireciona e-mail novo ou duplicado ao mesmo login com mensagem neutra. Somente a criacao real registra `USER_REGISTERED`; cadastro nao cria sessao nem cookie.
 - O token puro de sessao e gerado no servidor com `crypto`.
 - O banco armazena apenas `Session.tokenHash`.
 - O cookie `money_flow_session` carrega o token puro com `httpOnly`, `sameSite: "lax"`, `path: "/"`, expiracao de 30 dias e `secure` em producao.
-- Logout invalida a sessao no banco e remove o cookie.
+- Logout invalida somente a sessao selecionada pelo hash do token atual. O cookie e removido depois da exclusao ou de um `P2025` que comprove que a sessao ja esta ausente; outros erros de persistencia propagam antes da limpeza e nao geram `USER_LOGOUT`.
+- Sessoes simultaneas permanecem independentes, com validade fixa de 30 dias e sem rotacao ou renovacao deslizante.
 - `getCurrentUser` e `requireCurrentUser` concentram a obtencao server-side do usuario autenticado.
 
 ## Protecao de rotas
@@ -128,10 +130,10 @@ O modulo `lib/category-rules` concentra o dominio e o acesso Prisma. As Server A
 
 `lib/security/rate-limit` mantém o núcleo independente de framework, a derivação HMAC-SHA-256, a composição de políticas e o adapter PostgreSQL. O consumo usa um `INSERT ... ON CONFLICT ... DO UPDATE ... WHERE count < limit` parametrizado, preservando o limite sob concorrência sem sequência `SELECT → UPDATE`.
 
-Login e cadastro derivam a chave do e-mail normalizado, mas usam scopes independentes. A action consulta o limiter antes de usuário, bcrypt ou persistência de autenticação. Login válido remove somente seus buckets de login; cadastro não executa reset. Somente indisponibilidade reconhecida do storage gera `fail-open`; erros de entrada, configuração e programação propagam.
+Login e cadastro derivam a chave do e-mail normalizado, mas usam scopes independentes. A action consulta o limiter antes de usuário, bcrypt ou persistência de autenticação. Login válido remove somente seus buckets de login; cadastro novo ou duplicado não executa reset. Somente indisponibilidade reconhecida do storage gera `fail-open`; erros de entrada, configuração e programação propagam.
 
 Não existem buckets por IP, confiança em headers encaminhados, HTTP 429 ou proteção de borda implementada. Essas camadas futuras não substituem autenticação, autorização ou isolamento por `userId`.
 
 ## Evolucao prevista
 
-Sprint 4 entregou categorias, categoria pai/filha, edição/criação, regras automáticas e transações não categorizadas. O Bloco 3 da Sprint 5 implementou rate limiting por identidade para login e cadastro. MFA, recuperação de senha, proteção por origem/borda, criptografia forte, OFX e modo de privacidade avançado permanecem futuros.
+Sprint 4 entregou categorias, categoria pai/filha, edição/criação, regras automáticas e transações não categorizadas. O Bloco 3 da Sprint 5 implementou rate limiting por identidade para login e cadastro. O Bloco 4 removeu o login automático do cadastro, neutralizou a duplicidade e tornou a revogação da sessão atual fail-closed para erros inesperados. MFA, recuperação de senha, proteção por origem/borda, criptografia forte, OFX e modo de privacidade avançado permanecem futuros.

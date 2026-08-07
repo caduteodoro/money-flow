@@ -26,12 +26,14 @@ A fundacao de testes automatizados de isolamento do Bloco 2 e suas limitacoes es
 
 - Senhas sao validadas no servidor e armazenadas com hash bcrypt.
 - E-mails sao normalizados com `trim/lowercase`.
+- Cadastro novo e e-mail duplicado terminam no mesmo login com mensagem neutra; cadastro nao cria sessao nem cookie.
+- Somente usuario realmente criado registra `USER_REGISTERED`; a duplicidade de `User.email` nao altera o registro existente.
 - Erros de login usam mensagem generica para nao revelar se o e-mail existe.
 - Login invalido registra `LOGIN_FAILED` com hash do e-mail e sem senha.
 - Sessao usa token aleatorio criado no servidor.
 - Apenas o hash do token e salvo em `Session.tokenHash`.
 - O token puro fica somente no cookie HTTP-only.
-- Logout remove a sessao do banco e limpa o cookie.
+- Logout remove somente a sessao atual e limpa o cookie depois da revogacao ou da confirmacao de que o registro ja nao existe. Erros inesperados de persistencia propagam sem evento falso de sucesso.
 
 ## Cookies de sessao
 
@@ -95,6 +97,35 @@ Achados do checkpoint:
 - **MÉDIO, corrigido no Bloco 3:** a classificação inicial aceitava qualquer `PrismaClientInitializationError` como indisponibilidade, podendo converter erro de configuração em `fail-open`. O adapter passou a aceitar somente falhas transitórias explicitamente reconhecidas e o caso P1001 sem código emitido pelo Prisma 5; URL inválida agora propaga e possui teste de regressão.
 - **INFORMATIVO, risco residual:** a proteção é somente por identidade. Ataques distribuídos, múltiplos e-mails e operações fora de login/cadastro permanecem possíveis; relação com `SEC-001` e `BCK-031`.
 - **INFORMATIVO, risco residual:** não há observabilidade operacional específica para liberações por indisponibilidade ou falhas auxiliares de cleanup. Um subsistema novo ficou fora do escopo deste bloco.
+
+### Checkpoint do Bloco 4 da Sprint 5
+
+A Atividade 4.1 parte de `c44792b` na branch `feature/sprint-5-bloco-4-auth-session-hardening`. O cadastro passou a tratar exclusivamente a unique constraint de `User.email` como caso neutro, sem consulta previa de existencia. E-mail novo e duplicado redirecionam para `/login?registration=submitted`, onde a mesma mensagem publica e exibida. Nenhum cadastro cria sessao ou cookie; somente a criacao real persiste o usuario e registra `USER_REGISTERED`. O usuario novo autentica depois pelo login normal.
+
+O limiter do Bloco 3 foi preservado: validacao estrutural ocorre antes do consumo; a identidade normalizada e limitada antes de bcrypt e banco; as janelas continuam em 3/15 minutos e 5/1 hora; sucesso ou duplicidade nao limpam buckets; bloqueio nao cria usuario, sessao, cookie ou auditoria. Scopes, HMAC, `retryAfterSeconds`, ausencia de IP e `fail-open` restrito nao mudaram.
+
+No logout, somente `P2025` e tratado como ausencia idempotente. A sessao continua localizada pelo hash do token atual e nenhuma query ampla revoga outras sessoes. Erros inesperados de persistencia propagam antes da limpeza do cookie, do evento `USER_LOGOUT` e do redirect. Sessoes simultaneas, token aleatorio, hash SHA-256, atributos do cookie e validade fixa de 30 dias foram preservados; logout global, rotacao e renovacao deslizante nao foram implementados.
+
+Arquivos de producao alterados: `app/register/actions.ts`, `app/login/page.tsx` e `lib/auth/session.ts`. Os testes foram atualizados em `tests/unit/register-action-rate-limit.test.ts` e `tests/integration/register-rate-limit.test.ts`; as lacunas de revogacao e sessoes foram cobertas em `tests/unit/session-invalidation.test.ts`, `tests/unit/logout-action.test.ts` e `tests/integration/session-logout.test.ts`. README, arquitetura, modelo de dados, seguranca, roadmap, threat model e a nota historica da fundacao de testes foram atualizados incrementalmente.
+
+Matriz de regressao do checkpoint:
+
+| Area | Evidencia | Tipo | Resultado |
+|---|---|---|---|
+| Cadastro estrutural e limiter | formulario invalido, normalizacao, janelas, bloqueio, retry e buckets preservados | Unitario/PostgreSQL | PASS |
+| Equivalencia publica | novo e duplicado no mesmo destino, sem erro de campo, sessao ou cookie | Unitario/PostgreSQL | PASS |
+| Persistencia e auditoria | novo cria um usuario e `USER_REGISTERED`; duplicado preserva o registro e nao cria evento | PostgreSQL | PASS |
+| Concorrencia | duas tentativas simultaneas criam no maximo um usuario e convergem ao mesmo destino | PostgreSQL | PASS |
+| Erros inesperados | outra constraint e outros erros Prisma propagam | Unitario | PASS |
+| Login posterior | usuario novo autentica pelo fluxo normal, que cria sessao e cookie | PostgreSQL | PASS |
+| Logout | sessao atual removida; sessao paralela preservada; ausencia idempotente | Unitario/PostgreSQL | PASS |
+| Falha de revogacao | erro de persistencia nao limpa cookie, nao audita e nao redireciona | Unitario | PASS |
+| Token, cookie e expiracao | somente hash persistido; flags preservadas; validade fixa de 30 dias; expirada rejeitada | PostgreSQL | PASS |
+| Regressao | 44 testes unitarios e 41 de integracao; lint, TypeScript, Prisma e build | Automatizada/PostgreSQL | PASS |
+
+O `SEC-004` esta **MITIGADO**, nao encerrado: o canal direto por texto, estrutura, destino, sessao e cookie foi removido. Permanecem diferencas internas inevitaveis de persistencia/auditoria, potencial canal temporal nao medido e inferencia possivel por tentativa posterior de login. O `SEC-001` permanece mitigado parcialmente. O `SEC-009` continua mitigado pelo framework no ambiente local e pendente de validacao no proxy/deployment. Cloudflare permanece planejada em `BCK-031`, sem implementacao. A Sprint 5 continua aberta e o Bloco 5 nao foi iniciado.
+
+Revisao de seguranca: nenhum achado bloqueante, alto ou medio foi introduzido. A falha silenciosa de revogacao foi corrigida; como riscos baixos/informativos permanecem a gestao limitada de sessoes antigas (`SEC-011`), a possibilidade de enumeracao por tempo ou login posterior (`SEC-004`) e a protecao de abuso apenas por identidade (`SEC-001`).
 
 ## Audit logs
 
