@@ -282,7 +282,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 
 - Sem recuperacao de senha.
 - Sem MFA.
-- Sem rate limiting.
+- Rate limiting persistente por identidade implementado no login e no cadastro; ainda sem proteção por IP ou borda confiável.
 - Sem login social.
 - Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
 - Hardening adicional do banco ainda pendente.
@@ -292,7 +292,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem PWA.
 - Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
-- A suite automatizada atual cobre a sentinela do banco, autorizacao de categorias, regras e transacoes e preservacao de `USER_MANUAL`; autenticacao, importacoes e audit logs ainda nao possuem cobertura de integracao neste incremento.
+- A suite automatizada cobre a sentinela do banco, autorização de categorias, regras e transações, preservação de `USER_MANUAL` e rate limiting de login/cadastro com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
 - Algumas migrations antigas assumem banco local sem dados preexistentes.
 
 ## Fora do escopo atual

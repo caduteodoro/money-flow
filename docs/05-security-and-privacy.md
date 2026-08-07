@@ -43,6 +43,20 @@ O cookie `money_flow_session` usa:
 - `path: "/"`
 - expiracao de 30 dias
 
+## Rate limiting de autenticação
+
+Login e cadastro aplicam janelas fixas persistidas no PostgreSQL antes da consulta ou operação bcrypt. A identidade é o e-mail já normalizado pela validação canônica e transformado em HMAC-SHA-256 com `RATE_LIMIT_HMAC_SECRET`; os buckets não armazenam o e-mail bruto.
+
+- Login: 5 tentativas por minuto e 10 tentativas por 15 minutos.
+- Cadastro: 3 tentativas por 15 minutos e 5 tentativas por hora.
+- Qualquer janela bloqueada impede a operação e produz mensagem genérica com `retryAfterSeconds`.
+- Somente indisponibilidade reconhecida do storage permite `fail-open`; erros de configuração e programação continuam propagados.
+- Login válido remove apenas seus próprios buckets de login.
+- Cadastro válido não remove seus buckets.
+- Não há buckets por IP, leitura de headers encaminhados ou proteção completa contra cadastro automatizado com múltiplos e-mails.
+
+Como camada futura e complementar, avaliar Cloudflare Access, WAF/rate limiting, Turnstile e proteção do servidor de origem. Esses recursos não substituem autenticação, autorização por `userId`, validações server-side ou rate limiting por identidade dentro da aplicação.
+
 ## Audit logs
 
 Eventos atuais:
@@ -112,7 +126,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 
 - Ainda nao ha MFA.
 - Ainda nao ha recuperacao de senha.
-- Ainda nao ha rate limiting.
+- Rate limiting ainda cobre somente login e cadastro por identidade; uploads, dashboard e outras operações não estão limitados.
 - Ainda nao ha login social.
 - Ainda nao ha criptografia de campos financeiros.
 - Ainda nao ha modo zero-knowledge/privacy mode.
@@ -121,7 +135,7 @@ Os dados exibidos no dashboard sao dados do proprio usuario autenticado. Ainda a
 - Ainda nao ha Open Finance.
 - Ainda nao ha PWA.
 - Ainda nao ha IA externa.
-- Ainda nao ha cobertura automatizada de integracao para autenticacao, importacoes, audit logs, contas ou dashboard.
+- Login e cadastro possuem cobertura automatizada de rate limiting, sessão e eventos de auditoria relacionados; importações, contas e dashboard ainda não possuem cobertura equivalente.
 
 ## Criptografia futura
 

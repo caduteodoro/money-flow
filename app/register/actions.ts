@@ -7,9 +7,11 @@ import { AUTH_AUDIT_ACTIONS, recordAuthAuditLog } from "@/lib/auth/audit";
 import { hashPassword } from "@/lib/auth/password";
 import { createUserSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
+import { applyRegisterRateLimit } from "@/lib/security/rate-limit/register-rate-limit";
 
 type RegisterActionState = {
   message: string | null;
+  retryAfterSeconds?: number;
   fieldErrors?: {
     name?: string[];
     email?: string[];
@@ -17,6 +19,8 @@ type RegisterActionState = {
     confirmPassword?: string[];
   };
 };
+
+const rateLimitMessage = "Muitas tentativas de cadastro. Aguarde antes de tentar novamente.";
 
 const registerSchema = z
   .object({
@@ -44,6 +48,14 @@ export async function registerAction(
   }
 
   const { name, email, password } = parsed.data;
+  const rateLimit = await applyRegisterRateLimit(email);
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimitMessage,
+      retryAfterSeconds: rateLimit.retryAfterSeconds,
+    };
+  }
+
   const passwordHash = await hashPassword(password);
 
   try {

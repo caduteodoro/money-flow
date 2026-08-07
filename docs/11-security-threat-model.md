@@ -81,20 +81,20 @@ O middleware verifica apenas a presença do cookie nas rotas protegidas; ele nã
 
 Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer validação**, **Mitigado pelo framework no ambiente testado**, **Informativo** e **Planejado para pré-produção**.
 
-### SEC-001 - Ausência de rate limiting em autenticação
+### SEC-001 - Rate limiting parcial em autenticação
 
 - **Categoria:** autenticação e disponibilidade.
-- **Status da evidência:** Confirmado.
+- **Status da evidência:** Parcialmente confirmado.
 - **Cenário:** cliente automatiza login, cadastro ou geração de audit logs.
-- **Evidência técnica:** `loginAction` e `registerAction` não aplicam limitação; a ausência também está documentada no README.
+- **Evidência técnica:** `loginAction` aplica 5 tentativas por minuto e 10 por 15 minutos; `registerAction` aplica 3 tentativas por 15 minutos e 5 por hora. Ambas derivam buckets persistentes por HMAC da identidade normalizada antes de banco e bcrypt.
 - **Impacto:** tentativa de tomada de conta, uso intensivo de bcrypt e crescimento de banco/logs.
 - **Probabilidade:** média.
 - **Severidade atual:** alta.
 - **Aplicabilidade:** relevante antes de exposição pública; o impacto atual depende do ambiente local.
-- **Controle existente:** bcrypt, mensagem genérica no login e audit log de falha.
-- **Risco residual:** tentativas e cadastros continuam ilimitados.
-- **Recomendação:** desenhar política por operação, IP confiável e identidade normalizada antes de escolher tecnologia.
-- **Validação futura:** testar rajadas, janelas, recuperação e IP compartilhado.
+- **Controle existente:** janelas fixas atômicas no PostgreSQL, HMAC-SHA-256 sem e-mail bruto nos buckets, bcrypt, resposta neutra durante bloqueios e testes unitários/integração em banco descartável.
+- **Risco residual:** a proteção é por identidade; múltiplos e-mails, origens distribuídas e operações fora de login/cadastro permanecem vetores possíveis. O cadastro ainda expõe P2002 quando não está bloqueado.
+- **Recomendação:** manter controles internos e avaliar borda confiável, limitação por origem e Turnstile antes de testadores externos.
+- **Validação futura:** validar proxy/deployment, múltiplas instâncias, comportamento operacional do `fail-open` e abuso distribuído.
 
 ### SEC-002 - Dados financeiros em claro e acesso operacional
 
@@ -133,10 +133,10 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Requer val
 - **Cenário:** atacante testa se determinados e-mails já possuem conta.
 - **Evidência técnica:** `registerAction` retorna mensagem específica para violação de unicidade `P2002`.
 - **Impacto:** confirmação de cadastro e apoio a phishing direcionado.
-- **Probabilidade:** média sem limitação.
+- **Probabilidade:** média; o limiter por identidade reduz repetição direta, mas não corrige a enumeração nem abuso distribuído.
 - **Severidade atual:** média.
 - **Aplicabilidade:** relevante em ambiente público; há trade-off de UX.
-- **Controle existente:** normalização e unicidade de e-mail.
+- **Controle existente:** normalização, unicidade de e-mail e rate limiting por identidade antes do bcrypt e da criação.
 - **Risco residual:** diferença explícita na resposta.
 - **Recomendação:** decidir conscientemente a política de resposta e combiná-la com rate limiting.
 - **Validação futura:** comparar conteúdo, status e tempo entre e-mail existente e novo.
@@ -292,7 +292,7 @@ As proteções dos fluxos atuais estão comprovadas na aplicação. O banco não
 
 A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; buscas e updates sensíveis usam `id + userId`; transação e categoria são validadas separadamente; categoria e regra precisam pertencer ao mesmo usuário; e importações, dashboard e agregações filtram por `userId`. Os serviços avaliados usam respostas controladas para recurso inexistente ou alheio. Permanecem pendentes teste dinâmico com dois usuários, concorrência, tentativa de inserção cruzada diretamente no banco, constraints compostas e validação da integridade estrutural. SEC-005 e SEC-006 não estão corrigidos.
 
-## Rate limiting: candidatos e requisitos de decisão
+## Rate limiting: controles atuais e candidatos restantes
 
 | Operação | Abuso a mitigar | Prioridade preliminar |
 |---|---|---|
@@ -304,7 +304,7 @@ A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurr
 | Categorias e regras | Spam de recursos e mutações | P2 |
 | Dashboard | Consultas e agregações repetidas | P2 |
 
-A implementação não foi escolhida. A decisão depende da topologia de deployment, proxy confiável, quantidade de instâncias, armazenamento compartilhado, semântica de IP e cotas por usuário. Esta matriz não coloca automaticamente todos os candidatos no escopo de implementação da Sprint 5.
+Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fail-open` restrito à indisponibilidade reconhecida do storage. Não há proteção por IP. Os demais candidatos continuam sem implementação; decisões de borda dependem da topologia de deployment, proxy confiável, quantidade de instâncias e custos. Cloudflare Access, WAF/rate limiting, Turnstile e proteção da origem permanecem em discovery como camadas complementares.
 
 ## Privacidade e retenção
 
@@ -347,7 +347,7 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 
 - Nenhum risco crítico comprovado bloqueia a continuidade normal do Bloco 1.
 - Riscos altos não entram automaticamente como implementação imediata; severidade, contexto e capacidade devem orientar o planejamento.
-- SEC-001 é prioridade de desenho técnico antes da implementação de rate limiting.
+- SEC-001 foi mitigado para login e cadastro por identidade, mas permanece aberto para abuso distribuído, borda e outras operações.
 - SEC-002 é requisito relevante antes de produção, não declaração de incidente ou bloqueio do desenvolvimento local.
 - SEC-009 está mitigado pelo framework no ambiente testado, mas a conclusão depende da configuração do proxy/deployment.
 - SEC-008 permanece no grafo de produção; ausência de caminho explorável identificado não elimina o advisory.
@@ -359,7 +359,7 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 As próximas atividades propostas, ainda não concluídas nem automaticamente comprometidas com a Sprint 5, são:
 
 1. Validações manuais de segurança.
-2. Desenho de rate limiting.
+2. Validar rate limiting no deployment e decidir proteção complementar de borda.
 3. Hardening de autenticação e sessão.
 4. Análise estrutural do modelo.
 5. Privacidade e retenção.

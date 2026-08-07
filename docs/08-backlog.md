@@ -95,6 +95,7 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-028 | Segurança | Isolamento de regras | Validar regra, categoria e transação por `userId`, preservando categorização manual. | P0 | Sprint 4 | M | Alto | Alto | BCK-027 | Concluído |
 | BCK-029 | Feature | Autoexecução após importação | Aplicar regras automaticamente ao concluir uma importação. | P2 | Sprint 5 | M | Médio | Médio | Hardening e testes automatizados | Backlog |
 | BCK-030 | Feature | Editar e excluir regras | Permitir edição completa e exclusão definitiva com autorização por usuário. | P2 | Sprint 5 | M | Médio | Médio | Regras v1 | Backlog |
+| BCK-031 | Segurança / Infraestrutura / Deploy | Proteção de borda e acesso restrito com Cloudflare | Avaliar Cloudflare Access, WAF, rate limiting por origem, Turnstile e proteção da origem antes do primeiro deploy externo, sem substituir controles internos. | P1 agora; P0 antes de testadores externos | Sprint 5, pré-deploy ou sprint de infraestrutura | M | Alto | Médio | Estratégia de deploy; grupo de testadores; topologia da origem; análise de custos e planos | Ideia |
 
 ## Por Sprint Sugerida
 
@@ -125,6 +126,7 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 
 - BCK-009: avaliar regra do filtro "Mês atual".
 - BCK-010: avaliar rótulo "Todo o período importado".
+- BCK-031: avaliar proteção de borda e acesso restrito com Cloudflare antes do primeiro deploy externo.
 
 ## Por Tema
 
@@ -163,6 +165,84 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 - BCK-011: suíte automatizada de testes.
 - BCK-012: migration segura para bancos com dados.
 - BCK-014: navegação mobile autenticada.
+
+### Segurança, Infraestrutura E Deploy
+
+- BCK-031: proteção de borda e acesso restrito com Cloudflare.
+
+## Itens Em Discovery
+
+### BCK-031 - Proteção De Borda E Acesso Restrito Com Cloudflare
+
+- **Tipo:** Segurança / Infraestrutura / Deploy
+- **Prioridade:** P1 agora; P0 antes de liberar o sistema para testadores externos
+- **Sprint sugerida:** Sprint 5, pré-deploy ou sprint específica de infraestrutura
+- **Esforço estimado:** M
+- **Impacto:** Alto
+- **Risco:** Médio
+- **Dependências:** Estratégia de deploy; definição do primeiro grupo de testadores; topologia e restrições da origem; análise de custos e limitações dos planos Cloudflare
+- **Status:** Ideia
+
+#### Problema
+
+Quando o Money Flow for publicado fora do ambiente local, mesmo para um grupo pequeno de testadores, a aplicação ficará exposta à internet. Isso aumenta os riscos de abuso, automações, tentativas de login, exploração de endpoints e acesso direto ao servidor de origem.
+
+#### Objetivo
+
+Avaliar o uso da Cloudflare como camada anterior à aplicação no primeiro deploy do Money Flow, especialmente para restringir acesso, reduzir abuso e proteger a origem.
+
+#### Ideia
+
+A estratégia poderá combinar Cloudflare Access para permitir somente usuários convidados, WAF e rate limiting para controlar abusos por origem, e Turnstile para reduzir automações em ações sensíveis.
+
+O servidor de origem deverá ficar protegido contra acesso direto, por exemplo utilizando Cloudflare Tunnel ou restrições equivalentes.
+
+#### Decisão Inicial
+
+Cloudflare deve ser considerada uma camada complementar de borda, não substituta dos controles internos do Money Flow.
+
+A aplicação continuará precisando manter autenticação própria, sessões seguras, isolamento por `userId`, validações server-side, audit logs seguros e rate limiting por identidade.
+
+#### Critérios De Aceite
+
+- [ ] Avaliar se Cloudflare Access faz sentido para o primeiro grupo restrito de usuários.
+- [ ] Avaliar WAF e rate limiting por origem.
+- [ ] Avaliar Turnstile para ações sensíveis, como login, cadastro, convite, importação ou recuperação de senha futura.
+- [ ] Avaliar Cloudflare Tunnel ou alternativa para evitar acesso direto ao servidor de origem.
+- [ ] Documentar custos, limitações de plano e trade-offs.
+- [ ] Garantir que Cloudflare não substitua autenticação interna do Money Flow.
+- [ ] Garantir que Cloudflare não substitua isolamento por `userId`.
+- [ ] Garantir que Cloudflare não substitua rate limiting por identidade dentro da aplicação.
+- [ ] Registrar a decisão final antes do primeiro deploy externo.
+
+#### Observações De Segurança
+
+Cloudflare deve ser vista como proteção de borda. Ela reduz exposição e abuso externo, mas não corrige falhas internas da aplicação.
+
+O Money Flow ainda precisa validar sessão no servidor, filtrar queries por `userId`, proteger rotas internas, evitar logs sensíveis e impedir qualquer tela administrativa que exponha transações financeiras dos usuários.
+
+#### Relação Com Outros Itens
+
+- Cadastro por convite.
+- Painel administrativo mínimo.
+- Rate limiting.
+- Primeiro deploy.
+- Hardening de segurança.
+- Estratégia de testadores externos.
+- Proteção da origem.
+
+#### Fora Do Escopo Inicial
+
+- Implementar Cloudflare imediatamente.
+- Abrir cadastro público.
+- Substituir autenticação interna por Cloudflare.
+- Criar painel administrativo com acesso a dados financeiros.
+- Liberar produção pública sem revisão de segurança.
+- Assumir que WAF resolve falhas internas de autorização, sessão ou isolamento de dados.
+
+#### Evidência E Decisões Pendentes
+
+O roadmap já prevê hardening de segurança na Sprint 5 e deploy futuro com revisão de variáveis, cookies e observabilidade. A seleção deste item para uma sprint permanece pendente de decisão explícita sobre provedor, topologia, custos e grupo de testadores; seu registro não autoriza implementação.
 
 ## Itens Refinados
 
@@ -254,4 +334,4 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
-- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-023`.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-032`.
