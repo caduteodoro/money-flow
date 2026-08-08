@@ -96,6 +96,8 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-029 | Feature | Autoexecução após importação | Aplicar regras automaticamente ao concluir uma importação. | P2 | Sprint 5 | M | Médio | Médio | Hardening e testes automatizados | Backlog |
 | BCK-030 | Feature | Editar e excluir regras | Permitir edição completa e exclusão definitiva com autorização por usuário. | P2 | Sprint 5 | M | Médio | Médio | Regras v1 | Backlog |
 | BCK-031 | Segurança / Infraestrutura / Deploy | Proteção de borda e acesso restrito com Cloudflare | Avaliar Cloudflare Access, WAF, rate limiting por origem, Turnstile e proteção da origem antes do primeiro deploy externo, sem substituir controles internos. | P1 agora; P0 antes de testadores externos | Sprint 5, pré-deploy ou sprint de infraestrutura | M | Alto | Médio | Estratégia de deploy; grupo de testadores; topologia da origem; análise de custos e planos | Ideia |
+| BCK-032 | Privacidade / Segurança | Política de audit logs | Definir retenção, anonimização e integridade dos audit logs conciliando investigação de segurança, privacidade e exclusão de conta. | P1 | Futuro, antes de produção | M | Alto | Alto | Requisitos operacionais e legais; modelo de ameaças; fluxo de exclusão de conta | Backlog |
+| BCK-033 | Privacidade / Infraestrutura | Retenção e expurgo de backups | Definir prazo máximo de sobrevivência após exclusão, expurgo, restauração segura e prevenção da reintrodução de contas excluídas. | P1 | Futuro, antes de produção | M | Alto | Alto | Estratégia de backup e restore; infraestrutura de produção; política de retenção | Backlog |
 
 ## Por Sprint Sugerida
 
@@ -121,6 +123,8 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 ### Futuro
 
 - BCK-005: calendário financeiro.
+- BCK-032: política de retenção, anonimização e integridade de audit logs.
+- BCK-033: política de retenção e expurgo de backups.
 
 ### Discovery
 
@@ -169,6 +173,44 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 ### Segurança, Infraestrutura E Deploy
 
 - BCK-031: proteção de borda e acesso restrito com Cloudflare.
+- BCK-032: política de retenção, anonimização e integridade de audit logs.
+- BCK-033: política de retenção e expurgo de backups.
+
+## Itens Em Backlog
+
+### BCK-032 - Política De Retenção, Anonimização E Integridade De Audit Logs
+
+- **Tipo:** Privacidade / Segurança
+- **Prioridade:** P1
+- **Sprint sugerida:** Futuro, antes de produção
+- **Esforço estimado:** M
+- **Impacto:** Alto
+- **Risco:** Alto
+- **Dependências:** requisitos operacionais e legais; modelo de ameaças; fluxo de exclusão de conta
+- **Status:** Backlog
+
+#### Objetivo E Critérios De Aceite
+
+Definir finalidades, prazos e controles que conciliem investigação de segurança, minimização e exclusão de conta. A política futura deve identificar quais eventos podem ser retidos ou anonimizados, impedir vínculo indevido com uma conta excluída, definir controles de integridade e acesso e documentar expurgo verificável.
+
+Ficam fora deste item a implementação de recibo/tombstone identificável, exportação de dados e uma infraestrutura imutável de auditoria.
+
+### BCK-033 - Política De Retenção E Expurgo De Backups
+
+- **Tipo:** Privacidade / Infraestrutura
+- **Prioridade:** P1
+- **Sprint sugerida:** Futuro, antes de produção
+- **Esforço estimado:** M
+- **Impacto:** Alto
+- **Risco:** Alto
+- **Dependências:** estratégia de backup e restore; infraestrutura de produção; política de retenção
+- **Status:** Backlog
+
+#### Objetivo E Critérios De Aceite
+
+Definir prazo máximo de sobrevivência dos dados após exclusão, rotina de expurgo, restauração segura e mecanismo que evite reintroduzir contas excluídas. A política deve estabelecer responsáveis, evidência operacional e testes periódicos de backup/restore sem usar dados financeiros reais.
+
+Ficam fora deste item a escolha antecipada de provedor, a execução de restore em produção e qualquer promessa de prazo antes da decisão operacional.
 
 ## Itens Em Discovery
 
@@ -334,4 +376,4 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
-- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-032`.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-034`.

@@ -3,7 +3,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 
 type BaseProps = {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "destructive";
   className?: string;
 };
 
@@ -17,6 +17,8 @@ const variants = {
     "border border-slate-200 bg-white text-brand-navy hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-teal-700",
   ghost:
     "text-brand-navy hover:bg-white/70 focus-visible:outline-teal-700",
+  destructive:
+    "bg-rose-700 text-white shadow-soft hover:bg-rose-800 focus-visible:outline-rose-700",
 };
 
 const baseClass =

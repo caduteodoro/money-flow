@@ -135,7 +135,7 @@ As cinco relacoes opcionais usam `ON DELETE NO ACTION`; o banco nao tenta zerar 
 
 O diagnostico `READ ONLY` no desenvolvimento retornou zero orfaos e zero associacoes cruzadas nas seis relacoes. As duas migrations foram validadas com Prisma 5.22 e PostgreSQL 16, sem drift. Testes diretos confirmaram relacoes validas, opcionais nulos, rejeicao `P2003` das seis tentativas cruzadas, cinco bloqueios `NO ACTION`, cascata restrita ao mesmo usuario, rollback transacional e exclusao direta de um usuario completo sem alterar outro tenant. O ensaio de rollback restaurou primeiro as FKs simples e removeu depois os indices compostos.
 
-Na entrega historica da Atividade 5.1, `SEC-006`, `BCK-016` e `SEC-007` ainda estavam pendentes. A Atividade 5.2 mitigou posteriormente `SEC-006` e concluiu `BCK-016`; `SEC-007` continua pendente. Os filtros `id + userId` da aplicacao continuam obrigatorios para autorizacao e respostas publicas seguras; as constraints nao os substituem.
+Na entrega historica da Atividade 5.1, `SEC-006`, `BCK-016` e `SEC-007` ainda estavam pendentes. A Atividade 5.2 mitigou posteriormente `SEC-006` e concluiu `BCK-016`; a Atividade 5.3 mitigou posteriormente `SEC-007`. Os filtros `id + userId` da aplicacao continuam obrigatorios para autorizacao e respostas publicas seguras; as constraints nao os substituem.
 
 ### Atividade 5.2 - unicidade estrutural de categorias
 
@@ -146,6 +146,14 @@ O diagnostico `READ ONLY` no desenvolvimento encontrou zero grupos de raizes ou 
 Criacoes e renomeacoes continuam fazendo precheck, mas o PostgreSQL decide a disputa final. Um `P2002` so vira a mensagem publica controlada de duplicidade quando o alvo corresponde ao indice esperado e uma colisao real ainda existe no mesmo escopo; outros erros permanecem genericos. Testes com escritas liberadas simultaneamente provaram uma unica persistencia para raizes, filhos e renomeacao, sem alteracao parcial do registro rejeitado.
 
 O indice parcial de raizes usa SQL manual porque o Prisma 5.22 nao o representa no schema. `prisma validate`, `generate` e `migrate diff` permaneceram aprovados; o diff ignora esse indice, portanto a migration versionada deve ser preservada. O rollback descartavel restaurou primeiro o indice anterior e so depois removeu as novas garantias e a coluna. Detalhes e riscos residuais estao em [`docs/14-sprint-5-category-uniqueness.md`](14-sprint-5-category-uniqueness.md).
+
+### Atividade 5.3 - exclusao segura de conta
+
+O `SEC-007` foi mitigado no fluxo atual por uma rota protegida `/settings`. A action ignora qualquer `userId` do navegador, usa somente a sessao autenticada e exige senha atual e a frase exata `EXCLUIR MINHA CONTA`. A exclusao e imediata, definitiva, sincrona e executada em uma unica transacao Prisma; o cookie e limpo somente depois do commit.
+
+O servico remove explicitamente, sempre por `userId`, transacoes, regras, hierarquia e categorias, importacoes, contas, todas as sessoes e audit logs associados. Tambem remove falhas de login identificadas pelo hash exato do e-mail e os buckets HMAC exatos das politicas de login e cadastro. Hashes globais de IP ou user-agent nao sao usados isoladamente como criterio, pois podem representar mais de uma pessoa; os presentes em sessoes e logs vinculados sao removidos com esses registros.
+
+Nao ha soft delete, recibo, tombstone, fila ou tabela de solicitacao. O CSV bruto continua sem persistencia. Testes PostgreSQL com dois usuarios provam exclusao integral, preservacao completa do outro tenant, invalidacao das sessoes e rollback total sob falha intermediaria. Backups permanecem risco residual: ainda nao ha politica operacional de expurgo nem mecanismo para impedir reintroducao por restauracao. Os GAPs `BCK-032` e `BCK-033` registram as politicas futuras de audit logs e backups. Detalhes estao em [`docs/15-sprint-5-account-deletion.md`](15-sprint-5-account-deletion.md).
 
 ## Audit logs
 

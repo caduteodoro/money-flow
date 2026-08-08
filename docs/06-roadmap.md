@@ -91,7 +91,8 @@ Estado atual:
 - Blocos 1 a 4 concluidos nos respectivos escopos documentados.
 - Bloco 5, Atividade 5.1: concluida; `SEC-005` mitigado por FKs compostas com `userId`.
 - Bloco 5, Atividade 5.2: concluida; `SEC-006` mitigado e `BCK-016` concluido por unicidade estrutural de categorias.
-- Bloco 5, Atividade 5.3: `SEC-007` planejado e ainda nao implementado.
+- Bloco 5, Atividade 5.3: concluida; `SEC-007` mitigado por exclusao imediata, definitiva e transacional da propria conta.
+- Bloco 5: concluido no escopo das Atividades 5.1, 5.2 e 5.3.
 - O rate limiting persistente atual cobre login e cadastro por identidade; protecao por origem/borda e outros vetores de abuso permanecem pendentes.
 - A Sprint 5 permanece aberta. Revisao de privacidade, atividades posteriores e validacoes de pre-producao nao estao concluidas.
 

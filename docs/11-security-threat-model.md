@@ -8,7 +8,7 @@
 - **Escopo:** autenticação, sessões, autorização, importação CSV, categorias, regras, transações, dashboard, audit logs, Prisma, PostgreSQL, configuração e dependências.
 - **Metodologia:** inspeção estática do código e da documentação, inventário de pontos de entrada e fronteiras de confiança, matriz de isolamento por `userId`, auditorias não destrutivas com `npm audit --omit=dev` e `npm audit` e validações locais controladas da Atividade 1.3.
 
-As validações adicionais usaram uma build de produção local, requisições sintéticas sem sessão válida e inspeção das dependências instaladas. A avaliação não incluiu pentest, infraestrutura de produção, banco descartável, dados reais, backups ou testes dinâmicos com contas autenticadas. Severidades preliminares podem mudar após validação. Nenhum dado financeiro real, segredo ou identificador pessoal foi usado.
+As validações iniciais usaram uma build de produção local, requisições sintéticas sem sessão válida e inspeção das dependências instaladas. As atividades posteriores acrescentaram PostgreSQL descartável e testes dinâmicos com contas sintéticas autenticadas, incluindo a exclusão de conta da Atividade 5.3. A avaliação não incluiu pentest, infraestrutura de produção, dados reais ou backups. Severidades preliminares podem mudar após validação. Nenhum dado financeiro real, segredo ou identificador pessoal foi usado.
 
 ## Contexto e arquitetura
 
@@ -171,20 +171,20 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 - **Recomendação:** preservar a migration, a função canônica e os testes diretos/concorrentes em toda nova escrita de categoria.
 - **Validação realizada:** diagnóstico sem duplicidades, paridade TypeScript/SQL, bloqueio seguro de migration, criação e renomeação concorrentes, SQL/Prisma diretos, recriação desde zero e rollback descartável.
 
-### SEC-007 - Retenção e exclusão de dados não implementadas
+### SEC-007 - Exclusao segura de conta e retencao minima (mitigado)
 
 - **Categoria:** privacidade e conformidade.
-- **Status da evidência:** Planejado para pré-produção.
-- **Cenário:** sessões, logs e dados financeiros permanecem além da finalidade ou solicitação do titular.
-- **Evidência técnica:** não há fluxo de exclusão de conta nem política operacional de retenção e backups.
+- **Status da evidência:** Mitigado; Atividade 5.3 concluida.
+- **Cenário:** sessoes, logs e dados financeiros poderiam permanecer alem da solicitacao de exclusao do titular.
+- **Evidência técnica:** `/settings` exige sessao, senha atual e frase exata; o servico remove dados, sessoes, logs e identificadores inequivocamente vinculaveis em uma unica transacao.
 - **Impacto:** aumento do impacto de incidentes e risco LGPD/GDPR.
-- **Probabilidade:** média quando houver operação real.
-- **Severidade atual:** média.
+- **Probabilidade:** baixa no banco ativo; residual para backups e operacao.
+- **Severidade atual:** baixa, residual.
 - **Aplicabilidade:** requisito de produto e operação antes de produção.
-- **Controle existente:** cascatas relacionais ao excluir usuário.
-- **Risco residual:** não existe processo que acione e verifique exclusão completa.
-- **Recomendação:** definir retenção, exclusão, exportação e tratamento de backups.
-- **Validação futura:** ciclo de exclusão e conferência de cópias e relações.
+- **Controle existente:** exclusao imediata e transacional, filtros explicitos por `userId`, remocao de todas as sessoes, `emailHash` e buckets HMAC exatos, cookie limpo somente apos commit e nenhuma persistencia de recibo ou tombstone.
+- **Risco residual:** nao ha politica operacional de retencao/anonimizacao de audit logs nem expurgo de backups; restauracoes podem reintroduzir dados excluidos.
+- **Recomendação:** tratar `BCK-032` e `BCK-033` antes da operacao real com backups.
+- **Validação realizada:** PostgreSQL real com dois usuarios, inventario completo, snapshots integrais do outro tenant, invalidacao de sessoes e falha intermediaria com rollback total.
 
 ### SEC-008 - Advisory transitivo de PostCSS
 
@@ -290,7 +290,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 
 As proteções dos fluxos atuais estão comprovadas na aplicação. Desde a Atividade 5.1, o banco também garante que as seis relações multiusuário existentes tenham o mesmo `userId`; mudanças relacionais futuras continuam exigindo inspeção dos dados, rollback e aprovação explícita.
 
-A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; os Blocos 2 e 4 acrescentaram testes dinâmicos de autorização. A Atividade 5.1 comprovou diretamente no PostgreSQL a rejeição das seis inserções cruzadas e os comportamentos de exclusão. A Atividade 5.2 comprovou a unicidade estrutural sob concorrência; `SEC-005` e `SEC-006` estão mitigados.
+A Atividade 1.3 confirmou estaticamente que `userId` é derivado de `requireCurrentUser`; os Blocos 2 e 4 acrescentaram testes dinâmicos de autorização. A Atividade 5.1 comprovou diretamente no PostgreSQL a rejeição das seis inserções cruzadas e os comportamentos de exclusão. A Atividade 5.2 comprovou a unicidade estrutural sob concorrência. A Atividade 5.3 comprovou exclusao integral e rollback com dois usuarios; `SEC-005`, `SEC-006` e `SEC-007` estao mitigados.
 
 ## Rate limiting: controles atuais e candidatos restantes
 
@@ -313,9 +313,9 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 - Audit logs atuais minimizam conteúdo usando hashes e agregados; logs reais do Prisma ainda precisam ser verificados.
 - SHA-256 de e-mails e IPs reduz exposição direta, mas valores previsíveis podem ser submetidos a ataques de dicionário.
 - Sessões têm expiração de 30 dias e logout da sessão atual; não há gestão global de dispositivos.
-- Não há política implementada de retenção, exclusão do titular ou descarte de backups.
-- Cascatas do schema ajudam uma futura exclusão, mas não constituem por si só processo LGPD completo.
-- Criptografia, acesso operacional, retenção, exclusão e backups exigem desenho pré-produção; este documento não promete implementação imediata.
+- A exclusao do titular existe no banco ativo, e imediata e transacional; nao ha recibo, tombstone ou soft delete.
+- Nao ha politica implementada de retencao/anonimizacao de audit logs ou descarte de backups.
+- Criptografia, acesso operacional, retencao e backups ainda exigem desenho pre-producao; este documento nao promete implementacao imediata.
 
 ## Pontos pendentes de validação
 

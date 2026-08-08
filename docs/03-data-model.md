@@ -27,6 +27,8 @@
 
 Cada login valido cria uma sessao independente com validade fixa de 30 dias. O cadastro nao cria `Session`. O logout deriva o hash do cookie atual e remove somente o registro correspondente; um registro ja ausente e idempotente, enquanto erro inesperado de persistencia propaga antes da limpeza do cookie. Nao ha logout global, rotacao, renovacao deslizante ou mudanca estrutural do modelo no Bloco 4.
 
+A exclusao de conta da Atividade 5.3 remove explicitamente todas as sessoes do usuario dentro da mesma transacao que elimina seus demais dados. O cookie da requisicao e limpo apenas depois do commit; rollback preserva inclusive as sessoes.
+
 ## Importacoes
 
 `StatementImport` guarda metadados do processamento:
@@ -80,6 +82,10 @@ Regras para a Sprint 4:
 - Validar na aplicacao que pai, categoria, regra e transacao pertencem ao mesmo usuario, mantendo respostas publicas controladas; as FKs compostas fornecem uma segunda garantia no banco.
 
 O servico e o banco protegem a propriedade composta das relacoes. A Atividade 5.2 acrescentou unicidade estrutural para raizes e filhos sem alterar as FKs da Atividade 5.1.
+
+## Exclusao transacional da conta
+
+A Atividade 5.3 reutiliza o schema existente. Como cinco FKs compostas usam `NO ACTION`, o servico remove dependencias explicitamente por `userId` antes do `User`: transacoes, regras, vinculos pai/filho, categorias, importacoes e contas. Depois remove sessoes, audit logs e buckets de rate limiting vinculaveis e exclui o usuario. Toda a sequencia ocorre em uma unica transacao Prisma. Nao ha migration, soft delete, recibo, tombstone, fila ou historico de solicitacao.
 
 ## Unicidade estrutural de categorias
 

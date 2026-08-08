@@ -7,7 +7,7 @@ const navItems = [
   { id: "transactions", href: "/transactions", label: "Transacoes", icon: ListChecks },
   { id: "categories", href: "/categories", label: "Categorias", icon: Layers3 },
   { id: "reports", href: "/dashboard", label: "Relatorios", icon: BarChart3 },
-  { id: "settings", href: "/dashboard", label: "Ajustes", icon: Settings },
+  { id: "settings", href: "/settings", label: "Ajustes", icon: Settings },
 ];
 
 type SidebarProps = {

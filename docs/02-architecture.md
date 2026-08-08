@@ -134,6 +134,12 @@ Login e cadastro derivam a chave do e-mail normalizado, mas usam scopes independ
 
 Não existem buckets por IP, confiança em headers encaminhados, HTTP 429 ou proteção de borda implementada. Essas camadas futuras não substituem autenticação, autorização ou isolamento por `userId`.
 
+## Exclusao de conta
+
+A rota protegida `/settings` deriva a identidade exclusivamente da sessao e exige senha atual e a frase exata `EXCLUIR MINHA CONTA`. O servico `lib/account/account-deletion-service.ts` calcula os identificadores deterministicos vinculaveis ao e-mail e executa em uma unica transacao Prisma a remocao explicita por `userId` de transacoes, regras, hierarquia de categorias, categorias, importacoes, contas, sessoes, audit logs e, por fim, do usuario. Buckets de login e cadastro sao removidos por pares exatos de scope e digest HMAC.
+
+O cookie e limpo somente depois do commit. Uma falha anterior reverte toda a transacao e preserva conta, sessoes e dados. Nao existem soft delete, fila, recibo, tombstone ou tabela adicional; por isso a Atividade 5.3 nao altera o schema nem cria migration.
+
 ## Evolucao prevista
 
-Sprint 4 entregou categorias, categoria pai/filha, edição/criação, regras automáticas e transações não categorizadas. O Bloco 3 da Sprint 5 implementou rate limiting por identidade para login e cadastro. O Bloco 4 removeu o login automático do cadastro, neutralizou a duplicidade e tornou a revogação da sessão atual fail-closed para erros inesperados. MFA, recuperação de senha, proteção por origem/borda, criptografia forte, OFX e modo de privacidade avançado permanecem futuros.
+Sprint 4 entregou categorias, categoria pai/filha, edição/criação, regras automáticas e transações não categorizadas. O Bloco 3 da Sprint 5 implementou rate limiting por identidade para login e cadastro. O Bloco 4 removeu o login automático do cadastro, neutralizou a duplicidade e tornou a revogação da sessão atual fail-closed para erros inesperados. O Bloco 5 adicionou integridade relacional, unicidade estrutural de categorias e exclusao atomica da propria conta. MFA, recuperação de senha, proteção por origem/borda, criptografia forte, OFX e modo de privacidade avançado permanecem futuros.
