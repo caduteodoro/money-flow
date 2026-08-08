@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - Bloco 5 concluido com exclusao atomica de conta, integridade relacional e unicidade estrutural validadas tecnicamente**.
+Status atual: **Sprint 5 em andamento - Bloco 6 concluido com postura de seguranca consolidada; uso externo continua bloqueado por dependencias, logging e validacoes de infraestrutura**.
 
 ## Problema
 
@@ -54,6 +54,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Suite de integracao para isolamento multi-tenant de categorias, regras e transacoes, com PostgreSQL descartavel.
 - Rota protegida `/settings` com exclusao imediata e transacional da propria conta mediante senha atual e frase de confirmacao exata.
 - Exclusao de todas as sessoes, dados financeiros, categorias, regras, logs e buckets inequivocamente vinculaveis, sem soft delete, recibo ou tombstone.
+- Matriz consolidada de `SEC-001` a `SEC-013`, com fronteiras distintas para uso local, preview restrito e producao publica.
 
 ## Funcionalidades planejadas do MVP
 

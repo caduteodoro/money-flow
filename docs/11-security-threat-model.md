@@ -79,12 +79,12 @@ O middleware verifica apenas a presença do cookie nas rotas protegidas; ele nã
 
 ## Matriz de riscos
 
-Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**, **Requer validação**, **Mitigado pelo framework no ambiente testado**, **Informativo** e **Planejado para pré-produção**.
+Os estados consolidados do Bloco 6 são: **Mitigado**, **Mitigado parcialmente**, **Aceito temporariamente**, **Adiado**, **Bloqueador de uso restrito**, **Bloqueador de produção pública** e **Não aplicável ou superado**. O detalhe completo e as fronteiras de liberação estão em [`docs/16-sprint-5-security-consolidation.md`](16-sprint-5-security-consolidation.md).
 
 ### SEC-001 - Rate limiting parcial em autenticação
 
 - **Categoria:** autenticação e disponibilidade.
-- **Status da evidência:** Parcialmente confirmado — mitigado parcialmente.
+- **Status consolidado:** Mitigado parcialmente.
 - **Cenário:** cliente automatiza login, cadastro ou geração de audit logs.
 - **Evidência técnica:** `loginAction` aplica 5 tentativas por minuto e 10 por 15 minutos; `registerAction` aplica 3 tentativas por 15 minutos e 5 por hora. Ambas derivam buckets persistentes por HMAC da identidade normalizada antes de banco e bcrypt.
 - **Impacto:** tentativa de tomada de conta, uso intensivo de bcrypt e crescimento de banco/logs.
@@ -99,7 +99,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-002 - Dados financeiros em claro e acesso operacional
 
 - **Categoria:** privacidade e proteção de dados.
-- **Status da evidência:** Planejado para pré-produção.
+- **Status consolidado:** Bloqueador de produção pública.
 - **Cenário:** credencial do banco comprometida ou operador privilegiado consulta transações.
 - **Evidência técnica:** campos como descrição, valor e payload não têm criptografia de aplicação em `prisma/schema.prisma`; a documentação prevê criptografia futura.
 - **Impacto:** exposição financeira ampla e implicações LGPD/GDPR.
@@ -114,7 +114,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-003 - Operações dispendiosas sem limitação
 
 - **Categoria:** disponibilidade e abuso autenticado.
-- **Status da evidência:** Confirmado.
+- **Status consolidado:** Mitigado parcialmente.
 - **Cenário:** preview, confirmação de CSV ou aplicação de regras são repetidos ou executados em paralelo.
 - **Evidência técnica:** essas Actions não têm rate limiting; o arquivo é limitado a 2 MB, mas a frequência não é limitada.
 - **Impacto:** consumo de CPU, memória, queries e crescimento do banco.
@@ -129,7 +129,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-004 - Enumeração de e-mail no cadastro
 
 - **Categoria:** autenticação e privacidade.
-- **Status da evidência:** Mitigado.
+- **Status consolidado:** Mitigado.
 - **Cenário:** atacante testa se determinados e-mails já possuem conta.
 - **Evidência técnica:** o Bloco 4 removeu a mensagem e o `fieldErrors.email` específicos. E-mail novo e duplicado usam o mesmo redirect e mensagem no login; cadastro não cria sessão nem cookie. Somente a unique constraint de `User.email` recebe tratamento neutro, e a criação permanece atômica sob concorrência.
 - **Impacto:** confirmação de cadastro e apoio a phishing direcionado.
@@ -144,7 +144,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-005 - Isolamento relacional não garantido integralmente pelo banco (mitigado)
 
 - **Categoria:** autorização e integridade do modelo.
-- **Status da evidência:** Mitigado.
+- **Status consolidado:** Mitigado.
 - **Cenário:** novo serviço, script ou falha futura cria associação entre usuários.
 - **Evidência técnica:** duas migrations adicionaram chaves candidatas `id + userId` em `Category`, `BankAccount` e `StatementImport` e substituíram por FKs compostas as seis relações de pai, regra/categoria, transação/categoria, transação/conta, transação/importação e importação/conta.
 - **Impacto:** corrupção de integridade e potencial exposição cruzada.
@@ -159,7 +159,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-006 - Unicidade estrutural de categorias (mitigado)
 
 - **Categoria:** integridade e concorrência.
-- **Status da evidência:** Mitigado; Atividade 5.2 concluída.
+- **Status consolidado:** Mitigado; Atividade 5.2 concluída.
 - **Cenário:** criações ou renomeações concorrentes geravam categorias equivalentes no mesmo escopo.
 - **Evidência técnica:** `Category.comparisonKey` guarda a chave canônica; filhos usam unique `userId + comparisonKey + parentId` e raízes usam índice único parcial `userId + comparisonKey` com `parentId IS NULL`.
 - **Impacto:** árvore ambígua e regras inconsistentes.
@@ -174,7 +174,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-007 - Exclusao segura de conta e retencao minima (mitigado)
 
 - **Categoria:** privacidade e conformidade.
-- **Status da evidência:** Mitigado; Atividade 5.3 concluida.
+- **Status consolidado:** Mitigado; Atividade 5.3 concluida.
 - **Cenário:** sessoes, logs e dados financeiros poderiam permanecer alem da solicitacao de exclusao do titular.
 - **Evidência técnica:** `/settings` exige sessao, senha atual e frase exata; o servico remove dados, sessoes, logs e identificadores inequivocamente vinculaveis em uma unica transacao.
 - **Impacto:** aumento do impacto de incidentes e risco LGPD/GDPR.
@@ -186,25 +186,25 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 - **Recomendação:** tratar `BCK-032` e `BCK-033` antes da operacao real com backups.
 - **Validação realizada:** PostgreSQL real com dois usuarios, inventario completo, snapshots integrais do outro tenant, invalidacao de sessoes e falha intermediaria com rollback total.
 
-### SEC-008 - Advisory transitivo de PostCSS
+### SEC-008 - Advisories no grafo de dependencias
 
 - **Categoria:** dependências e XSS.
-- **Status da evidência:** Confirmado quanto ao advisory; sem caminho explorável identificado.
-- **Cenário:** entrada não confiável alcança uma operação vulnerável de stringify de CSS.
-- **Evidência técnica:** Next.js 15.5.19 resolve PostCSS 8.4.31 em sua cadeia, enquanto a dependência direta instalada resolve PostCSS 8.5.15. `npm audit --omit=dev` e `npm audit` reportaram o advisory de severidade moderada no grafo de produção.
-- **Impacto:** XSS se existir caminho de exploração.
-- **Probabilidade:** baixa no contexto observado; não foi encontrado caminho de entrada do usuário para geração ou stringify de CSS.
-- **Severidade atual:** média segundo o advisory, condicionada ao contexto.
-- **Aplicabilidade:** não há exploração comprovada no Money Flow.
-- **Controle existente:** nenhum caminho de CSS dinâmico não confiável foi identificado.
-- **Risco residual:** a versão vulnerável permanece no grafo de produção.
-- **Recomendação:** acompanhar a dependência e avaliar atualização por caminho compatível; não aplicar correção forçada sem análise.
-- **Validação futura:** reavaliar o caminho de exploração ao alterar geração de estilos ou atualizar o framework. Não foram executados `npm audit fix`, atualização forçada ou override.
+- **Status consolidado:** Bloqueador de uso restrito.
+- **Cenário:** vulnerabilidades conhecidas no framework e dependencias transitivas podem afetar Server Actions, cache, SSRF, disponibilidade, processamento de imagem ou CSS.
+- **Evidência técnica:** em 8 de agosto de 2026, `npm audit --omit=dev` reportou quatro vulnerabilidades altas no grafo de producao (`next`, `postcss`, `nanoid` e `sharp`). `npm audit` reportou seis altas no total, acrescentando `brace-expansion` e `js-yaml`.
+- **Impacto:** exposicao, indisponibilidade ou comportamento inseguro dependendo do caminho alcancavel.
+- **Probabilidade:** condicionada aos caminhos usados; o projeto usa App Router e Server Actions, enquanto nenhum CSS dinamico nao confiavel foi encontrado.
+- **Severidade atual:** alta segundo a auditoria atual.
+- **Aplicabilidade:** exige triagem por advisory e versao antes de qualquer exposicao externa; ausencia de exploracao demonstrada nao equivale a mitigacao.
+- **Controle existente:** acesso atual local e ausencia de CSS dinamico nao confiavel identificado.
+- **Risco residual:** pacotes vulneraveis permanecem no grafo executavel e de desenvolvimento.
+- **Recomendação:** executar atividade dedicada de compatibilidade e atualizacao, sem `npm audit fix` forcado.
+- **Validação futura:** confirmar caminhos aplicaveis, atualizar por versao suportada e repetir testes/auditoria.
 
 ### SEC-009 - CSRF e validação de Origin das Server Actions
 
 - **Categoria:** integridade de requisições.
-- **Status da evidência:** Mitigado pelo framework no ambiente testado; validação do proxy/deployment pendente.
+- **Status consolidado:** Mitigado parcialmente; validação do proxy/deployment pendente.
 - **Cenário:** origem externa tenta executar mutação autenticada.
 - **Evidência técnica:** o handler de Server Actions do Next.js 15.5.19 compara `Origin` com `Host` ou `X-Forwarded-Host`. Uma requisição same-origin alcançou a camada de autenticação, enquanto uma requisição sintética com Origin divergente foi rejeitada como Server Action inválida.
 - **Impacto:** alteração de recursos do usuário.
@@ -219,22 +219,22 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-010 - Conteúdo dos logs de erro do Prisma
 
 - **Categoria:** logging e exposição de dados.
-- **Status da evidência:** Requer validação.
+- **Status consolidado:** Bloqueador de uso restrito.
 - **Cenário:** erro do driver registra parâmetros ou contexto sensível.
-- **Evidência técnica:** a configuração estática registra `error/warn` em desenvolvimento e `error` em produção. Nenhum erro real do Prisma foi provocado para evitar afetar os dados locais existentes; parâmetros, contexto e stack trace permanecem inconclusivos.
+- **Evidência técnica:** a configuração registra `error/warn` em desenvolvimento e `error` em produção. Em PostgreSQL descartável, uma colisão sintética `P2002` incluiu o e-mail sintético na saída capturada; os hashes sintéticos de senha não apareceram.
 - **Impacto:** exposição operacional de metadados ou dados financeiros.
-- **Probabilidade:** não confirmada.
-- **Severidade atual:** média preliminar.
+- **Probabilidade:** confirmada para o erro de unicidade exercitado; outros erros permanecem inconclusivos.
+- **Severidade atual:** média.
 - **Aplicabilidade:** depende da observabilidade e do erro gerado.
 - **Controle existente:** mensagens internas são convertidas em respostas genéricas em vários serviços.
-- **Risco residual:** resposta controlada não garante log controlado.
-- **Recomendação:** testar redaction em ambiente controlado.
-- **Validação futura:** provocar erros fictícios representativos e inspecionar logs em banco ou ambiente descartável com dados sintéticos.
+- **Risco residual:** resposta controlada não impede que dados pessoais alcancem o log operacional.
+- **Recomendação:** definir redaction ou configuração segura de logging e cobrir por regressão antes de uso externo.
+- **Validação futura:** ampliar a caracterização para erros financeiros sintéticos e confirmar a saída da configuração corrigida.
 
 ### SEC-011 - Gestão limitada de sessões antigas
 
 - **Categoria:** sessão.
-- **Status da evidência:** Confirmado.
+- **Status consolidado:** Aceito temporariamente.
 - **Cenário:** sessão roubada continua válida depois de um novo login ou logout em outro dispositivo.
 - **Evidência técnica:** cada login cria sessão independente, logout remove somente a sessão correspondente ao hash do cookie atual, apenas `tokenHash` é persistido e a expiração é fixa em 30 dias. Testes PostgreSQL comprovam duas sessões simultâneas, logout independente, ausência idempotente e rejeição/remoção de sessão expirada. Erros inesperados na exclusão propagam antes de limpar o cookie ou auditar sucesso.
 - **Impacto:** prolongamento de acesso indevido.
@@ -249,7 +249,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-012 - Headers de segurança não configurados explicitamente
 
 - **Categoria:** defesa em profundidade.
-- **Status da evidência:** Parcialmente confirmado.
+- **Status consolidado:** Bloqueador de produção pública.
 - **Cenário:** ausência de CSP, proteção contra framing ou outras políticas amplia outro defeito.
 - **Evidência técnica:** na build de produção local não foram observados `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors` ou `X-Frame-Options`. Login e cadastro retornaram `Cache-Control: private, no-cache, no-store`; rotas protegidas redirecionaram sem sessão.
 - **Impacto:** redução de defesa em profundidade.
@@ -264,7 +264,7 @@ Os status usados são: **Confirmado**, **Parcialmente confirmado**, **Mitigado**
 ### SEC-013 - CSV Injection sem caminho explorável atual
 
 - **Categoria:** entrada e exportação futura.
-- **Status da evidência:** Informativo.
+- **Status consolidado:** Não aplicável ou superado no produto atual; não existe exportação.
 - **Cenário:** campo iniciado por fórmula é futuramente exportado e aberto em planilha.
 - **Evidência técnica:** descrições são renderizadas com escape do React; não existe exportação CSV/Excel.
 - **Impacto:** execução de fórmula somente em um fluxo futuro de exportação.
@@ -335,7 +335,7 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 - Privilégios do usuário PostgreSQL.
 - Logs e observabilidade da plataforma.
 
-O advisory de PostCSS continua acompanhado, sem caminho explorável identificado no contexto atual.
+Os advisories atuais de dependencias exigem triagem antes de uso externo. A ausencia de um caminho CSS dinamico nao resolve os demais achados de `next`, `nanoid`, `sharp`, `brace-expansion` e `js-yaml`.
 
 ## Observações informativas das validações
 
@@ -343,24 +343,24 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 
 ## Critérios de decisão
 
-- Nenhum risco crítico comprovado bloqueia a continuidade normal do Bloco 1.
+- Nenhum risco critico foi reportado pela auditoria atual, mas `SEC-008` e `SEC-010` bloqueiam uso restrito ate tratamento explicito.
 - Riscos altos não entram automaticamente como implementação imediata; severidade, contexto e capacidade devem orientar o planejamento.
 - SEC-001 foi mitigado para login e cadastro por identidade, mas permanece aberto para abuso distribuído, borda e outras operações.
 - SEC-004 foi mitigado pelo cadastro neutro do Bloco 4, sem declaração de resolução total por causa dos canais residuais temporal e de login posterior.
 - SEC-002 é requisito relevante antes de produção, não declaração de incidente ou bloqueio do desenvolvimento local.
 - SEC-009 está mitigado pelo framework no ambiente testado, mas a conclusão depende da configuração do proxy/deployment.
-- SEC-008 permanece no grafo de produção; ausência de caminho explorável identificado não elimina o advisory.
+- SEC-008 agora agrega advisories altos no grafo de producao e desenvolvimento; ausencia de exploracao demonstrada nao autoriza exposicao externa.
 - Qualquer migration de hardening exige inspeção de dados, proposta técnica, impacto, rollback e aprovação explícita.
 - Achados preliminares podem subir, cair ou ser encerrados após testes.
 
 ## Plano controlado
 
-O plano controlado permanece como referência de sequência. O item 3 foi executado parcialmente pelo Bloco 4, Atividade 4.1; os demais itens não são iniciados automaticamente:
+O plano controlado permanece como referencia historica de sequencia. Os Blocos 3 a 6 executaram partes de autenticacao, modelo, privacidade, dependencias e regressao; pendencias nao sao iniciadas automaticamente:
 
 1. Validações manuais de segurança.
 2. Validar rate limiting no deployment e decidir proteção complementar de borda.
 3. Hardening de autenticação e sessão — cadastro neutro e revogação segura concluídos no Bloco 4; gestão global permanece futura.
-4. Análise estrutural do modelo.
-5. Privacidade e retenção.
-6. Dependências e headers.
-7. Testes automatizados e regressão.
+4. Analise estrutural do modelo — FKs compostas, unicidade e exclusao validadas; `BCK-012` permanece aberto.
+5. Privacidade e retencao — exclusao do banco ativo concluida; `BCK-032` e `BCK-033` permanecem abertos.
+6. Dependencias e headers — consolidados no Bloco 6 e ainda bloqueantes conforme a matriz.
+7. Testes automatizados e regressao — fundacao de seguranca aprovada; `BCK-011` amplo permanece aberto.

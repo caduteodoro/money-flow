@@ -157,6 +157,10 @@ Nao ha soft delete, recibo, tombstone, fila ou tabela de solicitacao. O CSV brut
 
 ## Audit logs
 
+### Consolidacao do Bloco 6
+
+A matriz consolidada de `SEC-001` a `SEC-013`, as fronteiras entre ambiente local, uso restrito e producao publica e as evidencias atualizadas estao em [`docs/16-sprint-5-security-consolidation.md`](16-sprint-5-security-consolidation.md). O Bloco 6 confirmou `SEC-005`, `SEC-006` e `SEC-007`, manteve `BCK-011` aberto e identificou como bloqueadores de uso externo os advisories atuais, a validacao de proxy/Origin e a exposicao de e-mail sintetico em log de erro do Prisma. Nenhuma dependencia ou mitigacao nova foi aplicada.
+
 Eventos atuais:
 
 - `USER_REGISTERED`

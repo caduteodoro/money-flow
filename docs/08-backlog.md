@@ -371,6 +371,7 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 - Testes manuais do Bloco 1: PASSOU para login, filtros, período real, estados vazios, tabela responsiva, preview/importação/reimportação CSV, CSV inválido, histórico e dashboard pós-importação.
 - Bloco 3 da Sprint 4: camada `lib/categories/` concluída por revisão estática e validações técnicas; as entregas posteriores concluíram testes, categorização, regras, as constraints compostas de `BCK-017` e a unicidade estrutural de `BCK-016`.
 - Bloco 4: PASSOU nos testes manuais de estado vazio, raiz/filha, duplicidade, mesmo nome sob pais diferentes, edição, limite de hierarquia, dois usuários, sessão e responsividade. O erro de export incompatível em arquivo `"use server"` também foi corrigido e validado.
+- Bloco 6 da Sprint 5: `BCK-011` permanece Backlog porque parser CSV, normalizacao financeira, filtros de data e preview/importacao nao possuem cobertura equivalente aos dominios de seguranca ja testados. `BCK-012` permanece Backlog; recriacao desde zero nao comprova migrations antigas com dados. `BCK-031` nao foi implementado. `BCK-032` e `BCK-033` permanecem Backlog, P1 e fora da Sprint 5 atual.
 
 - Itens deste backlog não entram automaticamente no escopo da sprint atual.
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
