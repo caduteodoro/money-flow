@@ -58,38 +58,25 @@ Status: concluida no escopo planejado para CSV do MVP. OFX e PDF automatico fica
 
 Status: concluida no escopo planejado para dashboard real do MVP.
 
-## Sprint 4 - estado por blocos
+## Sprint 4
 
-- Bloco 1: concluido.
-- Bloco 2: revisado; hardening adicional do banco pendente.
-- Bloco 3: concluido.
-- Bloco 4: concluido.
-- Bloco 5: concluido e validado manualmente.
-- Bloco 6: concluido e validado manualmente.
+- Bloco 1: concluido; reconciliacao, hardening CSV, validacoes tecnicas e testes manuais aprovados.
+- Bloco 2: concluido no escopo preparatorio da Sprint 4; hardening estrutural posterior foi tratado nas Atividades 5.1 e 5.2 da Sprint 5.
+- Bloco 3: concluido; camada server-side segura para listar, criar e renomear categorias pai/filha.
+- Bloco 4: concluido e validado manualmente, incluindo criacao, hierarquia, edicao, duplicidade, sessao e isolamento entre usuarios.
+- Bloco 5: concluido; categorizacao manual e transacoes sem categoria entregues.
+- Bloco 6: concluido; regras automaticas v1 e aplicacao explicita entregues e validadas.
 
-Sprint 4 concluida funcionalmente. Permanecem separados como debitos tecnicos: hardening adicional do banco, constraints compostas e suite automatizada de testes. Analytics por categoria e execucao automatica apos importacao continuam fora desta entrega.
+Sprint 4 concluida funcionalmente.
 
 - Rotulos visuais antigos de sprint foram removidos das telas publicas/importacao.
 - Importacao passou a diferenciar erro esperado de CSV de erro interno.
 - Contadores de importacao passaram a refletir a quantidade realmente inserida pelo banco.
-- Documentada a regra de integridade de categorias: toda mutacao futura deve validar `userId` e evitar nomes duplicados entre categorias irmas, incluindo categorias raiz.
+- A integridade de categorias recebeu hardening posterior na Sprint 5: a Atividade 5.1 adicionou constraints compostas com `userId`, e a Atividade 5.2 adicionou unicidade estrutural para categorias equivalentes.
+- A fundacao automatizada de testes de seguranca foi adicionada na Sprint 5; a cobertura automatizada ampla de `BCK-011` permanece separada no backlog.
+- Analytics por categoria e execucao automatica de regras apos importacao continuam fora da entrega da Sprint 4.
 
-Status:
-
-- Bloco 1: concluido; reconciliacao, hardening CSV, validacoes tecnicas e testes manuais aprovados.
-- Bloco 2: modelo preparatorio existente e revisao tecnica realizada; hardening do banco depende de decisao e migration futura.
-- Bloco 3: concluido; camada server-side segura para listar, criar e renomear categorias pai/filha.
-- Bloco 4: concluido e validado manualmente, incluindo criacao, hierarquia, edicao, duplicidade, sessao e isolamento entre usuarios.
-- Blocos 5 e 6: nao iniciados.
-
-## Sprint 4
-
-- Categorias.
-- Categoria pai/filha.
-- Edicao de categoria.
-- Criacao de categoria.
-- Regras automaticas.
-- Transacoes nao categorizadas.
+Status: concluida no escopo funcional planejado.
 
 ## Sprint 5
 
@@ -99,7 +86,14 @@ Status:
 - Documentacao final do MVP.
 - Preparacao para OFX.
 
-Estado atual: Bloco 4 concluído tecnicamente. O Bloco 3 preserva o rate limiting persistente por identidade; a Atividade 4.1 adiciona cadastro neutro sem login automático, revogação segura da sessão atual e regressão de autenticação/sessão. A Sprint 5 permanece aberta; proteção por origem/borda, outros vetores de abuso, revisão de privacidade e atividades posteriores continuam pendentes.
+Estado atual:
+
+- Blocos 1 a 4 concluidos nos respectivos escopos documentados.
+- Bloco 5, Atividade 5.1: concluida; `SEC-005` mitigado por FKs compostas com `userId`.
+- Bloco 5, Atividade 5.2: concluida; `SEC-006` mitigado e `BCK-016` concluido por unicidade estrutural de categorias.
+- Bloco 5, Atividade 5.3: `SEC-007` planejado e ainda nao implementado.
+- O rate limiting persistente atual cobre login e cadastro por identidade; protecao por origem/borda e outros vetores de abuso permanecem pendentes.
+- A Sprint 5 permanece aberta. Revisao de privacidade, atividades posteriores e validacoes de pre-producao nao estao concluidas.
 
 ## Futuro pos-MVP
 

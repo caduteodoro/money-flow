@@ -4,6 +4,8 @@
 
 A Atividade 5.1 mitiga `SEC-005` ao transformar a propriedade por `userId` em invariante do PostgreSQL, sem substituir os filtros de autorizacao da aplicacao. `SEC-006`, `BCK-016`, `SEC-007` e novos fluxos de exclusao permanecem fora do escopo.
 
+Nota de continuidade: este documento registra o estado ao termino da Atividade 5.1, quando `SEC-006` ainda estava pendente. Posteriormente, a Atividade 5.2 mitigou `SEC-006`; o estado posterior esta documentado em [`docs/14-sprint-5-category-uniqueness.md`](14-sprint-5-category-uniqueness.md).
+
 ## Relacoes protegidas
 
 | Origem | Destino | Acao de exclusao |
