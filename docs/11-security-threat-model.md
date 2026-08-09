@@ -189,47 +189,47 @@ Os estados consolidados do Bloco 6 são: **Mitigado**, **Mitigado parcialmente**
 ### SEC-008 - Advisories no grafo de dependencias
 
 - **Categoria:** dependências e XSS.
-- **Status consolidado:** Bloqueador de uso restrito.
+- **Status consolidado:** Mitigado parcialmente; risco residual aceito somente no modelo local atual.
 - **Cenário:** vulnerabilidades conhecidas no framework e dependencias transitivas podem afetar Server Actions, cache, SSRF, disponibilidade, processamento de imagem ou CSS.
-- **Evidência técnica:** em 8 de agosto de 2026, `npm audit --omit=dev` reportou quatro vulnerabilidades altas no grafo de producao (`next`, `postcss`, `nanoid` e `sharp`). `npm audit` reportou seis altas no total, acrescentando `brace-expansion` e `js-yaml`.
+- **Evidência técnica:** Next foi atualizado de 15.5.19 para 15.5.23, PostCSS direto para 8.5.26 e dependencias de lint dentro das faixas compativeis. Advisories proprios do Next, Nanoid, JS-YAML e Brace Expansion foram removidos. A auditoria final reporta tres altas em ambos os grafos, agregadas por `next`, PostCSS interno e `sharp`.
 - **Impacto:** exposicao, indisponibilidade ou comportamento inseguro dependendo do caminho alcancavel.
-- **Probabilidade:** condicionada aos caminhos usados; o projeto usa App Router e Server Actions, enquanto nenhum CSS dinamico nao confiavel foi encontrado.
+- **Probabilidade:** nao demonstravelmente alcancavel hoje: CSS processado no build e estatico e confiavel; nao ha CSS do usuario, temas personalizados, `next/image`, uploads/processamento de imagens ou configuracao de imagens remotas. A unica entrada de arquivo e CSV validado.
 - **Severidade atual:** alta segundo a auditoria atual.
-- **Aplicabilidade:** exige triagem por advisory e versao antes de qualquer exposicao externa; ausencia de exploracao demonstrada nao equivale a mitigacao.
-- **Controle existente:** acesso atual local e ausencia de CSS dinamico nao confiavel identificado.
-- **Risco residual:** pacotes vulneraveis permanecem no grafo executavel e de desenvolvimento.
-- **Recomendação:** executar atividade dedicada de compatibilidade e atualizacao, sem `npm audit fix` forcado.
-- **Validação futura:** confirmar caminhos aplicaveis, atualizar por versao suportada e repetir testes/auditoria.
+- **Aplicabilidade:** o aceite vale apenas para o desenho atual e nao declara os pacotes corrigidos nem o `npm audit` zerado.
+- **Controle existente:** superficie restrita a CSV, assets e CSS confiaveis do repositorio, sem rota/configuracao que entregue imagem nao confiavel ao otimizador.
+- **Risco residual:** Next 15.5.23 ainda fixa PostCSS 8.4.31 e inclui Sharp 0.34.5; a remocao indicada pelo npm exige Next 16, fora deste bloco.
+- **Recomendação:** reavaliar obrigatoriamente ao adotar `next/image`, imagens, CSS externo/do usuario, temas personalizados, preview/producao ou migracao planejada para Next 16.
+- **Validação futura:** repetir analise de alcance e auditorias em qualquer gatilho; nao autorizar exposicao externa com base apenas neste aceite local.
 
 ### SEC-009 - CSRF e validação de Origin das Server Actions
 
 - **Categoria:** integridade de requisições.
 - **Status consolidado:** Mitigado parcialmente; validação do proxy/deployment pendente.
 - **Cenário:** origem externa tenta executar mutação autenticada.
-- **Evidência técnica:** o handler de Server Actions do Next.js 15.5.19 compara `Origin` com `Host` ou `X-Forwarded-Host`. Uma requisição same-origin alcançou a camada de autenticação, enquanto uma requisição sintética com Origin divergente foi rejeitada como Server Action inválida.
+- **Evidência técnica:** o handler de Server Actions do Next.js 15.5.23 compara `Origin` com `Host` ou `X-Forwarded-Host`. O teste local anterior comprovou passagem same-origin e rejeicao cross-origin; cookies usam `Secure` em producao, `HttpOnly` e `SameSite=Lax`.
 - **Impacto:** alteração de recursos do usuário.
 - **Probabilidade:** baixa no fluxo local testado; depende da preservação correta dos headers no deployment.
 - **Severidade atual:** baixa no ambiente testado, condicionada ao deployment.
 - **Aplicabilidade:** o teste local comprovou a mitigação do fluxo exercitado, não uma garantia para a infraestrutura futura.
 - **Controle existente:** comparação nativa de origem do framework, `SameSite=Lax` como controle complementar e sessão server-side.
 - **Risco residual:** proxy ou plataforma que reescreva incorretamente `Host`, `Origin` ou `X-Forwarded-Host` pode alterar a eficácia do controle.
-- **Recomendação:** validar o comportamento no deployment antes de adicionar mecanismo próprio.
+- **Recomendação:** usar origem HTTPS unica; fazer o proxy remover headers encaminhados do cliente e escrever valores canonicos; bloquear acesso direto a origem; validar antes de adicionar mecanismo proprio ou origens extras.
 - **Validação futura:** repetir requisições same-origin e cross-origin reais atrás do proxy escolhido.
 
 ### SEC-010 - Conteúdo dos logs de erro do Prisma
 
 - **Categoria:** logging e exposição de dados.
-- **Status consolidado:** Bloqueador de uso restrito.
+- **Status consolidado:** Mitigado.
 - **Cenário:** erro do driver registra parâmetros ou contexto sensível.
-- **Evidência técnica:** a configuração registra `error/warn` em desenvolvimento e `error` em produção. Em PostgreSQL descartável, uma colisão sintética `P2002` incluiu o e-mail sintético na saída capturada; os hashes sintéticos de senha não apareceram.
+- **Evidência técnica:** erros e warnings Prisma agora sao eventos interceptados; o payload bruto e descartado e a saida admite somente evento, correlacao aleatoria, contexto, classificacao e codigo Prisma validado quando disponivel. Testes unitarios e um `P2002` PostgreSQL real confirmaram ausencia de e-mail, senha, hash, token, nome, descricao e valor sinteticos.
 - **Impacto:** exposição operacional de metadados ou dados financeiros.
-- **Probabilidade:** confirmada para o erro de unicidade exercitado; outros erros permanecem inconclusivos.
+- **Probabilidade:** o vazamento anteriormente confirmado foi removido por construcao no logger controlado pela aplicacao.
 - **Severidade atual:** média.
 - **Aplicabilidade:** depende da observabilidade e do erro gerado.
-- **Controle existente:** mensagens internas são convertidas em respostas genéricas em vários serviços.
-- **Risco residual:** resposta controlada não impede que dados pessoais alcancem o log operacional.
-- **Recomendação:** definir redaction ou configuração segura de logging e cobrir por regressão antes de uso externo.
-- **Validação futura:** ampliar a caracterização para erros financeiros sintéticos e confirmar a saída da configuração corrigida.
+- **Controle existente:** contrato centralizado de campos fechados, respostas publicas genericas e regressao unitaria/PostgreSQL.
+- **Risco residual:** logs externos do runtime, proxy, provedor e PostgreSQL nao foram caracterizados sem deployment.
+- **Recomendação:** preservar o contrato fechado e validar observabilidade externa antes de preview.
+- **Validação futura:** incluir qualquer novo sink ou provedor nos testes de ausencia de PII.
 
 ### SEC-011 - Gestão limitada de sessões antigas
 
@@ -310,7 +310,7 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 
 - Descrições, valores e outros dados financeiros estão em claro no PostgreSQL; o sistema atual não é zero-knowledge.
 - Isolamento por `userId` e ausência de tela administrativa reduzem exposição pela aplicação, mas não impedem acesso operacional direto ao banco.
-- Audit logs atuais minimizam conteúdo usando hashes e agregados; logs reais do Prisma ainda precisam ser verificados.
+- Audit logs atuais minimizam conteúdo usando hashes e agregados; o logger Prisma da aplicacao usa campos tecnicos fechados, enquanto sinks externos ainda precisam ser verificados no deployment.
 - SHA-256 de e-mails e IPs reduz exposição direta, mas valores previsíveis podem ser submetidos a ataques de dicionário.
 - Sessões têm expiração de 30 dias e logout da sessão atual; não há gestão global de dispositivos.
 - A exclusao do titular existe no banco ativo, e imediata e transacional; nao ha recibo, tombstone ou soft delete.
@@ -335,7 +335,7 @@ Login e cadastro usam PostgreSQL compartilhado, chaves HMAC por identidade e `fa
 - Privilégios do usuário PostgreSQL.
 - Logs e observabilidade da plataforma.
 
-Os advisories atuais de dependencias exigem triagem antes de uso externo. A ausencia de um caminho CSS dinamico nao resolve os demais achados de `next`, `nanoid`, `sharp`, `brace-expansion` e `js-yaml`.
+Os advisories alcancaveis de dependencias foram tratados no Bloco 7A. PostCSS interno e Sharp permanecem como risco residual aceito apenas no desenho local atual; qualquer preparacao para uso externo obriga nova avaliacao.
 
 ## Observações informativas das validações
 
@@ -343,13 +343,13 @@ A build local executada em `127.0.0.1:3100` gerou redirects para `http://localho
 
 ## Critérios de decisão
 
-- Nenhum risco critico foi reportado pela auditoria atual, mas `SEC-008` e `SEC-010` bloqueiam uso restrito ate tratamento explicito.
+- Nenhum risco critico foi reportado. `SEC-008` esta parcialmente mitigado para uso local e `SEC-010` mitigado; isso nao autoriza uso restrito externo.
 - Riscos altos não entram automaticamente como implementação imediata; severidade, contexto e capacidade devem orientar o planejamento.
 - SEC-001 foi mitigado para login e cadastro por identidade, mas permanece aberto para abuso distribuído, borda e outras operações.
 - SEC-004 foi mitigado pelo cadastro neutro do Bloco 4, sem declaração de resolução total por causa dos canais residuais temporal e de login posterior.
 - SEC-002 é requisito relevante antes de produção, não declaração de incidente ou bloqueio do desenvolvimento local.
 - SEC-009 está mitigado pelo framework no ambiente testado, mas a conclusão depende da configuração do proxy/deployment.
-- SEC-008 agora agrega advisories altos no grafo de producao e desenvolvimento; ausencia de exploracao demonstrada nao autoriza exposicao externa.
+- SEC-008 preserva tres advisories altos no grafo, aceitos somente como nao alcancaveis no desenho local comprovado; preparacao para exposicao externa e gatilho obrigatorio de reavaliacao.
 - Qualquer migration de hardening exige inspeção de dados, proposta técnica, impacto, rollback e aprovação explícita.
 - Achados preliminares podem subir, cair ou ser encerrados após testes.
 

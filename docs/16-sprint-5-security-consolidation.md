@@ -6,6 +6,8 @@ O Bloco 6 consolida a postura comprovada do Money Flow sem implementar novas mit
 
 O resultado e uma fotografia tecnica, nao uma autorizacao de deploy. Uso local, preview restrito e producao publica possuem fronteiras distintas.
 
+> Nota de continuidade: este documento preserva a fotografia ao termino do Bloco 6. O tratamento posterior de `SEC-008`, `SEC-010` e do contrato tecnico de `SEC-009` esta em [`docs/17-sprint-5-final-remediation.md`](17-sprint-5-final-remediation.md).
+
 ## Metodologia
 
 Foram inspecionados o threat model, README, seguranca/privacidade, roadmap, backlog, arquitetura, modelo de dados, documentos das Atividades 5.1 a 5.3, codigo server-side, middleware, schema, nove migrations, lockfile e suites automatizadas. A evidência foi classificada na seguinte ordem:

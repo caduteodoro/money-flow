@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - Bloco 6 concluido com postura de seguranca consolidada; uso externo continua bloqueado por dependencias, logging e validacoes de infraestrutura**.
+Status atual: **Sprint 5 em andamento - Bloco 7A concluido tecnicamente; dependencias alcancaveis e logging Prisma remediados, enquanto preview externo e producao continuam sem autorizacao**.
 
 ## Problema
 
@@ -55,6 +55,7 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Rota protegida `/settings` com exclusao imediata e transacional da propria conta mediante senha atual e frase de confirmacao exata.
 - Exclusao de todas as sessoes, dados financeiros, categorias, regras, logs e buckets inequivocamente vinculaveis, sem soft delete, recibo ou tombstone.
 - Matriz consolidada de `SEC-001` a `SEC-013`, com fronteiras distintas para uso local, preview restrito e producao publica.
+- Logging Prisma por eventos tecnicos fechados, sem mensagem, metadados, stack ou argumentos brutos e com correlacao aleatoria nao pessoal.
 
 ## Funcionalidades planejadas do MVP
 
@@ -292,6 +293,8 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Rate limiting persistente por identidade implementado no login e no cadastro; ainda sem proteção por IP ou borda confiável.
 - Sem login social.
+- `SEC-008` permanece parcialmente mitigado: PostCSS e Sharp vulneraveis continuam no grafo do Next 15.5.23, mas nao sao alcancaveis pelo desenho atual sem CSS ou imagens nao confiaveis; qualquer novo caminho desse tipo exige reavaliacao.
+- `SEC-009` permanece parcialmente mitigado e depende de validacao atras do proxy real antes de preview externo.
 - Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
 - A integridade relacional multiusuario e a unicidade estrutural de categorias estao protegidas no banco; retencao/exclusao continuam pendentes.
 - Sem parser OFX.

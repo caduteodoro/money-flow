@@ -161,6 +161,8 @@ Nao ha soft delete, recibo, tombstone, fila ou tabela de solicitacao. O CSV brut
 
 A matriz consolidada de `SEC-001` a `SEC-013`, as fronteiras entre ambiente local, uso restrito e producao publica e as evidencias atualizadas estao em [`docs/16-sprint-5-security-consolidation.md`](16-sprint-5-security-consolidation.md). O Bloco 6 confirmou `SEC-005`, `SEC-006` e `SEC-007`, manteve `BCK-011` aberto e identificou como bloqueadores de uso externo os advisories atuais, a validacao de proxy/Origin e a exposicao de e-mail sintetico em log de erro do Prisma. Nenhuma dependencia ou mitigacao nova foi aplicada.
 
+O tratamento posterior esta em [`docs/17-sprint-5-final-remediation.md`](17-sprint-5-final-remediation.md): `SEC-008` foi parcialmente mitigado com aceite residual restrito ao desenho local, `SEC-010` foi mitigado e `SEC-009` permanece dependente de validacao operacional.
+
 Eventos atuais:
 
 - `USER_REGISTERED`
@@ -185,6 +187,22 @@ Nao registrar:
 - Dados de conta bancaria.
 - Valores financeiros sensiveis.
 - Conteudo bruto de arquivos CSV.
+
+## Logging tecnico seguro
+
+O Prisma envia erros e warnings configurados como eventos para uma camada local de logging seguro. O evento bruto e descartado: `message`, `meta`, `stack`, argumentos e quaisquer valores incorporados pelo driver nao sao registrados. A saida permitida contem somente tipo fixo do evento, contexto enumerado, classificacao tecnica, codigo Prisma validado quando ele estiver disponivel separadamente e um UUID aleatorio de correlacao.
+
+Testes unitarios com e-mail, senha, hash, token, descricao e valor sinteticos cobrem o contrato fechado. Um teste PostgreSQL real provoca `P2002` com identidade sintetica e confirma que o log nao contem e-mail, hash ou nome. Mensagens publicas dos fluxos continuam genericas.
+
+Essa sanitizacao cobre o logger Prisma controlado pela aplicacao. Logs da plataforma, proxy, runtime e banco gerenciado ainda precisam de validacao no ambiente implantado.
+
+## Origem, proxy e cookies
+
+- Server Actions usam a validacao nativa de `Origin` contra `Host`/`X-Forwarded-Host` do Next.js; nao existe allowlist adicional porque o projeto atual possui uma unica origem esperada.
+- O proxy futuro deve remover headers encaminhados fornecidos pelo cliente e escrever valores canonicos; a aplicacao nao considera `X-Forwarded-*` confiavel por si so.
+- A origem publica deve ser unica, HTTPS e explicitamente conhecida na configuracao operacional. Hosts inesperados nao devem chegar diretamente ao runtime.
+- Cookies de sessao ja usam `secure` em producao, `httpOnly` e `SameSite=Lax`.
+- Ausencia de deployment impede validar preservacao de `Host`, `Origin`, protocolo, redirects e bloqueio do acesso direto a origem. Por isso `SEC-009` permanece parcialmente mitigado e preview externo nao esta autorizado.
 
 ## Upload CSV da Sprint 2
 
