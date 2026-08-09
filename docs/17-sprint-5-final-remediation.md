@@ -95,3 +95,5 @@ Checklist futuro: testar same-origin e cross-origin atras do proxy, host invalid
 - nao existe autorizacao para preview externo ou producao publica.
 
 O Bloco 7B deve decidir os gates finais e a eventual integracao da Sprint 5 sem converter este resultado tecnico em aprovacao operacional. A Sprint 5 permanece aberta.
+
+> Nota de continuidade: o gate posterior foi aprovado no Bloco 7B e esta documentado em [`docs/18-sprint-5-closure.md`](18-sprint-5-closure.md). O fechamento autoriza integracao local, nao preview, producao ou deploy.

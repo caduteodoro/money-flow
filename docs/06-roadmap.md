@@ -95,9 +95,9 @@ Estado atual:
 - Bloco 5: concluido no escopo das Atividades 5.1, 5.2 e 5.3.
 - Bloco 6: concluido; postura de seguranca, privacidade, dependencias, cobertura e fronteiras de liberacao consolidadas sem implementar novas mitigacoes.
 - Bloco 7A: concluido tecnicamente; atualizacoes compativeis trataram advisories alcancaveis, `SEC-010` foi mitigado por logging seguro e o contrato independente de provedor de `SEC-009` foi consolidado.
-- Bloco 7B: planejado e nao iniciado; deve decidir os gates finais sem presumir validacao operacional ou autorizacao de uso externo.
+- Bloco 7B: concluido; gate final aprovou integracao local por fast-forward, preservando bloqueios operacionais de preview e producao.
 - O rate limiting persistente atual cobre login e cadastro por identidade; protecao por origem/borda e outros vetores de abuso permanecem pendentes.
-- A Sprint 5 permanece aberta. Integracao, Bloco 7B e validacoes de pre-producao nao estao concluidos.
+- A Sprint 5 esta concluida no escopo tecnico local. Isso nao declara prontidao para preview externo, producao publica ou deploy.
 
 ## Futuro pos-MVP
 

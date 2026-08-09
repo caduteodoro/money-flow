@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 em andamento - Bloco 7A concluido tecnicamente; dependencias alcancaveis e logging Prisma remediados, enquanto preview externo e producao continuam sem autorizacao**.
+Status atual: **Sprint 5 concluida e integrada no escopo tecnico local; preview externo, producao e deploy continuam sem autorizacao**.
 
 ## Problema
 
