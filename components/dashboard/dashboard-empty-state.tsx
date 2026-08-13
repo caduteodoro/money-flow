@@ -31,7 +31,7 @@ export function DashboardEmptyState({
               ? `O filtro ${filterLabel} nao encontrou movimentacoes${
                   periodRangeLabel ? ` entre ${periodRangeLabel}` : ""
                 }. Os seus dados importados continuam disponiveis em outros periodos.`
-              : "Depois da primeira importacao, esta tela mostra KPIs reais, saldo do periodo e as ultimas transacoes vinculadas ao seu usuario."}
+              : "Depois da primeira importacao, esta tela mostra KPIs reais, resultado do periodo e as ultimas transacoes vinculadas ao seu usuario."}
           </p>
         </div>
 

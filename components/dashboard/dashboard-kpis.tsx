@@ -31,16 +31,19 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
       icon: <ArrowUpRight className="size-5" aria-hidden="true" />,
     },
     {
-      label: "Saldo",
-      value: formatCurrency(kpis.balanceCents),
+      label: "Resultado do periodo",
+      value: formatCurrency(kpis.periodResultCents),
       helper: "Entradas menos saidas.",
       accent: "bg-sky-50 text-sky-700",
       icon: <CircleDollarSign className="size-5" aria-hidden="true" />,
     },
     {
-      label: "Gasto medio diario",
-      value: formatCurrency(kpis.averageDailyExpenseCents),
-      helper: "Saidas divididas pelos dias do periodo.",
+      label: "Gasto medio por saida",
+      value: kpis.averageExpenseCents === null ? "Sem saidas" : formatCurrency(kpis.averageExpenseCents),
+      helper:
+        kpis.averageExpenseCents === null
+          ? "Nenhuma despesa no periodo."
+          : "Saidas divididas pela quantidade de despesas.",
       accent: "bg-amber-50 text-amber-700",
       icon: <TrendingDown className="size-5" aria-hidden="true" />,
     },
@@ -53,8 +56,8 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
     },
     {
       label: "Transacoes",
-      value: String(kpis.transactionCount),
-      helper: "Itens considerados no periodo.",
+      value: String(kpis.includedTransactionCount),
+      helper: "Entradas e saidas consideradas no periodo.",
       accent: "bg-teal-50 text-brand-teal",
       icon: <ListChecks className="size-5" aria-hidden="true" />,
     },

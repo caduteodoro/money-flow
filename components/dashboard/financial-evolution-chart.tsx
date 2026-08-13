@@ -5,10 +5,7 @@ type FinancialEvolutionChartProps = {
 };
 
 export function FinancialEvolutionChart({ points }: FinancialEvolutionChartProps) {
-  const maxValue = Math.max(
-    1,
-    ...points.flatMap((point) => [point.incomeCents, point.expenseCents, Math.abs(point.cumulativeBalanceCents)]),
-  );
+  const maxValue = Math.max(1, ...points.flatMap((point) => [point.incomeCents, point.expenseCents]));
 
   return (
     <div className="space-y-4">

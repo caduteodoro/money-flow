@@ -18,7 +18,7 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({ user, summary, activeFilter }: DashboardShellProps) {
-  const hasTransactionsInPeriod = summary.kpis.transactionCount > 0;
+  const hasTransactionsInPeriod = summary.kpis.includedTransactionCount > 0;
   const activeFilterLabel = formatFilterLabel(activeFilter);
   const periodRangeLabel = formatPeriodRange(summary.period);
 
@@ -90,12 +90,12 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 }
 
 function formatPeriodRange(period: DashboardSummary["period"]) {
-  if (!period.startDate || !period.endDate) {
+  if (!period.startInclusive || !period.endExclusive) {
     return null;
   }
 
-  const start = formatDate(period.startDate);
-  const end = formatDate(period.endDate);
+  const start = formatDate(period.startInclusive);
+  const end = formatDate(new Date(period.endExclusive.getTime() - 1));
 
   return start === end ? start : `${start} a ${end}`;
 }

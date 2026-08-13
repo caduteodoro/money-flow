@@ -4,6 +4,27 @@ type TransactionsTableProps = {
   transactions: DashboardTransactionItem[];
 };
 
+const directionLabels: Record<DashboardTransactionItem["direction"], string> = {
+  INCOME: "Entrada",
+  EXPENSE: "Saida",
+  TRANSFER: "Transferencia",
+  REVERSAL: "Estorno",
+};
+
+const directionClasses: Record<DashboardTransactionItem["direction"], string> = {
+  INCOME: "bg-emerald-50 text-emerald-700",
+  EXPENSE: "bg-rose-50 text-rose-700",
+  TRANSFER: "bg-sky-50 text-sky-700",
+  REVERSAL: "bg-amber-50 text-amber-700",
+};
+
+const amountClasses: Record<DashboardTransactionItem["direction"], string> = {
+  INCOME: "text-emerald-700",
+  EXPENSE: "text-rose-700",
+  TRANSFER: "text-sky-700",
+  REVERSAL: "text-amber-700",
+};
+
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   return (
     <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-200">
@@ -30,21 +51,13 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <span
-                    className={`inline-flex max-w-full truncate rounded-full px-2.5 py-1 text-xs font-bold ${
-                      isExpense(transaction.direction, transaction.amountCents)
-                        ? "bg-rose-50 text-rose-700"
-                        : "bg-emerald-50 text-emerald-700"
-                    }`}
+                    className={`inline-flex max-w-full truncate rounded-full px-2.5 py-1 text-xs font-bold ${directionClasses[transaction.direction]}`}
                   >
-                    {formatDirection(transaction.direction, transaction.amountCents)}
+                    {directionLabels[transaction.direction]}
                   </span>
                 </td>
                 <td
-                  className={`whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums ${
-                    isExpense(transaction.direction, transaction.amountCents)
-                      ? "text-rose-700"
-                      : "text-emerald-700"
-                  }`}
+                  className={`whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums ${amountClasses[transaction.direction]}`}
                 >
                   {formatCurrency(transaction.amountCents)}
                 </td>
@@ -67,7 +80,7 @@ function formatCurrency(amountCents: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(amountCents / 100);
+  }).format(Math.abs(amountCents) / 100);
 }
 
 function formatDate(date: string) {
@@ -77,24 +90,4 @@ function formatDate(date: string) {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(date));
-}
-
-function formatDirection(direction: string, amountCents: number) {
-  if (direction === "INCOME" || amountCents > 0) {
-    return "Entrada";
-  }
-
-  if (direction === "EXPENSE" || amountCents < 0) {
-    return "Saida";
-  }
-
-  if (direction === "TRANSFER") {
-    return "Transferencia";
-  }
-
-  return "Estorno";
-}
-
-function isExpense(direction: string, amountCents: number) {
-  return direction === "EXPENSE" || amountCents < 0;
 }

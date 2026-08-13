@@ -2,14 +2,22 @@ import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
 import {
+  buildDashboardKpiComparisons,
+  buildDashboardOffenders,
+  buildDashboardTimeSeries,
+  calculateCategoryAnalytics,
+  calculateFinancialKpis,
+} from "@/lib/dashboard/dashboard-calculations";
+import {
   resolveFixedDashboardDateRange,
   resolveImportedPeriodDateRange,
+  resolvePreviousDashboardDateRange,
 } from "@/lib/dashboard/date-filters";
 import type {
-  DashboardChartGranularity,
-  DashboardCharts,
+  DashboardAnalyticsTransaction,
   DashboardDateFilterId,
   DashboardDateRange,
+  DashboardFinancialTransaction,
   DashboardInsight,
   DashboardQueryParams,
   DashboardSummary,
@@ -19,14 +27,11 @@ import type {
 
 const DEFAULT_DASHBOARD_FILTER: DashboardDateFilterId = "imported-period";
 const RECENT_TRANSACTIONS_LIMIT = 10;
-
-type DashboardTransaction = {
-  id: string;
-  occurredAt: Date;
-  description: string;
-  amountCents: number;
-  direction: string;
-};
+const OFFENDER_LIMITS = {
+  largestExpenses: 5,
+  normalizedDescriptions: 5,
+  expenseDays: 5,
+} as const;
 
 export async function getDashboardSummary(params: DashboardQueryParams): Promise<DashboardSummary> {
   if (!params.userId) {
@@ -43,32 +48,78 @@ export async function getDashboardSummary(params: DashboardQueryParams): Promise
     }),
   ]);
   const hasImportedTransactions = totalTransactionCount > 0;
+  const comparisonPeriod = resolvePreviousDashboardDateRange(period);
 
-  if (!period.startDate || !period.endDate) {
-    return buildEmptyDashboardSummary(period, hasImportedTransactions);
+  if (
+    !period.startInclusive ||
+    !period.endExclusive ||
+    !comparisonPeriod?.startInclusive ||
+    !comparisonPeriod.endExclusive
+  ) {
+    return buildDashboardSummary(period, comparisonPeriod, [], [], hasImportedTransactions);
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      userId: params.userId,
-      occurredAt: {
-        gte: period.startDate,
-        lte: period.endDate,
-      },
-    },
-    select: {
-      id: true,
-      occurredAt: true,
-      description: true,
-      amountCents: true,
-      direction: true,
-    },
-    orderBy: {
-      occurredAt: "desc",
-    },
-  });
+  const comparisonStartInclusive = comparisonPeriod.startInclusive;
+  const comparisonEndExclusive = comparisonPeriod.endExclusive;
 
-  return buildDashboardSummary(period, transactions, hasImportedTransactions);
+  const [currentTransactions, previousTransactions] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        userId: params.userId,
+        occurredAt: {
+          gte: period.startInclusive,
+          lt: period.endExclusive,
+        },
+      },
+      select: {
+        id: true,
+        occurredAt: true,
+        description: true,
+        normalizedDescription: true,
+        descriptionHash: true,
+        amountCents: true,
+        direction: true,
+        categoryId: true,
+        categorizationSource: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [{ occurredAt: "desc" }, { id: "asc" }],
+    }),
+    prisma.transaction.findMany({
+      where: {
+        userId: params.userId,
+        occurredAt: {
+          gte: comparisonStartInclusive,
+          lt: comparisonEndExclusive,
+        },
+      },
+      select: {
+        id: true,
+        occurredAt: true,
+        amountCents: true,
+        direction: true,
+      },
+    }),
+  ]);
+
+  return buildDashboardSummary(
+    period,
+    comparisonPeriod,
+    currentTransactions,
+    previousTransactions,
+    hasImportedTransactions,
+  );
 }
 
 async function resolveDashboardDateRange(
@@ -97,90 +148,51 @@ async function resolveDashboardDateRange(
 
 function buildDashboardSummary(
   period: DashboardDateRange,
-  transactions: DashboardTransaction[],
+  comparisonPeriod: DashboardDateRange | null,
+  currentTransactions: DashboardAnalyticsTransaction[],
+  previousTransactions: DashboardFinancialTransaction[],
   hasImportedTransactions: boolean,
 ): DashboardSummary {
-  const kpis = calculateFinancialKpis(transactions, period.dayCount);
-  const largestExpense = transactions
-    .filter(isExpenseTransaction)
-    .sort((first, second) => Math.abs(second.amountCents) - Math.abs(first.amountCents))[0];
-  const dashboardLargestExpense = largestExpense
-    ? {
-        id: largestExpense.id,
-        occurredAt: largestExpense.occurredAt.toISOString(),
-        description: largestExpense.description,
-        amountCents: Math.abs(largestExpense.amountCents),
-      }
-    : null;
+  const kpis = calculateFinancialKpis(currentTransactions);
+  const previousKpis = calculateFinancialKpis(previousTransactions);
+  const categories = calculateCategoryAnalytics(currentTransactions);
+  const offenders = buildDashboardOffenders(currentTransactions, categories, OFFENDER_LIMITS);
+  const timeSeries = buildDashboardTimeSeries(period, currentTransactions);
+  const largestExpense = offenders.largestExpenses[0] ?? null;
 
   return {
     period,
+    comparisonPeriod,
     hasImportedTransactions,
     kpis,
-    largestExpense: dashboardLargestExpense,
-    recentTransactions: buildRecentTransactions(transactions),
-    charts: buildDashboardCharts(period, transactions),
-    insights: buildDashboardInsights(kpis, dashboardLargestExpense),
-  };
-}
-
-function calculateFinancialKpis(transactions: DashboardTransaction[], dayCount: number): FinancialKpis {
-  const totals = transactions.reduce(
-    (accumulator, transaction) => {
-      if (isIncomeTransaction(transaction)) {
-        accumulator.totalIncomeCents += Math.abs(transaction.amountCents);
-      }
-
-      if (isExpenseTransaction(transaction)) {
-        accumulator.totalExpenseCents += Math.abs(transaction.amountCents);
-      }
-
-      return accumulator;
-    },
-    {
-      totalIncomeCents: 0,
-      totalExpenseCents: 0,
-    },
-  );
-
-  return {
-    totalIncomeCents: totals.totalIncomeCents,
-    totalExpenseCents: totals.totalExpenseCents,
-    balanceCents: totals.totalIncomeCents - totals.totalExpenseCents,
-    averageDailyExpenseCents: dayCount > 0 ? Math.round(totals.totalExpenseCents / dayCount) : 0,
-    transactionCount: transactions.length,
-  };
-}
-
-function buildEmptyDashboardSummary(
-  period: DashboardDateRange,
-  hasImportedTransactions: boolean,
-): DashboardSummary {
-  return {
-    period,
-    hasImportedTransactions,
-    kpis: {
-      totalIncomeCents: 0,
-      totalExpenseCents: 0,
-      balanceCents: 0,
-      averageDailyExpenseCents: 0,
-      transactionCount: 0,
-    },
-    largestExpense: null,
-    recentTransactions: [],
+    comparisons: buildDashboardKpiComparisons(
+      kpis,
+      previousKpis.includedTransactionCount > 0 ? previousKpis : null,
+    ),
+    largestExpense: largestExpense
+      ? {
+          id: largestExpense.id,
+          occurredAt: largestExpense.occurredAt,
+          description: largestExpense.description,
+          amountCents: largestExpense.amountCents,
+        }
+      : null,
+    recentTransactions: buildRecentTransactions(currentTransactions),
     charts: {
-      granularity: "day",
-      cashflow: [],
+      granularity: timeSeries.granularity,
+      cashflow: timeSeries.points,
       incomeExpense: {
-        incomeCents: 0,
-        expenseCents: 0,
+        incomeCents: kpis.totalIncomeCents,
+        expenseCents: kpis.totalExpenseCents,
       },
     },
-    insights: [],
+    categories,
+    offenders,
+    insights: buildDashboardInsights(kpis, largestExpense),
   };
 }
 
-function buildRecentTransactions(transactions: DashboardTransaction[]): DashboardTransactionItem[] {
+function buildRecentTransactions(transactions: DashboardAnalyticsTransaction[]): DashboardTransactionItem[] {
   return transactions.slice(0, RECENT_TRANSACTIONS_LIMIT).map((transaction) => ({
     id: transaction.id,
     occurredAt: transaction.occurredAt.toISOString(),
@@ -190,140 +202,14 @@ function buildRecentTransactions(transactions: DashboardTransaction[]): Dashboar
   }));
 }
 
-function isIncomeTransaction(transaction: DashboardTransaction) {
-  return transaction.direction === "INCOME" || transaction.amountCents > 0;
-}
-
-function isExpenseTransaction(transaction: DashboardTransaction) {
-  return transaction.direction === "EXPENSE" || transaction.amountCents < 0;
-}
-
-function buildDashboardCharts(period: DashboardDateRange, transactions: DashboardTransaction[]): DashboardCharts {
-  const granularity: DashboardChartGranularity = period.dayCount > 92 ? "month" : "day";
-  const buckets = createPeriodBuckets(period, granularity);
-
-  for (const transaction of transactions) {
-    const key = getBucketKey(transaction.occurredAt, granularity);
-    const bucket = buckets.get(key);
-
-    if (!bucket) {
-      continue;
-    }
-
-    if (isIncomeTransaction(transaction)) {
-      bucket.incomeCents += Math.abs(transaction.amountCents);
-    }
-
-    if (isExpenseTransaction(transaction)) {
-      bucket.expenseCents += Math.abs(transaction.amountCents);
-    }
-
-    bucket.transactionCount += 1;
-  }
-
-  let cumulativeBalanceCents = 0;
-  const cashflow = Array.from(buckets.values()).map((bucket) => {
-    const balanceCents = bucket.incomeCents - bucket.expenseCents;
-    cumulativeBalanceCents += balanceCents;
-
-    return {
-      ...bucket,
-      balanceCents,
-      cumulativeBalanceCents,
-    };
-  });
-
-  return {
-    granularity,
-    cashflow,
-    incomeExpense: {
-      incomeCents: cashflow.reduce((total, point) => total + point.incomeCents, 0),
-      expenseCents: cashflow.reduce((total, point) => total + point.expenseCents, 0),
-    },
-  };
-}
-
-function createPeriodBuckets(period: DashboardDateRange, granularity: DashboardChartGranularity) {
-  const buckets = new Map<
-    string,
-    {
-      key: string;
-      label: string;
-      incomeCents: number;
-      expenseCents: number;
-      transactionCount: number;
-    }
-  >();
-
-  if (!period.startDate || !period.endDate) {
-    return buckets;
-  }
-
-  const cursor = new Date(
-    Date.UTC(period.startDate.getUTCFullYear(), period.startDate.getUTCMonth(), period.startDate.getUTCDate()),
-  );
-  const end = new Date(
-    Date.UTC(period.endDate.getUTCFullYear(), period.endDate.getUTCMonth(), period.endDate.getUTCDate()),
-  );
-
-  while (cursor.getTime() <= end.getTime()) {
-    const key = getBucketKey(cursor, granularity);
-
-    if (!buckets.has(key)) {
-      buckets.set(key, {
-        key,
-        label: formatBucketLabel(cursor, granularity),
-        incomeCents: 0,
-        expenseCents: 0,
-        transactionCount: 0,
-      });
-    }
-
-    if (granularity === "month") {
-      cursor.setUTCMonth(cursor.getUTCMonth() + 1, 1);
-    } else {
-      cursor.setUTCDate(cursor.getUTCDate() + 1);
-    }
-  }
-
-  return buckets;
-}
-
-function getBucketKey(date: Date, granularity: DashboardChartGranularity) {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-
-  if (granularity === "month") {
-    return `${year}-${month}`;
-  }
-
-  const day = String(date.getUTCDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function formatBucketLabel(date: Date, granularity: DashboardChartGranularity) {
-  if (granularity === "month") {
-    return new Intl.DateTimeFormat("pt-BR", {
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    })
-      .format(date)
-      .replace(".", "");
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "UTC",
-  }).format(date);
-}
-
 function buildDashboardInsights(
   kpis: FinancialKpis,
-  largestExpense: NonNullable<DashboardSummary["largestExpense"]> | null,
+  largestExpense: DashboardSummary["offenders"]["largestExpenses"][number] | null,
 ): DashboardInsight[] {
+  if (kpis.includedTransactionCount === 0) {
+    return [];
+  }
+
   const insights: DashboardInsight[] = [];
 
   if (largestExpense) {
@@ -337,7 +223,7 @@ function buildDashboardInsights(
   }
 
   insights.push({
-    id: "income-expense-balance",
+    id: "income-expense-result",
     title: kpis.totalExpenseCents > kpis.totalIncomeCents ? "Saidas acima das entradas" : "Entradas cobriram as saidas",
     description:
       kpis.totalExpenseCents > kpis.totalIncomeCents
@@ -347,28 +233,30 @@ function buildDashboardInsights(
   });
 
   insights.push({
-    id: "period-balance",
-    title: kpis.balanceCents >= 0 ? "Saldo positivo no periodo" : "Saldo negativo no periodo",
+    id: "period-result",
+    title: kpis.periodResultCents >= 0 ? "Resultado positivo no periodo" : "Resultado negativo no periodo",
     description:
-      kpis.balanceCents >= 0
-        ? "O saldo do periodo ficou acima de zero."
-        : "O saldo do periodo ficou abaixo de zero, sem julgamento: e um ponto de atencao para recalcular a rota.",
-    tone: kpis.balanceCents >= 0 ? "positive" : "warning",
-    amountCents: Math.abs(kpis.balanceCents),
+      kpis.periodResultCents >= 0
+        ? "O resultado do periodo ficou acima de zero."
+        : "O resultado do periodo ficou abaixo de zero, sem julgamento: e um ponto de atencao para recalcular a rota.",
+    tone: kpis.periodResultCents >= 0 ? "positive" : "warning",
+    amountCents: Math.abs(kpis.periodResultCents),
   });
 
-  insights.push({
-    id: "average-daily-expense",
-    title: "Gasto medio diario",
-    description: "Media simples das saidas dividida pelos dias do periodo selecionado.",
-    tone: "neutral",
-    amountCents: kpis.averageDailyExpenseCents,
-  });
+  if (kpis.averageExpenseCents !== null) {
+    insights.push({
+      id: "average-expense",
+      title: "Gasto medio por saida",
+      description: "Media das despesas dividida pela quantidade de transacoes de saida.",
+      tone: "neutral",
+      amountCents: kpis.averageExpenseCents,
+    });
+  }
 
   insights.push({
     id: "transaction-count",
     title: "Volume de transacoes",
-    description: `${kpis.transactionCount} transacoes foram consideradas neste periodo.`,
+    description: `${kpis.includedTransactionCount} transacoes financeiras foram consideradas neste periodo.`,
     tone: "neutral",
   });
 
