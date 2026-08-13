@@ -15,6 +15,7 @@ import {
 } from "@/lib/dashboard/date-filters";
 import type {
   DashboardAnalyticsTransaction,
+  DashboardCategoryAnalytics,
   DashboardDateFilterId,
   DashboardDateRange,
   DashboardFinancialTransaction,
@@ -22,7 +23,7 @@ import type {
   DashboardQueryParams,
   DashboardSummary,
   DashboardTransactionItem,
-  FinancialKpis,
+  DashboardOffenders,
 } from "@/lib/dashboard/dashboard-types";
 
 const DEFAULT_DASHBOARD_FILTER: DashboardDateFilterId = "imported-period";
@@ -159,16 +160,17 @@ function buildDashboardSummary(
   const offenders = buildDashboardOffenders(currentTransactions, categories, OFFENDER_LIMITS);
   const timeSeries = buildDashboardTimeSeries(period, currentTransactions);
   const largestExpense = offenders.largestExpenses[0] ?? null;
+  const comparisons = buildDashboardKpiComparisons(
+    kpis,
+    previousKpis.includedTransactionCount > 0 ? previousKpis : null,
+  );
 
   return {
     period,
     comparisonPeriod,
     hasImportedTransactions,
     kpis,
-    comparisons: buildDashboardKpiComparisons(
-      kpis,
-      previousKpis.includedTransactionCount > 0 ? previousKpis : null,
-    ),
+    comparisons,
     largestExpense: largestExpense
       ? {
           id: largestExpense.id,
@@ -188,7 +190,7 @@ function buildDashboardSummary(
     },
     categories,
     offenders,
-    insights: buildDashboardInsights(kpis, largestExpense),
+    insights: buildDashboardInsights(categories, offenders),
   };
 }
 
@@ -199,67 +201,79 @@ function buildRecentTransactions(transactions: DashboardAnalyticsTransaction[]):
     description: transaction.description,
     direction: transaction.direction,
     amountCents: transaction.amountCents,
+    category: transaction.category
+      ? {
+          id: transaction.category.id,
+          name: transaction.category.name,
+          rootCategoryId: transaction.category.parent?.id ?? transaction.category.id,
+          rootCategoryName: transaction.category.parent?.name ?? transaction.category.name,
+        }
+      : null,
   }));
 }
 
 function buildDashboardInsights(
-  kpis: FinancialKpis,
-  largestExpense: DashboardSummary["offenders"]["largestExpenses"][number] | null,
+  categories: DashboardCategoryAnalytics,
+  offenders: DashboardOffenders,
 ): DashboardInsight[] {
-  if (kpis.includedTransactionCount === 0) {
+  if (categories.coverage.totalExpenseCount === 0) {
     return [];
   }
 
   const insights: DashboardInsight[] = [];
 
-  if (largestExpense) {
+  if (categories.topCategory) {
+    const percentage =
+      categories.coverage.totalExpenseCents > 0
+        ? (categories.topCategory.amountCents / categories.coverage.totalExpenseCents) * 100
+        : 0;
     insights.push({
-      id: "largest-expense",
-      title: "Maior gasto do periodo",
-      description: "A maior saida registrada ajuda a entender onde o fluxo mais pesou.",
+      id: "top-category-concentration",
+      title: `${categories.topCategory.rootCategoryName} liderou as despesas`,
+      description: `${formatPercentage(percentage)} do total de saídas ficou concentrado nessa categoria raiz.`,
       tone: "neutral",
-      amountCents: largestExpense.amountCents,
-      target: largestExpense.target,
+      amountCents: categories.topCategory.amountCents,
+      target: categories.topCategory.target,
     });
   }
 
-  insights.push({
-    id: "income-expense-result",
-    title: kpis.totalExpenseCents > kpis.totalIncomeCents ? "Saidas acima das entradas" : "Entradas cobriram as saidas",
-    description:
-      kpis.totalExpenseCents > kpis.totalIncomeCents
-        ? "O periodo fechou com mais saidas do que entradas. Vale acompanhar a rota nos proximos lancamentos."
-        : "As entradas foram suficientes para cobrir as saidas deste periodo.",
-    tone: kpis.totalExpenseCents > kpis.totalIncomeCents ? "warning" : "positive",
-  });
-
-  insights.push({
-    id: "period-result",
-    title: kpis.periodResultCents >= 0 ? "Resultado positivo no periodo" : "Resultado negativo no periodo",
-    description:
-      kpis.periodResultCents >= 0
-        ? "O resultado do periodo ficou acima de zero."
-        : "O resultado do periodo ficou abaixo de zero, sem julgamento: e um ponto de atencao para recalcular a rota.",
-    tone: kpis.periodResultCents >= 0 ? "positive" : "warning",
-    amountCents: Math.abs(kpis.periodResultCents),
-  });
-
-  if (kpis.averageExpenseCents !== null) {
+  if (categories.uncategorized.amountCents > 0) {
+    const percentage =
+      (categories.uncategorized.amountCents / categories.coverage.totalExpenseCents) * 100;
     insights.push({
-      id: "average-expense",
-      title: "Gasto medio por saida",
-      description: "Media das despesas dividida pela quantidade de transacoes de saida.",
-      tone: "neutral",
-      amountCents: kpis.averageExpenseCents,
+      id: "uncategorized-expenses",
+      title: "Há despesas sem categoria",
+      description: `${formatPercentage(percentage)} das saídas por valor ainda está separado como Sem categoria.`,
+      tone: "warning",
+      amountCents: categories.uncategorized.amountCents,
+      target: categories.uncategorized.target,
     });
   }
 
-  insights.push({
-    id: "transaction-count",
-    title: "Volume de transacoes",
-    description: `${kpis.includedTransactionCount} transacoes financeiras foram consideradas neste periodo.`,
-    tone: "neutral",
-  });
+  const topExpenseDay = offenders.topExpenseDays[0];
+  if (topExpenseDay) {
+    insights.push({
+      id: "top-expense-day",
+      title: "Dia com maior volume de saídas",
+      description: `${formatDate(topExpenseDay.date)} reuniu ${topExpenseDay.transactionCount} ${topExpenseDay.transactionCount === 1 ? "despesa" : "despesas"}.`,
+      tone: "neutral",
+      amountCents: topExpenseDay.amountCents,
+      target: topExpenseDay.target,
+    });
+  }
 
   return insights;
+}
+
+function formatPercentage(value: number) {
+  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(value)}%`;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
 }

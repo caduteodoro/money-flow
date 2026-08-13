@@ -21,6 +21,14 @@ const iconClasses: Record<DashboardInsight["tone"], string> = {
 };
 
 export function BasicInsights({ insights, activeFilter }: BasicInsightsProps) {
+  if (insights.length === 0) {
+    return (
+      <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+        Não há sinais analíticos adicionais para este recorte. Os indicadores principais continuam disponíveis acima.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {insights.map((insight) => {
@@ -44,7 +52,7 @@ export function BasicInsights({ insights, activeFilter }: BasicInsightsProps) {
               <p className="mt-1 text-sm leading-6">{insight.description}</p>
               {href ? (
                 <Link className="mt-2 inline-flex min-h-10 items-center text-sm font-bold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" href={href}>
-                  Ver transacao
+                  {formatActionLabel(insight)}
                 </Link>
               ) : null}
             </div>
@@ -54,6 +62,13 @@ export function BasicInsights({ insights, activeFilter }: BasicInsightsProps) {
       })}
     </div>
   );
+}
+
+function formatActionLabel(insight: DashboardInsight) {
+  if (insight.target?.kind === "TRANSACTION") return "Localizar transação";
+  if (insight.target?.kind === "DAY") return "Ver despesas do dia";
+  if (insight.target?.kind === "UNCATEGORIZED") return "Revisar sem categoria";
+  return "Ver despesas relacionadas";
 }
 
 function InsightIcon({ tone }: { tone: DashboardInsight["tone"] }) {

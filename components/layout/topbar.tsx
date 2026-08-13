@@ -8,6 +8,7 @@ type TopbarProps = {
   eyebrow?: string;
   title?: string;
   periodLabel?: string;
+  showContextBadge?: boolean;
 };
 
 export function Topbar({
@@ -15,6 +16,7 @@ export function Topbar({
   eyebrow = "Visao geral",
   title = "Dashboard financeiro",
   periodLabel = "Periodo",
+  showContextBadge = true,
 }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex flex-col gap-4 border-b border-slate-200/80 bg-white/95 px-5 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between lg:px-8">
@@ -25,13 +27,12 @@ export function Topbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-teal-100 bg-teal-50 px-4 text-sm font-semibold text-brand-teal"
-          type="button"
-        >
-          <CalendarDays className="size-4" aria-hidden="true" />
-          {periodLabel}
-        </button>
+        {showContextBadge && periodLabel ? (
+          <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-teal-100 bg-teal-50 px-4 text-sm font-semibold text-brand-teal">
+            <CalendarDays className="size-4" aria-hidden="true" />
+            {periodLabel}
+          </span>
+        ) : null}
         <form action={logoutAction}>
           <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-brand-navy transition hover:border-teal-200 hover:bg-teal-50">
             <LogOut className="size-4" aria-hidden="true" />

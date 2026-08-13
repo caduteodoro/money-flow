@@ -1,82 +1,58 @@
-import type { DashboardTimeSeriesPoint } from "@/lib/dashboard/dashboard-types";
+import { EChartsClient } from "@/components/dashboard/echarts-client";
+import type { DashboardEvolutionChartModel } from "@/lib/dashboard/dashboard-types";
+import { formatDashboardCurrency } from "@/lib/dashboard/dashboard-visualization";
 
 type FinancialEvolutionChartProps = {
-  points: DashboardTimeSeriesPoint[];
+  model: DashboardEvolutionChartModel;
 };
 
-export function FinancialEvolutionChart({ points }: FinancialEvolutionChartProps) {
-  const maxValue = Math.max(1, ...points.flatMap((point) => [point.incomeCents, point.expenseCents]));
-
+export function FinancialEvolutionChart({ model }: FinancialEvolutionChartProps) {
   return (
     <div className="space-y-4">
-      <div className="flex h-48 min-w-0 items-end gap-1.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-4 sm:gap-2">
-        {points.map((point, index) => {
-          const incomeHeight = calculateBarHeight(point.incomeCents, maxValue);
-          const expenseHeight = calculateBarHeight(point.expenseCents, maxValue);
-          const showLabel = shouldShowLabel(index, points.length);
+      <EChartsClient
+        ariaLabel="Gráfico de evolução financeira com entradas, saídas e resultado acumulado"
+        className="h-72 sm:h-80"
+        kind="evolution"
+        model={model}
+      />
 
-          return (
-            <div key={point.key} className="group flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
-              <div className="flex h-32 w-full max-w-7 items-end justify-center gap-1 sm:max-w-8">
-                <div
-                  className="w-1/2 rounded-t-sm bg-emerald-500 transition group-hover:bg-emerald-600"
-                  style={{ height: `${incomeHeight}%` }}
-                  title={`${point.label} - entradas: ${formatCurrency(point.incomeCents)}`}
-                />
-                <div
-                  className="w-1/2 rounded-t-sm bg-rose-500 transition group-hover:bg-rose-600"
-                  style={{ height: `${expenseHeight}%` }}
-                  title={`${point.label} - saidas: ${formatCurrency(point.expenseCents)}`}
-                />
-              </div>
-              <span className="h-4 max-w-14 truncate text-[11px] text-slate-500">
-                {showLabel ? point.label : ""}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      <p className="text-xs leading-5 text-slate-500">
+        Entradas aparecem acima de zero, saídas abaixo de zero e a linha acompanha o resultado acumulado.
+      </p>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-        <div className="flex flex-wrap gap-4">
-          <span className="inline-flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            Entradas
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <span className="size-2 rounded-full bg-rose-500" />
-            Saidas
-          </span>
+      <details className="rounded-lg border border-slate-200 bg-slate-50">
+        <summary className="min-h-11 cursor-pointer px-3 py-3 text-sm font-bold text-brand-teal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal">
+          Consultar dados da evolução em tabela
+        </summary>
+        <div className="overflow-x-auto border-t border-slate-200">
+          <table className="w-full min-w-[620px] text-left text-xs">
+            <thead className="bg-white text-slate-500">
+              <tr>
+                <th className="px-3 py-2">Período</th>
+                <th className="px-3 py-2 text-right">Entradas</th>
+                <th className="px-3 py-2 text-right">Saídas</th>
+                <th className="px-3 py-2 text-right">Resultado acumulado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {model.labels.map((label, index) => (
+                <tr key={`${label}-${index}`}>
+                  <td className="px-3 py-2 font-medium text-brand-navy">{label}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-emerald-700">
+                    {formatDashboardCurrency(model.incomeCents[index] ?? 0)}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-rose-700">
+                    {formatDashboardCurrency(model.expenseCents[index] ?? 0)}
+                  </td>
+                  <td className="px-3 py-2 text-right font-semibold tabular-nums text-sky-700">
+                    {formatDashboardCurrency(model.cumulativeResultCents[index] ?? 0)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <span>passe o mouse sobre as barras para ver valores</span>
-      </div>
+      </details>
     </div>
   );
-}
-
-function calculateBarHeight(amountCents: number, maxValue: number) {
-  if (amountCents <= 0) {
-    return 2;
-  }
-
-  return Math.max(6, Math.round((amountCents / maxValue) * 100));
-}
-
-function shouldShowLabel(index: number, total: number) {
-  if (total <= 8) {
-    return true;
-  }
-
-  if (index === 0 || index === total - 1) {
-    return true;
-  }
-
-  return index % Math.ceil(total / 6) === 0;
-}
-
-function formatCurrency(amountCents: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(amountCents / 100);
 }

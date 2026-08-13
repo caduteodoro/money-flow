@@ -1,13 +1,18 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { BasicInsights } from "@/components/dashboard/basic-insights";
 import { CategorizationCoverage } from "@/components/dashboard/categorization-coverage";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-filter";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Topbar } from "@/components/layout/topbar";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import type { DashboardDateFilterId, DashboardSummary } from "@/lib/dashboard/dashboard-types";
+import {
+  buildDashboardCategoryDestinationModel,
+  buildDashboardEvolutionChartModel,
+} from "@/lib/dashboard/dashboard-visualization";
 
 type DashboardShellProps = {
   user: {
@@ -22,34 +27,31 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
   const hasTransactionsInPeriod = summary.kpis.includedTransactionCount > 0;
   const activeFilterLabel = formatFilterLabel(activeFilter);
   const periodRangeLabel = formatPeriodRange(summary.period);
+  const evolutionModel = buildDashboardEvolutionChartModel(summary.charts.cashflow);
+  const categoryModel = buildDashboardCategoryDestinationModel(summary.categories);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50">
       <Sidebar activeItem="dashboard" />
       <main className="min-w-0 lg:pl-72">
-        <Topbar
-          eyebrow="Dashboard real"
-          periodLabel={activeFilterLabel}
-          title="Dashboard financeiro"
-          user={user}
-        />
+        <Topbar eyebrow="Cockpit financeiro" showContextBadge={false} title="Dashboard financeiro" user={user} />
         <div className="min-w-0 space-y-6 px-4 py-5 sm:px-5 lg:px-8 lg:py-7">
           <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-soft">
             <div className="border-l-4 border-brand-teal p-5 sm:p-6">
-              <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+              <div className="flex flex-col gap-5">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Sessao ativa</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Contexto analítico</p>
                   <h2 className="mt-2 text-balance text-xl font-bold text-brand-navy sm:text-2xl">
-                    Ola, {user.name}. Seu GPS financeiro esta pronto para recalcular a rota.
+                    Olá, {user.name}. Este é o resultado calculado para {activeFilterLabel.toLocaleLowerCase("pt-BR")}.
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {summary.hasImportedTransactions
-                      ? "Dados calculados a partir das transacoes importadas para o seu usuario."
-                      : "Importe seu primeiro CSV ficticio para ver os indicadores reais."}
+                      ? "Entradas e saídas são calculadas pelas transações importadas deste usuário; transferências e estornos ficam fora dos indicadores financeiros."
+                      : "Importe seu primeiro CSV fictício para ver os indicadores calculados."}
                   </p>
                   {periodRangeLabel ? (
                     <p className="mt-2 text-sm font-medium text-slate-500">
-                      Intervalo considerado: {periodRangeLabel}.
+                      Intervalo considerado: {periodRangeLabel}. O resultado do período não representa saldo bancário.
                     </p>
                   ) : null}
                 </div>
@@ -61,17 +63,41 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 
           {hasTransactionsInPeriod ? (
             <>
-              <DashboardKpis kpis={summary.kpis} largestExpense={summary.largestExpense} period={activeFilter} />
+              <DashboardKpis
+                comparisons={summary.comparisons}
+                kpis={summary.kpis}
+                largestExpense={summary.largestExpense}
+                period={activeFilter}
+              />
+
+              <DashboardCharts
+                activeFilter={activeFilter}
+                categoryModel={categoryModel}
+                evolutionModel={evolutionModel}
+                granularity={summary.charts.granularity}
+              />
 
               <CategorizationCoverage coverage={summary.categories.coverage} period={activeFilter} />
 
-              <DashboardCharts activeFilter={activeFilter} charts={summary.charts} insights={summary.insights} />
+              <Card>
+                <CardHeader>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Sinais do período</p>
+                    <h2 className="mt-1 text-lg font-bold text-brand-navy">Leituras contextuais</h2>
+                    <p className="mt-1 text-sm text-slate-500">Fatos derivados do recorte atual, sem recomendação financeira.</p>
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  <BasicInsights activeFilter={activeFilter} insights={summary.insights} />
+                </CardBody>
+              </Card>
 
               <Card>
                 <CardHeader>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Movimento recente</p>
-                    <h2 className="mt-1 text-base font-bold text-brand-navy">Ultimas transacoes</h2>
+                    <h2 className="mt-1 text-lg font-bold text-brand-navy">Últimas transações</h2>
+                    <p className="mt-1 text-sm text-slate-500">Inclui transferências e estornos para manter o histórico recente transparente.</p>
                   </div>
                 </CardHeader>
                 <CardBody>
@@ -93,13 +119,10 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 }
 
 function formatPeriodRange(period: DashboardSummary["period"]) {
-  if (!period.startInclusive || !period.endExclusive) {
-    return null;
-  }
+  if (!period.startInclusive || !period.endExclusive) return null;
 
   const start = formatDate(period.startInclusive);
   const end = formatDate(new Date(period.endExclusive.getTime() - 1));
-
   return start === end ? start : `${start} a ${end}`;
 }
 
@@ -114,12 +137,11 @@ function formatDate(date: Date) {
 
 function formatFilterLabel(filter: DashboardDateFilterId) {
   const labels: Record<DashboardDateFilterId, string> = {
-    "imported-period": "Todo o periodo importado",
-    "last-30-days": "Ultimos 30 dias",
-    "current-month": "Mes atual",
-    "previous-month": "Mes anterior",
+    "imported-period": "Todo o período importado",
+    "last-30-days": "Últimos 30 dias",
+    "current-month": "Mês atual",
+    "previous-month": "Mês anterior",
   };
 
   return labels[filter];
 }
-

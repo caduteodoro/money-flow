@@ -81,6 +81,12 @@ export type DashboardTransactionItem = {
   description: string;
   direction: TransactionDirection;
   amountCents: number;
+  category: {
+    id: string;
+    name: string;
+    rootCategoryId: string;
+    rootCategoryName: string;
+  } | null;
 };
 
 export type DashboardChartGranularity = "day" | "month";
@@ -168,6 +174,28 @@ export type DashboardGroupedCategories = {
   visibleCategories: DashboardRootCategoryGroup[];
   other: DashboardOtherCategoryGroup | null;
   uncategorized: DashboardUncategorizedGroup;
+};
+
+export type DashboardEvolutionChartModel = {
+  labels: string[];
+  incomeCents: number[];
+  expenseCents: number[];
+  cumulativeResultCents: number[];
+};
+
+export type DashboardCategoryDestinationItem = {
+  key: string;
+  kind: "ROOT_CATEGORY" | "OTHER" | "UNCATEGORIZED";
+  label: string;
+  amountCents: number;
+  transactionCount: number;
+  percentage: number;
+  target: DashboardDrillThroughTarget;
+};
+
+export type DashboardCategoryDestinationModel = {
+  totalExpenseCents: number;
+  items: DashboardCategoryDestinationItem[];
 };
 
 export type DashboardExpenseOffender = {
