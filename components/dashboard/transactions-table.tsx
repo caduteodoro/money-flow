@@ -1,7 +1,11 @@
-import type { DashboardTransactionItem } from "@/lib/dashboard/dashboard-types";
+import Link from "next/link";
+
+import type { DashboardDateFilterId, DashboardTransactionItem } from "@/lib/dashboard/dashboard-types";
+import { buildTransactionsUrl } from "@/lib/transactions";
 
 type TransactionsTableProps = {
   transactions: DashboardTransactionItem[];
+  activeFilter: DashboardDateFilterId;
 };
 
 const directionLabels: Record<DashboardTransactionItem["direction"], string> = {
@@ -25,7 +29,7 @@ const amountClasses: Record<DashboardTransactionItem["direction"], string> = {
   REVERSAL: "text-amber-700",
 };
 
-export function TransactionsTable({ transactions }: TransactionsTableProps) {
+export function TransactionsTable({ transactions, activeFilter }: TransactionsTableProps) {
   return (
     <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full min-w-[720px] table-fixed border-collapse text-sm">
@@ -48,6 +52,13 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                   <span className="block max-w-full truncate font-medium text-brand-navy">
                     {transaction.description}
                   </span>
+                  <Link
+                    aria-label="Localizar esta transacao na lista completa"
+                    className="mt-1 inline-flex min-h-8 items-center text-xs font-bold text-brand-teal underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal"
+                    href={buildTransactionsUrl({ period: activeFilter, transactionId: transaction.id })}
+                  >
+                    Localizar transacao
+                  </Link>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <span

@@ -92,6 +92,19 @@ export function resolvePreviousDashboardDateRange(period: DashboardDateRange): D
   );
 }
 
+export function resolveUtcCivilDateRange(date: string) {
+  const startInclusive = new Date(`${date}T00:00:00.000Z`);
+
+  if (Number.isNaN(startInclusive.getTime()) || startInclusive.toISOString().slice(0, 10) !== date) {
+    throw new RangeError("Data civil UTC invalida.");
+  }
+
+  return {
+    startInclusive,
+    endExclusive: addUtcDays(startInclusive, 1),
+  };
+}
+
 export function countUtcDays(startInclusive: Date, endExclusive: Date) {
   const duration = endExclusive.getTime() - startInclusive.getTime();
 

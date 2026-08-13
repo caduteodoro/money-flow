@@ -1,8 +1,11 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
-import type { DashboardInsight } from "@/lib/dashboard/dashboard-types";
+import Link from "next/link";
+import type { DashboardDateFilterId, DashboardInsight } from "@/lib/dashboard/dashboard-types";
+import { buildDashboardDrillThroughUrl } from "@/lib/transactions";
 
 type BasicInsightsProps = {
   insights: DashboardInsight[];
+  activeFilter: DashboardDateFilterId;
 };
 
 const toneClasses: Record<DashboardInsight["tone"], string> = {
@@ -17,10 +20,15 @@ const iconClasses: Record<DashboardInsight["tone"], string> = {
   neutral: "bg-white text-slate-500",
 };
 
-export function BasicInsights({ insights }: BasicInsightsProps) {
+export function BasicInsights({ insights, activeFilter }: BasicInsightsProps) {
   return (
     <div className="space-y-3">
-      {insights.map((insight) => (
+      {insights.map((insight) => {
+        const href = insight.target
+          ? buildDashboardDrillThroughUrl(insight.target, activeFilter)
+          : null;
+
+        return (
         <article key={insight.id} className={`rounded-xl border p-4 ${toneClasses[insight.tone]}`}>
           <div className="flex gap-3">
             <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${iconClasses[insight.tone]}`}>
@@ -34,10 +42,16 @@ export function BasicInsights({ insights }: BasicInsightsProps) {
                 ) : null}
               </div>
               <p className="mt-1 text-sm leading-6">{insight.description}</p>
+              {href ? (
+                <Link className="mt-2 inline-flex min-h-10 items-center text-sm font-bold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" href={href}>
+                  Ver transacao
+                </Link>
+              ) : null}
             </div>
           </div>
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }

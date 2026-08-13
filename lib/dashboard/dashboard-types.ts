@@ -217,6 +217,7 @@ export type DashboardInsight = {
   description: string;
   tone: DashboardInsightTone;
   amountCents?: number;
+  target?: DashboardDrillThroughTarget;
 };
 
 export type DashboardSummary = {

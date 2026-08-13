@@ -7,6 +7,17 @@ export type CategoryNode = {
   children: CategoryNode[];
 };
 
+export type CategoryNavigationNode = Omit<CategoryNode, "children"> & {
+  directExpenseCount: number;
+  totalExpenseCount: number;
+  children: CategoryNavigationNode[];
+};
+
+export type CategoryNavigationData = {
+  categories: CategoryNavigationNode[];
+  uncategorizedExpenseCount: number;
+};
+
 export type CreateCategoryInput = {
   userId: string;
   name: string;

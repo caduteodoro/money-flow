@@ -5,14 +5,19 @@ import { CategoryRuleSection } from "@/components/category-rules/category-rule-s
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { LinkButton } from "@/components/ui/button";
 import { requireCurrentUser } from "@/lib/auth/current-user";
-import { listUserCategories } from "@/lib/categories";
+import { listUserCategoriesForNavigation } from "@/lib/categories";
 import { listUserCategoryRules } from "@/lib/category-rules";
+import { buildTransactionsUrl } from "@/lib/transactions";
 
 export default async function CategoriesPage() {
   const user = await requireCurrentUser();
-  const [result, rulesResult] = await Promise.all([listUserCategories(user.id), listUserCategoryRules(user.id)]);
-  const categories = result.ok ? result.data : [];
+  const [result, rulesResult] = await Promise.all([
+    listUserCategoriesForNavigation(user.id),
+    listUserCategoryRules(user.id),
+  ]);
+  const categories = result.ok ? result.data.categories : [];
   const options = categories.flatMap((parent) => [{ id: parent.id, label: parent.name }, ...parent.children.map((child) => ({ id: child.id, label: `  └─ ${child.name}` }))]);
 
   return (
@@ -42,6 +47,30 @@ export default async function CategoriesPage() {
               <CreateCategoryForm />
             </CardBody>
           </Card>
+
+          {result.ok ? (
+            <Card>
+              <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Revisao rapida</p>
+                  <h2 className="mt-1 text-lg font-bold text-brand-navy">Despesas sem categoria</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {result.data.uncategorizedExpenseCount} {result.data.uncategorizedExpenseCount === 1 ? "despesa precisa" : "despesas precisam"} de revisao no periodo importado.
+                  </p>
+                </div>
+                <LinkButton
+                  className="shrink-0"
+                  href={buildTransactionsUrl({
+                    period: "imported-period",
+                    direction: "EXPENSE",
+                    filter: "uncategorized",
+                  })}
+                >
+                  Ver despesas sem categoria
+                </LinkButton>
+              </CardBody>
+            </Card>
+          ) : null}
 
           {!result.ok ? (
             <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

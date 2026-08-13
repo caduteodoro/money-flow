@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import { CategorizationCoverage } from "@/components/dashboard/categorization-coverage";
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-filter";
@@ -60,9 +61,11 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 
           {hasTransactionsInPeriod ? (
             <>
-              <DashboardKpis kpis={summary.kpis} largestExpense={summary.largestExpense} />
+              <DashboardKpis kpis={summary.kpis} largestExpense={summary.largestExpense} period={activeFilter} />
 
-              <DashboardCharts charts={summary.charts} insights={summary.insights} />
+              <CategorizationCoverage coverage={summary.categories.coverage} period={activeFilter} />
+
+              <DashboardCharts activeFilter={activeFilter} charts={summary.charts} insights={summary.insights} />
 
               <Card>
                 <CardHeader>
@@ -72,7 +75,7 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
                   </div>
                 </CardHeader>
                 <CardBody>
-                  <TransactionsTable transactions={summary.recentTransactions} />
+                  <TransactionsTable activeFilter={activeFilter} transactions={summary.recentTransactions} />
                 </CardBody>
               </Card>
             </>

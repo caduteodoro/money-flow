@@ -1,5 +1,10 @@
 import type { CategorizationSource, TransactionDirection } from "@prisma/client";
 
+import type {
+  TransactionFilterKey,
+  TransactionFilters,
+} from "@/lib/transactions/transaction-filters";
+
 export type TransactionListItem = {
   id: string;
   occurredAt: Date;
@@ -42,3 +47,31 @@ export type TransactionCategorizationResult =
       message: string;
       fieldErrors?: Record<string, string[]>;
     };
+
+export type TransactionPagination = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+};
+
+export type ActiveTransactionFilter = {
+  key: TransactionFilterKey;
+  label: string;
+  value: string;
+  removable: boolean;
+};
+
+export type FilteredTransactionPage = {
+  transactions: TransactionListItem[];
+  filters: TransactionFilters;
+  activeFilters: ActiveTransactionFilter[];
+  pagination: TransactionPagination;
+  totalUserTransactions: number;
+};
+
+export type FilteredTransactionResult =
+  | { ok: true; data: FilteredTransactionPage }
+  | { ok: false; reason: "RESOURCE_NOT_FOUND" | "INVALID_PAGE" };

@@ -19,6 +19,8 @@ export async function assignTransactionCategoryAction(
 
   if (!result.ok) return { status: "error", message: result.message };
   revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/categories");
   return { status: "success", message: "Categoria atualizada com sucesso." };
 }
 

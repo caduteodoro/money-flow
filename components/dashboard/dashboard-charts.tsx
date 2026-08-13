@@ -2,14 +2,15 @@ import { BasicInsights } from "@/components/dashboard/basic-insights";
 import { FinancialEvolutionChart } from "@/components/dashboard/financial-evolution-chart";
 import { IncomeExpenseChart } from "@/components/dashboard/income-expense-chart";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import type { DashboardCharts as DashboardChartsData, DashboardInsight } from "@/lib/dashboard/dashboard-types";
+import type { DashboardCharts as DashboardChartsData, DashboardDateFilterId, DashboardInsight } from "@/lib/dashboard/dashboard-types";
 
 type DashboardChartsProps = {
   charts: DashboardChartsData;
   insights: DashboardInsight[];
+  activeFilter: DashboardDateFilterId;
 };
 
-export function DashboardCharts({ charts, insights }: DashboardChartsProps) {
+export function DashboardCharts({ charts, insights, activeFilter }: DashboardChartsProps) {
   return (
     <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
       <Card>
@@ -50,7 +51,7 @@ export function DashboardCharts({ charts, insights }: DashboardChartsProps) {
             </div>
           </CardHeader>
           <CardBody>
-            <BasicInsights insights={insights} />
+            <BasicInsights activeFilter={activeFilter} insights={insights} />
           </CardBody>
         </Card>
       </div>

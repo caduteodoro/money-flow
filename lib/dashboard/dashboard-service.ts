@@ -40,7 +40,7 @@ export async function getDashboardSummary(params: DashboardQueryParams): Promise
 
   const dateFilter = params.dateFilter ?? DEFAULT_DASHBOARD_FILTER;
   const [period, totalTransactionCount] = await Promise.all([
-    resolveDashboardDateRange(params.userId, dateFilter, params.now),
+    resolveUserDashboardDateRange(params.userId, dateFilter, params.now),
     prisma.transaction.count({
       where: {
         userId: params.userId,
@@ -122,7 +122,7 @@ export async function getDashboardSummary(params: DashboardQueryParams): Promise
   );
 }
 
-async function resolveDashboardDateRange(
+export async function resolveUserDashboardDateRange(
   userId: string,
   filter: DashboardDateFilterId,
   now = new Date(),
@@ -219,6 +219,7 @@ function buildDashboardInsights(
       description: "A maior saida registrada ajuda a entender onde o fluxo mais pesou.",
       tone: "neutral",
       amountCents: largestExpense.amountCents,
+      target: largestExpense.target,
     });
   }
 

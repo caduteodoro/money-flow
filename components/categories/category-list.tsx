@@ -1,7 +1,7 @@
 import { CategoryCard } from "@/components/categories/category-card";
-import type { CategoryNode } from "@/lib/categories";
+import type { CategoryNavigationNode } from "@/lib/categories";
 
-export function CategoryList({ categories }: { categories: CategoryNode[] }) {
+export function CategoryList({ categories }: { categories: CategoryNavigationNode[] }) {
   return (
     <section aria-labelledby="category-list-title" className="space-y-4">
       <div>

@@ -7,14 +7,16 @@ import {
   WalletCards,
 } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
-import type { DashboardLargestExpense, FinancialKpis } from "@/lib/dashboard/dashboard-types";
+import type { DashboardDateFilterId, DashboardLargestExpense, FinancialKpis } from "@/lib/dashboard/dashboard-types";
+import { buildTransactionsUrl } from "@/lib/transactions";
 
 type DashboardKpisProps = {
   kpis: FinancialKpis;
   largestExpense: DashboardLargestExpense;
+  period: DashboardDateFilterId;
 };
 
-export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
+export function DashboardKpis({ kpis, largestExpense, period }: DashboardKpisProps) {
   const cards = [
     {
       label: "Entradas",
@@ -22,6 +24,8 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
       helper: "Total recebido no periodo.",
       accent: "bg-emerald-50 text-emerald-700",
       icon: <ArrowDownLeft className="size-5" aria-hidden="true" />,
+      actionHref: buildTransactionsUrl({ period, direction: "INCOME" }),
+      actionLabel: "Ver entradas",
     },
     {
       label: "Saidas",
@@ -29,6 +33,8 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
       helper: "Total gasto no periodo.",
       accent: "bg-rose-50 text-rose-700",
       icon: <ArrowUpRight className="size-5" aria-hidden="true" />,
+      actionHref: buildTransactionsUrl({ period, direction: "EXPENSE" }),
+      actionLabel: "Ver saidas",
     },
     {
       label: "Resultado do periodo",
@@ -46,6 +52,10 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
           : "Saidas divididas pela quantidade de despesas.",
       accent: "bg-amber-50 text-amber-700",
       icon: <TrendingDown className="size-5" aria-hidden="true" />,
+      actionHref: kpis.averageExpenseCents === null
+        ? undefined
+        : buildTransactionsUrl({ period, direction: "EXPENSE" }),
+      actionLabel: kpis.averageExpenseCents === null ? undefined : "Ver despesas",
     },
     {
       label: "Maior saida",
@@ -53,6 +63,10 @@ export function DashboardKpis({ kpis, largestExpense }: DashboardKpisProps) {
       helper: largestExpense ? truncateText(largestExpense.description, 42) : "Nenhuma saida no periodo.",
       accent: "bg-violet-50 text-violet-700",
       icon: <WalletCards className="size-5" aria-hidden="true" />,
+      actionHref: largestExpense
+        ? buildTransactionsUrl({ period, transactionId: largestExpense.id })
+        : undefined,
+      actionLabel: largestExpense ? "Localizar transacao" : undefined,
     },
     {
       label: "Transacoes",

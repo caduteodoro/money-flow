@@ -5,6 +5,8 @@ import { Prisma } from "@prisma/client";
 import { categoryFailure } from "@/lib/categories/category-errors";
 import type {
   CategoryNode,
+  CategoryNavigationData,
+  CategoryNavigationNode,
   CategoryServiceResult,
   CreateCategoryInput,
   CreateChildCategoryInput,
@@ -49,6 +51,41 @@ export async function listUserCategories(userId: string): Promise<CategoryServic
     });
 
     return { ok: true, data: buildCategoryTree(categories) };
+  } catch {
+    return categoryFailure("UNEXPECTED_ERROR");
+  }
+}
+
+export async function listUserCategoriesForNavigation(
+  userId: string,
+): Promise<CategoryServiceResult<CategoryNavigationData>> {
+  const parsed = listCategoriesSchema.safeParse({ userId });
+
+  if (!parsed.success) {
+    return validationFailure(parsed.error);
+  }
+
+  try {
+    const [categories, expenseCounts] = await Promise.all([
+      prisma.category.findMany({
+        where: { userId: parsed.data.userId },
+        select: categorySelect,
+      }),
+      prisma.transaction.groupBy({
+        by: ["categoryId"],
+        where: { userId: parsed.data.userId, direction: "EXPENSE" },
+        _count: { _all: true },
+      }),
+    ]);
+    const counts = new Map(expenseCounts.map((item) => [item.categoryId, item._count._all]));
+
+    return {
+      ok: true,
+      data: {
+        categories: buildCategoryNavigationTree(categories, counts),
+        uncategorizedExpenseCount: counts.get(null) ?? 0,
+      },
+    };
   } catch {
     return categoryFailure("UNEXPECTED_ERROR");
   }
@@ -230,6 +267,43 @@ function buildCategoryTree(categories: CategoryRecord[]): CategoryNode[] {
   for (const category of categories) {
     if (category.parentId) {
       nodes.get(category.parentId)?.children.push(nodes.get(category.id)!);
+    }
+  }
+
+  for (const node of nodes.values()) {
+    node.children.sort(compareCategoryNames);
+  }
+
+  return [...nodes.values()]
+    .filter((category) => category.parentId === null)
+    .sort(compareCategoryNames);
+}
+
+function buildCategoryNavigationTree(
+  categories: CategoryRecord[],
+  counts: ReadonlyMap<string | null, number>,
+): CategoryNavigationNode[] {
+  const nodes = new Map<string, CategoryNavigationNode>(
+    categories.map((category) => [
+      category.id,
+      {
+        ...category,
+        directExpenseCount: counts.get(category.id) ?? 0,
+        totalExpenseCount: counts.get(category.id) ?? 0,
+        children: [],
+      },
+    ]),
+  );
+
+  for (const category of categories) {
+    if (!category.parentId) continue;
+
+    const child = nodes.get(category.id);
+    const parent = nodes.get(category.parentId);
+
+    if (child && parent) {
+      parent.children.push(child);
+      parent.totalExpenseCount += child.totalExpenseCount;
     }
   }
 

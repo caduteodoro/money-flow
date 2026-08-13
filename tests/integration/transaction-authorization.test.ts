@@ -14,7 +14,7 @@ vi.mock("@/lib/auth/current-user", () => ({
 }));
 
 import { assignTransactionCategoryAction } from "@/app/transactions/actions";
-import { listUserTransactionsForCategorization } from "@/lib/transactions";
+import { listFilteredUserTransactions, parseTransactionFilters } from "@/lib/transactions";
 import { categoryFixture } from "@/tests/helpers/category-fixture";
 
 const prisma = new PrismaClient();
@@ -122,10 +122,17 @@ afterAll(async () => {
 
 describe("transaction authorization boundaries", () => {
   it("lists only transactions owned by the authenticated user", async () => {
-    const transactions = await listUserTransactionsForCategorization({ userId: userAId });
-    const serialized = JSON.stringify(transactions);
+    const parsed = parseTransactionFilters({});
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
 
-    expect(transactions).toEqual([
+    const result = await listFilteredUserTransactions({ userId: userAId, filters: parsed.filters });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const serialized = JSON.stringify(result.data.transactions);
+
+    expect(result.data.transactions).toEqual([
       expect.objectContaining({ id: transactionAId, description: "Synthetic transaction A" }),
     ]);
     expect(serialized).not.toContain(transactionBId);

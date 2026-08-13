@@ -6,6 +6,7 @@ import {
   resolveFixedDashboardDateRange,
   resolveImportedPeriodDateRange,
   resolvePreviousDashboardDateRange,
+  resolveUtcCivilDateRange,
 } from "@/lib/dashboard/date-filters";
 
 describe("dashboard date filters", () => {
@@ -113,5 +114,13 @@ describe("dashboard date filters", () => {
     expect(() =>
       countUtcDays(new Date("2026-01-01T00:00:00.000Z"), new Date("2026-01-01T12:00:00.000Z")),
     ).toThrow(RangeError);
+  });
+
+  it("resolves an isolated UTC civil date as a half-open one-day interval", () => {
+    expect(resolveUtcCivilDateRange("2026-08-13")).toEqual({
+      startInclusive: new Date("2026-08-13T00:00:00.000Z"),
+      endExclusive: new Date("2026-08-14T00:00:00.000Z"),
+    });
+    expect(() => resolveUtcCivilDateRange("2026-02-30")).toThrow(RangeError);
   });
 });
