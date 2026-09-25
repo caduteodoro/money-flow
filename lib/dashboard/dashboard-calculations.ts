@@ -17,8 +17,13 @@ import type {
   FinancialKpis,
 } from "@/lib/dashboard/dashboard-types";
 
+import {
+  normalizeAnalyticsText as normalizeText,
+  resolveDescriptionGroup,
+} from "@/lib/dashboard/description-groups";
+
+export { UNIDENTIFIED_DESCRIPTION_LABEL } from "@/lib/dashboard/description-groups";
 export const MONTHLY_GRANULARITY_THRESHOLD_DAYS = 92;
-export const UNIDENTIFIED_DESCRIPTION_LABEL = "Descrição não identificada";
 
 export function isIncludedFinancialDirection(
   direction: DashboardFinancialTransaction["direction"],
@@ -403,60 +408,46 @@ function buildDescriptionOffenders(
   const groups = new Map<string, DashboardDescriptionOffender>();
 
   for (const transaction of expenses) {
-    const normalizedDescription = normalizeOptionalDescription(transaction.normalizedDescription);
-    const descriptionHash = normalizeOptionalDescription(transaction.descriptionHash);
-    const key = descriptionHash
-      ? `hash:${descriptionHash}`
-      : normalizedDescription
-        ? `description:${normalizeText(normalizedDescription)}`
-        : "unidentified";
+    const group = resolveDescriptionGroup(transaction);
+    const key = group.aggregationKey;
+    const publicKey = `description-group:${transaction.id}`;
     const existing = groups.get(key);
 
     if (existing) {
       existing.amountCents += Math.abs(transaction.amountCents);
       existing.transactionCount += 1;
+      if (compareText(publicKey, existing.key) < 0) existing.key = publicKey;
 
       if (
-        normalizedDescription &&
-        (existing.label === UNIDENTIFIED_DESCRIPTION_LABEL ||
-          compareText(normalizeText(normalizedDescription), normalizeText(existing.label)) < 0 ||
-          (normalizeText(normalizedDescription) === normalizeText(existing.label) &&
-            compareText(normalizedDescription, existing.label) < 0))
+        group.target.kind === "NORMALIZED_DESCRIPTION" && group.target.normalizedDescription !== null &&
+        (existing.target.kind === "UNIDENTIFIED_DESCRIPTION" || existing.target.normalizedDescription === null ||
+          compareText(normalizeText(group.label), normalizeText(existing.label)) < 0 ||
+          (normalizeText(group.label) === normalizeText(existing.label) &&
+            compareText(group.label, existing.label) < 0))
       ) {
-        existing.label = normalizedDescription;
-        existing.target = {
-          kind: "NORMALIZED_DESCRIPTION",
-          descriptionHash,
-          normalizedDescription,
-        };
+        existing.label = group.label;
+        existing.target = group.target;
       }
 
       continue;
     }
 
     groups.set(key, {
-      key,
-      label: normalizedDescription ?? UNIDENTIFIED_DESCRIPTION_LABEL,
+      key: publicKey,
+      label: group.label,
       amountCents: Math.abs(transaction.amountCents),
       transactionCount: 1,
-      target:
-        descriptionHash || normalizedDescription
-          ? {
-              kind: "NORMALIZED_DESCRIPTION",
-              descriptionHash,
-              normalizedDescription,
-            }
-          : { kind: "UNIDENTIFIED_DESCRIPTION" },
+      target: group.target,
     });
   }
 
-  return Array.from(groups.values()).sort(
-    (first, second) =>
+  return Array.from(groups.entries()).sort(
+    ([firstKey, first], [secondKey, second]) =>
       second.amountCents - first.amountCents ||
       second.transactionCount - first.transactionCount ||
       compareText(normalizeText(first.label), normalizeText(second.label)) ||
-      compareText(first.key, second.key),
-  );
+      compareText(firstKey, secondKey),
+  ).map(([, group]) => group);
 }
 
 function buildExpenseDayOffenders(
@@ -488,15 +479,6 @@ function buildExpenseDayOffenders(
       second.transactionCount - first.transactionCount ||
       compareText(first.date, second.date),
   );
-}
-
-function normalizeOptionalDescription(value: string | null) {
-  const normalized = value?.trim();
-  return normalized ? normalized : null;
-}
-
-function normalizeText(value: string) {
-  return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
 }
 
 function compareText(first: string, second: string) {

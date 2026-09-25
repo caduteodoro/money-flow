@@ -22,8 +22,8 @@ export function CategoryDestinationChart({ activeFilter, model }: CategoryDestin
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-bold text-brand-navy">Não há despesas para compor este gráfico.</p>
-          <p className="mt-1 text-sm text-slate-600">O destino por categoria fica sem base até existir uma saída no período.</p>
+          <p className="font-bold text-brand-navy">Não há valor de saída para compor este gráfico.</p>
+          <p className="mt-1 text-sm text-slate-600">O destino por categoria fica sem base enquanto o total de saídas do período for zero.</p>
         </div>
         <LinkButton href={buildTransactionsUrl({ period: activeFilter, direction: "EXPENSE" })} variant="secondary">Ver saídas</LinkButton>
       </div>

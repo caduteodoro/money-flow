@@ -8,6 +8,9 @@ export default function DashboardLoading() {
         </div>
         <div className="h-[28rem] rounded-xl border border-slate-200 bg-white" />
         <div className="h-[26rem] rounded-xl border border-slate-200 bg-white" />
+        <div aria-label="Carregando principais gastos do período" className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => <div className="h-80 rounded-xl border border-slate-200 bg-white" key={index} />)}
+        </div>
       </div>
       <span className="sr-only" role="status">Carregando indicadores e visualizações.</span>
     </main>

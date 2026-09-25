@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { resolveUserDashboardDateRange } from "@/lib/dashboard/dashboard-service";
 import { resolveUtcCivilDateRange } from "@/lib/dashboard/date-filters";
 import { prisma } from "@/lib/db/prisma";
+import { parseDescriptionHash } from "@/lib/dashboard/description-groups";
 import {
   calculateTransactionPagination,
   TRANSACTION_PAGE_SIZE,
@@ -30,6 +31,9 @@ export async function listFilteredUserTransactions(input: {
   now?: Date;
 }): Promise<FilteredTransactionResult> {
   if (!input.userId) {
+    return { ok: false, reason: "RESOURCE_NOT_FOUND" };
+  }
+  if (input.filters.descriptionHash !== undefined && !parseDescriptionHash(input.filters.descriptionHash)) {
     return { ok: false, reason: "RESOURCE_NOT_FOUND" };
   }
 
@@ -59,16 +63,9 @@ export async function listFilteredUserTransactions(input: {
       : null;
   const where = buildTransactionWhere(input.userId, input.filters, category, dateRange);
 
-  const [totalItems, totalUserTransactions, descriptionContext] = await Promise.all([
+  const [totalItems, totalUserTransactions] = await Promise.all([
     prisma.transaction.count({ where }),
     prisma.transaction.count({ where: { userId: input.userId } }),
-    input.filters.descriptionHash
-      ? prisma.transaction.findFirst({
-          where: { userId: input.userId, descriptionHash: input.filters.descriptionHash },
-          select: { normalizedDescription: true },
-          orderBy: [{ occurredAt: "desc" }, { id: "desc" }],
-        })
-      : Promise.resolve(null),
   ]);
   const paginationResult = calculateTransactionPagination(totalItems, input.filters.page);
 
@@ -82,6 +79,7 @@ export async function listFilteredUserTransactions(input: {
       id: true,
       occurredAt: true,
       description: true,
+      normalizedDescription: true,
       amountCents: true,
       direction: true,
       categorizationSource: true,
@@ -107,7 +105,7 @@ export async function listFilteredUserTransactions(input: {
       activeFilters: buildActiveFilters(
         input.filters,
         category,
-        descriptionContext?.normalizedDescription ?? null,
+        transactions[0]?.normalizedDescription ?? null,
         dateRange,
       ),
       pagination: paginationResult.pagination,
@@ -158,7 +156,9 @@ function buildTransactionWhere(
             : category.id,
         }
       : {}),
-    ...(filters.descriptionHash ? { descriptionHash: filters.descriptionHash } : {}),
+    ...(filters.descriptionHash
+      ? { descriptionHash: { equals: parseDescriptionHash(filters.descriptionHash) ?? "", mode: "insensitive" } }
+      : {}),
     ...(filters.transactionId ? { id: filters.transactionId } : {}),
   };
 }

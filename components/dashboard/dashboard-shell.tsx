@@ -4,6 +4,7 @@ import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-filter";
+import { ExpenseHighlights } from "@/components/dashboard/expense-highlights";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -24,7 +25,7 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({ user, summary, activeFilter }: DashboardShellProps) {
-  const hasTransactionsInPeriod = summary.kpis.includedTransactionCount > 0;
+  const hasTransactionsInPeriod = summary.periodTransactionCount > 0;
   const activeFilterLabel = formatFilterLabel(activeFilter);
   const periodRangeLabel = formatPeriodRange(summary.period);
   const evolutionModel = buildDashboardEvolutionChartModel(summary.charts.cashflow);
@@ -63,6 +64,11 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 
           {hasTransactionsInPeriod ? (
             <>
+              {summary.kpis.includedTransactionCount === 0 ? (
+                <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600">
+                  Há movimentações neste período, mas somente transferências ou estornos. Elas aparecem nas últimas transações e ficam fora dos indicadores de entradas e saídas.
+                </p>
+              ) : null}
               <DashboardKpis
                 comparisons={summary.comparisons}
                 kpis={summary.kpis}
@@ -78,6 +84,13 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
               />
 
               <CategorizationCoverage coverage={summary.categories.coverage} period={activeFilter} />
+
+              <ExpenseHighlights
+                offenders={summary.offenders}
+                period={activeFilter}
+                totalExpenseCents={summary.kpis.totalExpenseCents}
+                expenseCount={summary.categories.coverage.totalExpenseCount}
+              />
 
               <Card>
                 <CardHeader>

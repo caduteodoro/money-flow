@@ -5,6 +5,7 @@ import type {
   DashboardDrillThroughTarget,
 } from "@/lib/dashboard/dashboard-types";
 import { parseDashboardDateFilter } from "@/lib/dashboard/date-filters";
+import { parseDescriptionHash } from "@/lib/dashboard/description-groups";
 
 export const TRANSACTION_PAGE_SIZE = 25;
 
@@ -19,7 +20,6 @@ const allowedParameters = new Set([
   "page",
 ]);
 const identifierPattern = /^[A-Za-z0-9_-]{1,128}$/;
-const descriptionHashPattern = /^[a-f0-9]{64}$/i;
 const utcDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 const directionByParameter = {
@@ -123,13 +123,12 @@ export function parseTransactionFilters(searchParams: TransactionSearchParams): 
     return { ok: false, reason: "INCOMPATIBLE_FILTERS" };
   }
 
-  const direction = directionValue
-    ? directionByParameter[directionValue as keyof typeof directionByParameter]
-    : undefined;
-
-  if (directionValue && !direction) {
+  if (directionValue !== undefined && !Object.hasOwn(directionByParameter, directionValue)) {
     return { ok: false, reason: "INVALID_DIRECTION" };
   }
+  const direction = directionValue === undefined
+    ? undefined
+    : directionByParameter[directionValue as keyof typeof directionByParameter];
 
   const filter = filterValue ?? "all";
 
@@ -141,7 +140,7 @@ export function parseTransactionFilters(searchParams: TransactionSearchParams): 
     return { ok: false, reason: "INVALID_CATEGORY_ID" };
   }
 
-  if (descriptionHash !== undefined && !descriptionHashPattern.test(descriptionHash)) {
+  if (descriptionHash !== undefined && !parseDescriptionHash(descriptionHash)) {
     return { ok: false, reason: "INVALID_DESCRIPTION_HASH" };
   }
 
@@ -218,11 +217,12 @@ export function buildDashboardDrillThroughUrl(
   }
 
   if (target.kind === "NORMALIZED_DESCRIPTION") {
-    return target.descriptionHash
+    const descriptionHash = parseDescriptionHash(target.descriptionHash);
+    return descriptionHash
       ? buildTransactionsUrl({
           period,
           direction: "EXPENSE",
-          descriptionHash: target.descriptionHash,
+          descriptionHash,
         })
       : null;
   }

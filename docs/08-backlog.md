@@ -66,12 +66,12 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | ID | Tipo | Item | Descrição | Prioridade | Sprint sugerida | Esforço | Impacto | Risco | Dependências | Status |
 |----|------|------|-----------|------------|-----------------|---------|---------|-------|--------------|--------|
 | BCK-001 | Feature | Gastos por categoria | Exibir distribuição de despesas por categoria quando a base de categorias e categorização estiver pronta. | P1 | Sprint 5 | M | Alto | Médio | Sprint 4: categorias e transações categorizadas | Backlog |
-| BCK-002 | Feature | Top estabelecimentos/descrições | Listar descrições ou estabelecimentos mais recorrentes/relevantes, com cuidado para não expor texto financeiro sensível em logs ou telas indevidas. | P3 | Pós-MVP | M | Médio | Médio | Normalização segura de descrições; revisão de privacidade | Ideia |
-| BCK-003 | Feature | Ranking de maiores saídas | Mostrar maiores despesas do período para ajudar o usuário a identificar impactos financeiros relevantes. | P1 | Sprint 5 | M | Alto | Médio | Filtros de período confiáveis; regras de privacidade para descrições | Backlog |
+| BCK-002 | Feature | Top descrições por valor de saída | Até cinco grupos de descrição por impacto no período; hash válido permite drill-through exato, grupos sem hash ficam sem link. Não identifica estabelecimentos. | P3 | Sprint 6 — Bloco 4A | M | Médio | Médio | Normalização analítica; filtros autorizados; privacidade | Concluído |
+| BCK-003 | Feature | Ranking de maiores saídas | Até cinco despesas do período com navegação para localizar a transação autorizada. | P1 | Sprint 6 — Bloco 4A | M | Alto | Médio | Filtros de período; transactionId por usuário | Concluído |
 | BCK-004 | Feature | Saldo acumulado | Calcular e exibir evolução de saldo acumulado ao longo do tempo, deixando claro se o saldo é estimado a partir das transações importadas. | P2 | Pós-MVP | M | Alto | Alto | Decisão de produto sobre saldo estimado vs. saldo bancário real | Ideia |
 | BCK-005 | Feature | Calendário financeiro | Criar visualização por calendário para localizar dias de maior concentração de entradas e saídas. | P3 | Futuro | G | Médio | Médio | Mais volume de dados; definição de visualização responsiva | Ideia |
-| BCK-006 | Feature | Ofensores do mês | Destacar principais categorias, descrições ou despesas que mais impactaram o mês, sem tom julgador. | P2 | Pós-MVP | M | Médio | Médio | Categorias; cuidado de linguagem; possível dependência de BCK-001 | Ideia |
-| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Ajustar tabela de transações para melhor leitura em telas menores e em desktop com sidebar, preservando densidade e clareza. | P1 | Sprint 4 | M | Alto | Baixo | Design responsivo da área autenticada | Concluído |
+| BCK-006 | Feature | Principais gastos do período (ofensores internos) | Descrições, maiores saídas e dias de maior gasto aprofundam destino/cobertura já existentes; linguagem descritiva e somente EXPENSE. | P2 | Sprint 6 — Bloco 4A | M | Médio | Médio | Contratos analíticos; BCK-002 e BCK-003; cockpit do Bloco 3 | Concluído |
+| BCK-007 | UX | Melhorar responsividade/legibilidade da tabela | Entrega da Sprint 4 preservada; reavaliar experiência responsiva da página de transações após a homologação do Bloco 4A. | P1 | Sprint 6 — avaliação no Bloco 5 | M | Alto | Baixo | Design responsivo da área autenticada; nova avaliação manual | Backlog |
 | BCK-008 | UX | Exibir período real calculado | Mostrar de forma explícita o intervalo real considerado pelos filtros e KPIs, reduzindo ambiguidade para usuários com dados importados fora do mês atual. | P1 | Sprint 4 | P | Alto | Baixo | Definição da semântica dos filtros de data | Concluído |
 | BCK-009 | Pesquisa | Avaliar regra do filtro "Mês atual" | Decidir se "Mês atual" deve usar o mês do sistema ou o mês mais recente disponível nos dados importados. | P1 | Discovery | P | Alto | Médio | Alinhamento de produto sobre expectativa do usuário | Concluído |
 | BCK-010 | UX | Avaliar rótulo "Todo o período importado" | Avaliar troca de "Período importado" para "Todo o período importado" para melhorar clareza do filtro. | P2 | Discovery | P | Médio | Baixo | Decisão de texto e consistência com filtros | Concluído |
@@ -98,12 +98,19 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 | BCK-031 | Segurança / Infraestrutura / Deploy | Proteção de borda e acesso restrito com Cloudflare | Avaliar Cloudflare Access, WAF, rate limiting por origem, Turnstile e proteção da origem antes do primeiro deploy externo, sem substituir controles internos. | P1 agora; P0 antes de testadores externos | Sprint 5, pré-deploy ou sprint de infraestrutura | M | Alto | Médio | Estratégia de deploy; grupo de testadores; topologia da origem; análise de custos e planos | Ideia |
 | BCK-032 | Privacidade / Segurança | Política de audit logs | Definir retenção, anonimização e integridade dos audit logs conciliando investigação de segurança, privacidade e exclusão de conta. | P1 | Futuro, antes de produção | M | Alto | Alto | Requisitos operacionais e legais; modelo de ameaças; fluxo de exclusão de conta | Backlog |
 | BCK-033 | Privacidade / Infraestrutura | Retenção e expurgo de backups | Definir prazo máximo de sobrevivência após exclusão, expurgo, restauração segura e prevenção da reintrodução de contas excluídas. | P1 | Futuro, antes de produção | M | Alto | Alto | Estratégia de backup e restore; infraestrutura de produção; política de retenção | Backlog |
+| BCK-034 | UX | Expansão somente com truncamento | Evitar expandir/recolher redundante quando a descrição já está integralmente visível. | P2 | Sprint 6 — avaliação no Bloco 5 | P | Médio | Baixo | Medição do truncamento; teclado; resize e zoom | Backlog |
+| BCK-035 | Pesquisa | Avisos mousewheel não passivo | Identificar origem e efeito dos avisos observados no Chrome antes de propor correção. | P2 | Sprint 6 — avaliação no Bloco 5 | P | Médio | Baixo | Reprodução sanitizada; identificação do listener | Backlog |
+| BCK-036 | Acessibilidade | Identificação em formulário de senha | Avaliar aviso sobre senha sem campo de identificação associado. | P2 | Sprint 6 — avaliação no Bloco 5 | P | Médio | Médio | Identificar formulário e semântica de autocomplete | Backlog |
+| BCK-037 | Feature | Intervalo personalizado de datas | Permitir selecionar data inicial e final, com contratos consistentes entre dashboard e detalhamento. | P2 | Futuro, fora da Sprint 6 | M | Alto | Médio | Semântica de limites e UTC; validação server-side | Backlog |
+| BCK-038 | Feature | Ordenar transações por data e valor | Escolher ordenação estável sem perder filtros ou consistência da paginação. | P2 | Futuro, fora da Sprint 6 | M | Médio | Médio | Contrato de ordenação; desempate; paginação | Backlog |
+| BCK-039 | Data Model | Preservar horário disponível na fonte | Avaliar preservação futura de horário e timezone sem inventar precisão ausente. | P3 | Futuro, fora da Sprint 6 | M | Médio | Alto | Capacidades da fonte; parser; deduplicação; revisão de modelo | Backlog |
+| BCK-040 | Analytics | Análise cronológica de dias atípicos | Avaliar sequência temporal e contexto dos dias atípicos, além do ranking de maiores gastos. | P3 | Futuro, fora da Sprint 6 | M | Médio | Médio | Definição de atipicidade; período e base comparativa | Backlog |
+| BCK-041 | Discovery / UX | Storytelling e densidade do dashboard | Analisar visão do usuário e experiência mobile mais compacta antes de propor mudanças visuais. | P2 | Após a Sprint 6 — Discovery | M | Alto | Baixo | Conclusão da Sprint 6; perguntas de produto; visão do usuário | Backlog |
 
 ## Por Sprint Sugerida
 
 ### Sprint 4
 
-- BCK-007: melhorar responsividade/legibilidade da tabela.
 - BCK-011: suíte automatizada de testes.
 - BCK-012: migration segura para bancos com dados.
 - BCK-013: guardrails de categorias por usuário.
@@ -112,25 +119,29 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 ### Sprint 5
 
 - BCK-001: gastos por categoria.
-- BCK-003: ranking de maiores saídas.
+
+### Sprint 6
+
+- BCK-002, BCK-003 e BCK-006: concluídos no Bloco 4A, nos limites reconciliados abaixo.
+- BCK-007 e BCK-034 a BCK-036: observações não bloqueantes reservadas à avaliação no Bloco 5; sem execução iniciada.
 
 ### Pós-MVP
 
-- BCK-002: top estabelecimentos/descrições.
 - BCK-004: saldo acumulado.
-- BCK-006: ofensores do mês.
 
 ### Futuro
 
 - BCK-005: calendário financeiro.
 - BCK-032: política de retenção, anonimização e integridade de audit logs.
 - BCK-033: política de retenção e expurgo de backups.
+- BCK-037 a BCK-040: datas personalizadas, ordenação, horário da fonte e dias atípicos; fora da Sprint 6.
 
 ### Discovery
 
 - BCK-009: avaliar regra do filtro "Mês atual".
 - BCK-010: avaliar rótulo "Todo o período importado".
 - BCK-031: avaliar proteção de borda e acesso restrito com Cloudflare antes do primeiro deploy externo.
+- BCK-041: storytelling, hierarquia e experiência mobile mais compacta, somente após a Sprint 6.
 
 ## Por Tema
 
@@ -159,7 +170,7 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 
 ### Privacidade E Dados Sensíveis
 
-- BCK-002: top estabelecimentos/descrições.
+- BCK-002: top descrições por valor de saída; sem identificação de estabelecimentos.
 - BCK-003: ranking de maiores saídas.
 - BCK-006: ofensores do mês.
 - BCK-013: guardrails de categorias por usuário.
@@ -175,6 +186,37 @@ Evite priorizar agora itens que dependem de IA externa, Open Finance, PWA, deplo
 - BCK-031: proteção de borda e acesso restrito com Cloudflare.
 - BCK-032: política de retenção, anonimização e integridade de audit logs.
 - BCK-033: política de retenção e expurgo de backups.
+
+## Reconciliação da homologação do Bloco 4A
+
+Fonte: aceite funcional informado pelo usuário, registrado no [roadmap](06-roadmap.md#homologação-funcional-do-bloco-4a), e contratos/testes atuais. Nenhum dado financeiro ou credencial compõe a evidência. Os IDs vigentes foram pesquisados antes desta inclusão; `BCK-034` era o próximo disponível. Prioridades e esforços dos novos itens são estimativas iniciais para refinamento, não compromissos de execução.
+
+- **BCK-002:** concluído como ranking de descrições por valor das saídas. O título antigo "Top estabelecimentos/descrições" foi restringido ao domínio comprovado. Não há identificação de empresas ou ranking de recorrência; grupos sem hash válido ficam sem link, conforme o fallback aprovado.
+- **BCK-003:** concluído com até cinco maiores saídas e localização exata via `transactionId` autorizado.
+- **BCK-006:** concluído como aprofundamento dos principais gastos do período, com descrições, saídas e dias. Categorias continuam no cockpit existente. Não inclui calendário, Pareto, recorrência ou análise cronológica de atipicidade.
+- **BCK-007:** reaberto em Backlog para reavaliação no Bloco 5, sem apagar o aceite da Sprint 4 nem duplicar o item. A observação da tabela de transações não invalida a aprovação responsiva do dashboard do Bloco 4A.
+
+### Pendências não bloqueantes para avaliação no Bloco 5
+
+**BCK-034 — Expansão somente com truncamento.** Problema observado: expandir/recolher aparece mesmo quando o texto está integralmente visível. Critério para futura aceitação: controle disponível somente com truncamento real, reavaliado em resize/zoom, preservando texto completo e acesso por teclado. Fora do escopo: redesenhar rankings ou alterar descrições. Evidência: homologação do usuário; mecanismo de medição ainda depende de refinamento.
+
+**BCK-035 — Avisos de `mousewheel` não passivo.** Objetivo: reproduzir e localizar o listener responsável, distinguindo código da aplicação, biblioteca ou ambiente do navegador. Critério: registrar origem e impacto verificável e decidir se há correção necessária. Fora do escopo: presumir defeito, trocar/atualizar biblioteca ou suprimir avisos sem diagnóstico. Evidência: aviso informado no Chrome; causa ainda não identificada.
+
+**BCK-036 — Identificação em formulário de senha.** Objetivo: identificar o formulário e avaliar associação/semântica adequada para acessibilidade e gerenciadores de senha. Critério: documentar a origem do aviso e validar uma solução, se necessária, sem exposição adicional de identidade ou alteração de autenticação. Fora do escopo: redesenhar login ou coletar credenciais. Evidência: aviso informado pelo usuário; formulário responsável ainda precisa ser confirmado.
+
+Esses itens e `BCK-007` não bloqueiam o aceite do Bloco 4A. Permanecem sem implementação nesta formalização e precisam de refinamento antes de execução autorizada no Bloco 5.
+
+### Melhorias futuras fora da Sprint 6
+
+**BCK-037 — Intervalo personalizado de datas.** Objetivo: escolher início e fim além dos filtros predefinidos. Critérios a refinar: validar limites e combinações; preservar UTC, isolamento, drill-through e paginação coerentes. Fora do escopo: mudar os filtros atuais nesta sprint. Evidência: solicitação pós-homologação; semântica inclusiva/exclusiva e UX ainda pendentes.
+
+**BCK-038 — Ordenação por data e valor.** Objetivo: controlar a ordem da página de transações. Critérios a refinar: direções de ordenação explícitas, desempate estável, filtros preservados e paginação sem omissões/duplicatas. Fora do escopo: alterar ordem dos rankings analíticos. Evidência: solicitação pós-homologação; contrato de parâmetros e custo das consultas ainda pendentes.
+
+**BCK-039 — Horário disponível na fonte.** Objetivo: avaliar preservação futura da precisão temporal realmente fornecida. Critérios a refinar: distinguir fonte com/sem horário, definir timezone e avaliar importação, deduplicação e dias civis antes de qualquer mudança. Fora do escopo: inventar horários, reprocessar dados ou autorizar schema/migration. Evidência: solicitação pós-homologação; capacidade das fontes e impacto de modelo ainda pendentes.
+
+**BCK-040 — Dias atípicos em ordem cronológica.** Objetivo: contextualizar dias ao longo do tempo, não apenas selecionar os maiores valores. Critérios a refinar: definir atipicidade, base comparativa, ordenação cronológica e explicação sem inferir causalidade. Fora do escopo: calendário/heatmap (`BCK-005`), previsões e IA. Evidência: solicitação pós-homologação; regra analítica e visualização ainda pendentes.
+
+**BCK-041 — Storytelling e densidade do dashboard.** Decisão de produto: realizar atividade inicialmente documental e de Discovery após concluir a Sprint 6, incluindo a experiência mais compacta em mobile. Critério de aceite do Discovery: mapa de perguntas por bloco, hierarquia, ordem das seções, proporções, densidade, redundâncias e percurso entre visão executiva e detalhe, validado com a visão atual do usuário. Fora do escopo: implementar layout, tabs, carrossel ou reduzir informação agora. Evidência: decisão explícita pós-homologação; soluções visuais e posterior execução ainda dependem da análise. Não duplica a tabela de transações de `BCK-007` nem o ranking de `BCK-006`.
 
 ## Itens Em Backlog
 
@@ -326,11 +368,13 @@ Item provável de interface/dashboard. Não deve alterar queries Prisma, schema,
 
 **Tipo:** UX  
 **Prioridade:** P1  
-**Sprint sugerida:** Sprint 4  
+**Sprint sugerida:** Sprint 6 — avaliação no Bloco 5\
 **Esforço estimado:** M  
 **Impacto:** Alto  
 **Risco:** Baixo  
-**Status:** Concluído
+**Status:** Backlog — reavaliação; entrega da Sprint 4 preservada
+
+O aceite anterior permanece registrado nos critérios abaixo. A homologação do Bloco 4A motivou nova avaliação da página de transações, sem regressão comprovada e sem duplicar o item. Antes de nova implementação, reproduzir o contexto responsivo observado, identificar a dificuldade concreta e definir ajuste mínimo. A nova aceitação deverá confirmar legibilidade de data, descrição, valor e ações nos tamanhos avaliados, preservando filtros, teclado e privacidade. Essa avaliação está pendente; não foi executada nesta formalização.
 
 #### Problema
 
@@ -364,7 +408,7 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 |----|----------|--------------------|--------|
 | BCK-009 | "Mês atual" deve seguir o mês do sistema ou o mês mais recente dos dados importados? | Validado: usa o mês atual do sistema/calendário. | Concluído |
 | BCK-010 | O rótulo "Período importado" deve virar "Todo o período importado"? | Validado: usa "Todo o período importado". | Concluído |
-| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | O prompt atual trouxe um placeholder em vez da lista; novos itens devem ser adicionados a partir de BCK-023 quando a lista for colada. | Ideia |
+| CAND-001 | Lista completa consolidada do chat de Backlog e Ideias | A solicitação histórica trouxe um placeholder em vez da lista; quando ela for fornecida, reconciliar equivalências e usar o próximo ID disponível, sem reutilizar IDs já atribuídos. | Ideia |
 
 ## Observações
 
@@ -377,4 +421,4 @@ Os itens abaixo precisam de confirmação de produto antes de virar implementaç
 - Itens que dependem de categorias devem aguardar a base da Sprint 4 ou posterior.
 - Nenhum item deve ser marcado como concluído sem implementação validada.
 - Bugs bloqueantes da sprint atual devem ser sinalizados como bloqueantes antes de serem enviados para futuro.
-- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-034`.
+- Não renumerar IDs antigos. O próximo item novo deve usar `BCK-042`.

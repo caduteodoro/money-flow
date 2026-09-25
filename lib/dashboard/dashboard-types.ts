@@ -252,6 +252,7 @@ export type DashboardSummary = {
   period: DashboardDateRange;
   comparisonPeriod: DashboardDateRange | null;
   hasImportedTransactions: boolean;
+  periodTransactionCount: number;
   kpis: FinancialKpis;
   comparisons: DashboardKpiComparisons;
   largestExpense: DashboardLargestExpense;

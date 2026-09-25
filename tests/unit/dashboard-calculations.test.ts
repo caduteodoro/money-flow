@@ -395,7 +395,7 @@ describe("expense offenders", () => {
         occurredAt: new Date("2026-08-05T10:00:00.000Z"),
         description: "Synthetic Coffee One",
         normalizedDescription: "Zulu Cafe Central",
-        descriptionHash: "hash-coffee",
+        descriptionHash: "a".repeat(64),
         amountCents: -500,
         categoryId: "root-food",
         category: { id: "root-food", name: "Alimentacao", parent: null },
@@ -405,7 +405,7 @@ describe("expense offenders", () => {
         occurredAt: new Date("2026-08-05T11:00:00.000Z"),
         description: "Synthetic Coffee Two",
         normalizedDescription: "Alpha Cafe Central",
-        descriptionHash: "hash-coffee",
+        descriptionHash: "a".repeat(64),
         amountCents: 300,
         categoryId: "root-food",
         category: { id: "root-food", name: "Alimentacao", parent: null },
@@ -444,18 +444,18 @@ describe("expense offenders", () => {
     });
     expect(offenders.topNormalizedDescriptions).toEqual([
       expect.objectContaining({
-        key: "hash:hash-coffee",
+        key: "description-group:coffee-1",
         label: "Alpha Cafe Central",
         amountCents: 800,
         transactionCount: 2,
         target: {
           kind: "NORMALIZED_DESCRIPTION",
-          descriptionHash: "hash-coffee",
+          descriptionHash: "a".repeat(64),
           normalizedDescription: "Alpha Cafe Central",
         },
       }),
       expect.objectContaining({
-        key: "unidentified",
+        key: "description-group:unidentified",
         label: UNIDENTIFIED_DESCRIPTION_LABEL,
         amountCents: 800,
         transactionCount: 1,

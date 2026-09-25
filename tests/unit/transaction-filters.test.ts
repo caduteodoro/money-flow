@@ -74,6 +74,16 @@ describe("transaction filters", () => {
     expect(parse("direction=positive")).toEqual({ ok: false, reason: "INVALID_DIRECTION" });
   });
 
+  it.each(["", "constructor", "__proto__", "toString", "hasOwnProperty", "EXPENSE", "expense "])(
+    "rejects the non-enumerated direction %j", (value) => {
+      expect(parse(`direction=${encodeURIComponent(value)}`)).toEqual({ ok: false, reason: "INVALID_DIRECTION" });
+    },
+  );
+
+  it("rejects a repeated direction even when both values are valid", () => {
+    expect(parseTransactionFilters({ direction: ["expense", "income"] })).toEqual({ ok: false, reason: "DUPLICATE_PARAMETER" });
+  });
+
   it.each(["all", "categorized", "uncategorized"] as const)(
     "accepts filter=%s",
     (filter) => {

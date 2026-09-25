@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 5 concluida e integrada no escopo tecnico local; preview externo, producao e deploy continuam sem autorizacao**.
+Status atual: **Sprint 6 em andamento; Bloco 4A implementado e homologado funcionalmente pelo usuário. Bloco 4B não iniciado; preview externo, produção e deploy continuam sem autorização**. Evidências e limites em [Roadmap — Sprint 6](docs/06-roadmap.md#sprint-6).
 
 ## Problema
 
@@ -33,13 +33,15 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 - Rota protegida `/import` com upload CSV, preview e confirmacao na mesma tela.
 - Historico de importacoes com mes ou periodo do extrato.
 - Dashboard real baseado nas transacoes importadas pelo usuario autenticado.
-- KPIs financeiros reais: entradas, saidas, saldo, gasto medio diario, maior saida e quantidade de transacoes.
+- KPIs financeiros calculados: entradas, saídas, resultado do período, gasto médio diário, maior saída e quantidade de transações; resultado não representa saldo bancário real.
 - Filtros de periodo: todo o periodo importado, ultimos 30 dias, mes atual e mes anterior.
 - Exibicao do intervalo real considerado pelo filtro ativo.
-- Graficos simples de evolucao financeira e entradas vs saidas.
+- Cockpit com evolução financeira, comparação de entradas e saídas, destino por categoria e cobertura de categorização.
+- Seção "Principais gastos do período": até cinco descrições, maiores saídas e dias de maior gasto, considerando somente `EXPENSE`.
+- Drill-through por hash válido de descrição, transação ou dia UTC; grupos sem hash válido permanecem visíveis sem link aproximado.
 - Insights basicos calculados localmente, sem IA externa.
 - Tabela de ultimas transacoes.
-- Estado vazio separado para usuarios sem transacoes e filtros sem movimento no periodo.
+- Estados distintos para ausência de transações, período sem movimento, movimentações excluídas dos analytics, ausência de saídas e saídas de valor zero.
 - Importacao com mensagens controladas para erros esperados de CSV e contadores baseados no que o banco realmente inseriu.
 - UI polish e ajuste responsivo dos KPIs para zoom 100%.
 - Rota protegida `/transactions` para listagem e categorizacao manual com categorias do proprio usuario.
@@ -59,11 +61,9 @@ O MVP comeca com CSV. OFX entra depois do MVP inicial. PDF nao faz parte da impo
 
 ## Funcionalidades planejadas do MVP
 
-- Categorias pai/filha editaveis.
-- Analytics e graficos por categoria.
 - Execucao automatica de regras apos importacao.
 - Politicas operacionais futuras para retencao de audit logs e expurgo de backups.
-- Itens planejados para a Sprint 5.
+- Blocos restantes da Sprint 6, conforme o roadmap e autorização específica.
 - Revisao final de privacidade do MVP.
 
 Os modelos `Category` e `CategoryRule` sustentam a rota protegida `/categories`, que permite gerenciar categorias e regras v1. A categorizacao manual e as regras automaticas foram validadas manualmente. A aplicacao das regras depende de acao explicita; autoexecucao apos importacao permanece fora do escopo.
@@ -170,6 +170,8 @@ DATABASE_URL="postgresql://money_flow:change-me-in-local-env@localhost:5432/mone
 ```
 
 Nao use segredos reais em arquivos versionados.
+
+Login e cadastro exigem `RATE_LIMIT_HMAC_SECRET` no ambiente local. Gere um segredo exclusivo com fonte criptograficamente segura (pelo menos 32 bytes aleatórios; por exemplo, representados em 64 caracteres hexadecimais) e grave somente no `.env` ignorado. O valor de exemplo não é um segredo utilizável. Não exiba o valor em terminal, logs, clipboard ou documentos. Depois de configurar, reinicie o servidor. A validação relevante é o carregamento pelo runtime; um build aprovado não comprova a presença dessa variável.
 
 ## Prisma
 
@@ -295,7 +297,8 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem login social.
 - `SEC-008` permanece parcialmente mitigado: PostCSS e Sharp vulneraveis continuam no grafo do Next 15.5.23, mas nao sao alcancaveis pelo desenho atual sem CSS ou imagens nao confiaveis; qualquer novo caminho desse tipo exige reavaliacao.
 - `SEC-009` permanece parcialmente mitigado e depende de validacao atras do proxy real antes de preview externo.
-- Sem autoexecucao de regras na importacao, analytics ou graficos por categoria.
+- Sem autoexecucao de regras na importacao.
+- Grupos de descrição sem hash válido não têm drill-through; o ranking não representa necessariamente todas as saídas. Observações não bloqueantes da homologação estão no [backlog](docs/08-backlog.md#reconciliação-da-homologação-do-bloco-4a).
 - A integridade relacional multiusuario e a unicidade estrutural de categorias estao protegidas no banco; retencao/exclusao continuam pendentes.
 - Sem parser OFX.
 - Sem importacao automatica de PDF.
@@ -303,7 +306,7 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem PWA.
 - Sem IA externa.
 - Sem modo zero-knowledge ou criptografia de campos financeiros.
-- A suite automatizada cobre a sentinela do banco, FKs compostas multiusuario, autorização de categorias, regras e transações, preservação de `USER_MANUAL`, rate limiting, cadastro neutro, login posterior, sessões simultâneas, expiração e logout com PostgreSQL descartável; importações e dashboard ainda não possuem cobertura de integração equivalente.
+- A suíte automatizada cobre a sentinela do banco, FKs compostas multiusuário, autorização de categorias, regras e transações, preservação de `USER_MANUAL`, rate limiting, autenticação e sessões com PostgreSQL descartável. Dashboard e drill-through também possuem testes de isolamento, filtros e precisão; isso não declara cobertura integral de todos os fluxos do produto.
 - Nao ha logout global, gerenciamento de dispositivos, rotacao de token ou renovacao deslizante.
 - Algumas migrations antigas assumem banco local sem dados preexistentes.
 

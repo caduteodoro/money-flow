@@ -169,6 +169,7 @@ function buildDashboardSummary(
     period,
     comparisonPeriod,
     hasImportedTransactions,
+    periodTransactionCount: currentTransactions.length,
     kpis,
     comparisons,
     largestExpense: largestExpense
