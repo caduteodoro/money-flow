@@ -1,5 +1,7 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
-import Link from "next/link";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LinkButton } from "@/components/ui/button";
 import type { DashboardDateFilterId, DashboardInsight } from "@/lib/dashboard/dashboard-types";
 import { buildDashboardDrillThroughUrl } from "@/lib/transactions";
 
@@ -9,55 +11,32 @@ type BasicInsightsProps = {
 };
 
 const toneClasses: Record<DashboardInsight["tone"], string> = {
-  positive: "border-emerald-100 bg-emerald-50/80 text-emerald-900",
-  warning: "border-amber-100 bg-amber-50/90 text-amber-900",
-  neutral: "border-slate-200 bg-slate-50 text-slate-700",
-};
-
-const iconClasses: Record<DashboardInsight["tone"], string> = {
-  positive: "bg-emerald-100 text-emerald-700",
-  warning: "bg-amber-100 text-amber-700",
-  neutral: "bg-white text-slate-500",
+  positive: "border-emerald-200 bg-emerald-50/70 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100",
+  warning: "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100",
+  neutral: "bg-muted/30",
 };
 
 export function BasicInsights({ insights, activeFilter }: BasicInsightsProps) {
   if (insights.length === 0) {
-    return (
-      <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-        Não há sinais analíticos adicionais para este recorte. Os indicadores principais continuam disponíveis acima.
-      </p>
-    );
+    return <Alert><Info aria-hidden="true" /><AlertDescription>Não há sinais analíticos adicionais para este recorte. Os indicadores principais continuam disponíveis acima.</AlertDescription></Alert>;
   }
 
   return (
     <div className="space-y-3">
       {insights.map((insight) => {
-        const href = insight.target
-          ? buildDashboardDrillThroughUrl(insight.target, activeFilter)
-          : null;
-
+        const href = insight.target ? buildDashboardDrillThroughUrl(insight.target, activeFilter) : null;
         return (
-        <article key={insight.id} className={`rounded-xl border p-4 ${toneClasses[insight.tone]}`}>
-          <div className="flex gap-3">
-            <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${iconClasses[insight.tone]}`}>
-              <InsightIcon tone={insight.tone} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-              <h3 className="text-sm font-bold">{insight.title}</h3>
-                {typeof insight.amountCents === "number" ? (
-                  <span className="shrink-0 text-sm font-bold">{formatCurrency(insight.amountCents)}</span>
-                ) : null}
-              </div>
-              <p className="mt-1 text-sm leading-6">{insight.description}</p>
-              {href ? (
-                <Link className="mt-2 inline-flex min-h-10 items-center text-sm font-bold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" href={href}>
-                  {formatActionLabel(insight)}
-                </Link>
-              ) : null}
-            </div>
-          </div>
-        </article>
+          <Alert key={insight.id} className={toneClasses[insight.tone]}>
+            <InsightIcon tone={insight.tone} />
+            <AlertTitle className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <span>{insight.title}</span>
+              {typeof insight.amountCents === "number" ? <span className="shrink-0 tabular-nums">{formatCurrency(insight.amountCents)}</span> : null}
+            </AlertTitle>
+            <AlertDescription className="text-current/80">
+              <p>{insight.description}</p>
+              {href ? <LinkButton className="mt-2 px-0" href={href} size="sm" variant="link">{formatActionLabel(insight)}</LinkButton> : null}
+            </AlertDescription>
+          </Alert>
         );
       })}
     </div>
@@ -72,20 +51,11 @@ function formatActionLabel(insight: DashboardInsight) {
 }
 
 function InsightIcon({ tone }: { tone: DashboardInsight["tone"] }) {
-  if (tone === "positive") {
-    return <CheckCircle2 className="size-4" aria-hidden="true" />;
-  }
-
-  if (tone === "warning") {
-    return <AlertTriangle className="size-4" aria-hidden="true" />;
-  }
-
-  return <Info className="size-4" aria-hidden="true" />;
+  if (tone === "positive") return <CheckCircle2 aria-hidden="true" />;
+  if (tone === "warning") return <AlertTriangle aria-hidden="true" />;
+  return <Info aria-hidden="true" />;
 }
 
 function formatCurrency(amountCents: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(amountCents / 100);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amountCents / 100);
 }

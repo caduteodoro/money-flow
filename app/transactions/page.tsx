@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
+import { AppShell } from "@/components/layout/app-shell";
 import { ActiveTransactionFilters } from "@/components/transactions/active-transaction-filters";
 import { TransactionPagination } from "@/components/transactions/transaction-pagination";
 import { TransactionsCategorizationTable } from "@/components/transactions/transactions-categorization-table";
 import { TransactionsEmptyState } from "@/components/transactions/transactions-empty-state";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { listUserCategories } from "@/lib/categories";
 import {
@@ -42,64 +44,89 @@ export default async function TransactionsPage({
     : [];
 
   return (
-    <div className="min-h-screen bg-brand-surface">
-      <Sidebar activeItem="transactions" />
-      <main className="lg:pl-72">
-        <Topbar eyebrow="Organizacao" periodLabel="Transacoes" title="Transacoes" user={user} />
-        <div className="space-y-6 px-5 py-6 lg:px-8">
-          <section className="rounded-xl border border-teal-100 bg-white p-5 shadow-soft lg:p-6">
-            <h1 className="text-xl font-bold text-brand-navy sm:text-2xl">Visualize suas movimentacoes e organize as categorias.</h1>
-            <p className="mt-2 text-sm text-slate-600">Os filtros sao aplicados no servidor e a lista e paginada sem perder o contexto. Categorias podem ser criadas e editadas em Categorias.</p>
-          </section>
+    <AppShell
+      activeItem="transactions"
+      contentClassName="flex flex-col gap-6"
+      eyebrow="Organização"
+      periodLabel="Transações"
+      title="Transações"
+      user={user}
+    >
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Movimentações</p>
+          <CardTitle className="text-xl sm:text-2xl">Revise, filtre e categorize com contexto</CardTitle>
+          <CardDescription className="max-w-3xl leading-6">
+            Filtros são aplicados no servidor e a paginação preserva o recorte. Categorias podem ser criadas e editadas em Categorias.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-          <ActiveTransactionFilters filters={transactionPage.filters} items={transactionPage.activeFilters} />
+      <ActiveTransactionFilters filters={transactionPage.filters} items={transactionPage.activeFilters} />
 
-          {!transactionPage.filters.transactionId ? (
-            <div className="grid gap-4 xl:grid-cols-2">
-              <FilterGroup label="Filtrar por direcao">
-                <FilterLink active={!transactionPage.filters.direction} href={updateTransactionFilters(transactionPage.filters, { direction: null })}>Todas</FilterLink>
-                <FilterLink active={transactionPage.filters.direction === "INCOME"} href={updateTransactionFilters(transactionPage.filters, { direction: "INCOME" })}>Entradas</FilterLink>
-                <FilterLink active={transactionPage.filters.direction === "EXPENSE"} href={updateTransactionFilters(transactionPage.filters, { direction: "EXPENSE" })}>Saidas</FilterLink>
-                <FilterLink active={transactionPage.filters.direction === "TRANSFER"} href={updateTransactionFilters(transactionPage.filters, { direction: "TRANSFER" })}>Transferencias</FilterLink>
-                <FilterLink active={transactionPage.filters.direction === "REVERSAL"} href={updateTransactionFilters(transactionPage.filters, { direction: "REVERSAL" })}>Estornos</FilterLink>
-              </FilterGroup>
-              <FilterGroup label="Filtrar por categorizacao">
-                <FilterLink active={transactionPage.filters.filter === "all"} href={updateTransactionFilters(transactionPage.filters, { filter: "all" })}>Todas</FilterLink>
-                <FilterLink active={transactionPage.filters.filter === "categorized"} href={updateTransactionFilters(transactionPage.filters, { filter: "categorized" })}>Categorizadas</FilterLink>
-                <FilterLink active={transactionPage.filters.filter === "uncategorized"} href={updateTransactionFilters(transactionPage.filters, { filter: "uncategorized" })}>Sem categoria</FilterLink>
-              </FilterGroup>
-            </div>
-          ) : null}
-
-          {!categoriesResult.ok ? <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{categoriesResult.message}</p> : null}
-          {categoriesResult.ok && options.length === 0 ? <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Crie uma categoria em <Link className="font-bold underline" href="/categories">Categorias</Link> antes de categorizar.</p> : null}
-
-          {transactionPage.transactions.length > 0 ? (
-            <TransactionsCategorizationTable
-              highlightedTransactionId={transactionPage.filters.transactionId}
-              transactions={transactionPage.transactions}
-              options={options}
-            />
-          ) : (
-            <TransactionsEmptyState
-              filters={transactionPage.filters}
-              totalUserTransactions={transactionPage.totalUserTransactions}
-            />
-          )}
-
-          <TransactionPagination filters={transactionPage.filters} pagination={transactionPage.pagination} />
+      {!transactionPage.filters.transactionId ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <FilterGroup label="Filtrar por direção">
+            <FilterLink active={!transactionPage.filters.direction} href={updateTransactionFilters(transactionPage.filters, { direction: null })}>Todas</FilterLink>
+            <FilterLink active={transactionPage.filters.direction === "INCOME"} href={updateTransactionFilters(transactionPage.filters, { direction: "INCOME" })}>Entradas</FilterLink>
+            <FilterLink active={transactionPage.filters.direction === "EXPENSE"} href={updateTransactionFilters(transactionPage.filters, { direction: "EXPENSE" })}>Saídas</FilterLink>
+            <FilterLink active={transactionPage.filters.direction === "TRANSFER"} href={updateTransactionFilters(transactionPage.filters, { direction: "TRANSFER" })}>Transferências</FilterLink>
+            <FilterLink active={transactionPage.filters.direction === "REVERSAL"} href={updateTransactionFilters(transactionPage.filters, { direction: "REVERSAL" })}>Estornos</FilterLink>
+          </FilterGroup>
+          <FilterGroup label="Filtrar por categorização">
+            <FilterLink active={transactionPage.filters.filter === "all"} href={updateTransactionFilters(transactionPage.filters, { filter: "all" })}>Todas</FilterLink>
+            <FilterLink active={transactionPage.filters.filter === "categorized"} href={updateTransactionFilters(transactionPage.filters, { filter: "categorized" })}>Categorizadas</FilterLink>
+            <FilterLink active={transactionPage.filters.filter === "uncategorized"} href={updateTransactionFilters(transactionPage.filters, { filter: "uncategorized" })}>Sem categoria</FilterLink>
+          </FilterGroup>
         </div>
-      </main>
-    </div>
+      ) : null}
+
+      {!categoriesResult.ok ? (
+        <Alert variant="destructive">
+          <AlertTitle>Não foi possível carregar categorias</AlertTitle>
+          <AlertDescription>{categoriesResult.message}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {categoriesResult.ok && options.length === 0 ? (
+        <Alert>
+          <AlertTitle>Nenhuma categoria criada</AlertTitle>
+          <AlertDescription>
+            Crie uma categoria em <Link className="font-semibold underline" href="/categories">Categorias</Link> antes de categorizar.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {transactionPage.transactions.length > 0 ? (
+        <TransactionsCategorizationTable
+          highlightedTransactionId={transactionPage.filters.transactionId}
+          transactions={transactionPage.transactions}
+          options={options}
+        />
+      ) : (
+        <TransactionsEmptyState
+          filters={transactionPage.filters}
+          totalUserTransactions={transactionPage.totalUserTransactions}
+        />
+      )}
+
+      <TransactionPagination filters={transactionPage.filters} pagination={transactionPage.pagination} />
+    </AppShell>
   );
 }
 
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <nav aria-label={label} className="rounded-xl border border-slate-200 bg-white p-3">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </nav>
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle className="text-sm">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <nav aria-label={label} className="flex flex-wrap gap-2">
+          {children}
+        </nav>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -107,11 +134,7 @@ function FilterLink({ active, href, children }: { active: boolean; href: string;
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`inline-flex min-h-11 items-center rounded-lg px-4 py-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal ${
-        active
-          ? "bg-brand-teal text-white"
-          : "border border-slate-300 bg-white text-slate-700 hover:border-teal-300"
-      }`}
+      className={buttonVariants({ variant: active ? "default" : "outline", size: "sm" })}
       href={href}
     >
       {children}

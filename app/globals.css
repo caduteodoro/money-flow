@@ -1,30 +1,132 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.ts";
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   color-scheme: light;
-  --background: #f8fafc;
+  --background: #f7f9fb;
   --foreground: #102a43;
+  --card: #ffffff;
+  --card-foreground: #102a43;
+  --popover: #ffffff;
+  --popover-foreground: #102a43;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f3f2;
+  --secondary-foreground: #134e4a;
+  --muted: #eef2f6;
+  --muted-foreground: #62758a;
+  --accent: #dff7f2;
+  --accent-foreground: #115e59;
+  --destructive: #be123c;
+  --border: #dce4ec;
+  --input: #cbd5e1;
+  --ring: #0f766e;
+  --chart-1: #0f766e;
+  --chart-2: #0284c7;
+  --chart-3: #65a30d;
+  --chart-4: #d97706;
+  --chart-5: #9333ea;
+  --radius: 0.75rem;
+  --sidebar: #0d2438;
+  --sidebar-foreground: #eaf2f8;
+  --sidebar-primary: #5eead4;
+  --sidebar-primary-foreground: #0d2438;
+  --sidebar-accent: #173b51;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #21485e;
+  --sidebar-ring: #5eead4;
 }
 
-* {
-  box-sizing: border-box;
+.dark {
+  --background: #081826;
+  --foreground: #eef6fb;
+  --card: #102a43;
+  --card-foreground: #eef6fb;
+  --popover: #102a43;
+  --popover-foreground: #eef6fb;
+  --primary: #5eead4;
+  --primary-foreground: #0d2438;
+  --secondary: #173b51;
+  --secondary-foreground: #eaf2f8;
+  --muted: #173247;
+  --muted-foreground: #a9bac9;
+  --accent: #164e63;
+  --accent-foreground: #ecfeff;
+  --destructive: #fb7185;
+  --border: rgb(255 255 255 / 12%);
+  --input: rgb(255 255 255 / 18%);
+  --ring: #5eead4;
+  --sidebar: #06131f;
+  --sidebar-foreground: #eaf2f8;
+  --sidebar-primary: #5eead4;
+  --sidebar-primary-foreground: #0d2438;
+  --sidebar-accent: #173b51;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 12%);
+  --sidebar-ring: #5eead4;
 }
 
-html {
-  scroll-behavior: smooth;
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-body {
-  min-height: 100vh;
-  margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }

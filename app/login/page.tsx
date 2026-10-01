@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, Route } from "lucide-react";
+
 import { LoginForm } from "@/app/login/login-form";
+import { BrandMark } from "@/components/layout/brand-mark";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 type LoginPageProps = {
@@ -20,51 +24,45 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const showRegistrationNotice = params.registration === "submitted";
 
   return (
-    <main className="grid min-h-screen bg-brand-surface px-5 py-10 lg:grid-cols-[0.9fr_1.1fr]">
-      <section className="mx-auto flex w-full max-w-md flex-col justify-center">
-        <Link href="/" className="mb-10 flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-lg bg-brand-navy text-sm font-bold text-white">
-            MF
-          </span>
-          <span>
-            <span className="block font-bold text-brand-navy">Money Flow</span>
-            <span className="block text-xs text-slate-500">Seu GPS financeiro pessoal.</span>
-          </span>
-        </Link>
+    <main className="grid min-h-svh lg:grid-cols-[minmax(0,1fr)_minmax(32rem,0.8fr)]">
+      <section className="flex items-center justify-center px-5 py-10 sm:px-8">
+        <div className="flex w-full max-w-md flex-col gap-8">
+          <BrandMark />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="mb-6">
-            <LockKeyhole className="mb-4 size-6 text-brand-teal" aria-hidden="true" />
-            <h1 className="text-2xl font-bold text-brand-navy">Entrar</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Acesse sua rota financeira com uma sessao segura.
-            </p>
-          </div>
-
-          {showRegistrationNotice ? (
-            <p className="mb-4 rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-800" role="status">
-              Se os dados puderem ser cadastrados, voce ja podera entrar com suas credenciais.
-            </p>
-          ) : null}
-
-          <LoginForm />
-
-          <p className="mt-5 text-center text-sm text-slate-600">
-            Ainda nao tem conta?{" "}
-            <Link className="font-semibold text-brand-teal hover:text-teal-700" href="/register">
-              Criar conta
-            </Link>
-          </p>
+          <Card>
+            <CardHeader>
+              <span className="mb-2 grid size-10 place-items-center rounded-lg bg-secondary text-secondary-foreground">
+                <LockKeyhole aria-hidden="true" className="size-5" />
+              </span>
+              <CardTitle className="text-2xl">Entrar</CardTitle>
+              <CardDescription>Acesse sua rota financeira com uma sessão segura.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {showRegistrationNotice ? (
+                <Alert>
+                  <AlertTitle>Cadastro recebido</AlertTitle>
+                  <AlertDescription>Se os dados foram cadastrados, você já pode entrar com suas credenciais.</AlertDescription>
+                </Alert>
+              ) : null}
+              <LoginForm />
+            </CardContent>
+            <CardFooter className="justify-center">
+              <p className="text-sm text-muted-foreground">
+                Ainda não tem conta?{" "}
+                <Link className="font-semibold text-primary hover:underline" href="/register">Criar conta</Link>
+              </p>
+            </CardFooter>
+          </Card>
         </div>
       </section>
 
-      <section className="hidden items-center justify-center p-8 lg:flex">
-        <div className="max-w-lg rounded-lg bg-brand-navy p-8 text-white shadow-soft">
-          <p className="text-sm font-semibold text-brand-mint">Proxima parada</p>
-          <h2 className="mt-3 text-3xl font-bold">Sessao segura e rotas protegidas.</h2>
-          <p className="mt-4 leading-7 text-slate-200">
-            A autenticacao do MVP usa cookie HTTP-only, token com hash no banco e isolamento por
-            usuario desde o primeiro acesso.
+      <section className="hidden bg-sidebar p-10 text-sidebar-foreground lg:flex lg:items-end">
+        <div className="max-w-xl">
+          <Route aria-hidden="true" className="mb-6 size-8 text-sidebar-primary" />
+          <p className="text-sm font-semibold text-sidebar-primary">Privacidade desde a origem</p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Sua visão financeira, sem perder isolamento.</h2>
+          <p className="mt-4 max-w-lg leading-7 text-sidebar-foreground/70">
+            Sessões protegidas, consultas filtradas por usuário e dados financeiros tratados como informação privada.
           </p>
         </div>
       </section>

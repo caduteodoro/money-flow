@@ -2,10 +2,17 @@ import { CategoriesEmptyState } from "@/components/categories/categories-empty-s
 import { CategoryList } from "@/components/categories/category-list";
 import { CreateCategoryForm } from "@/components/categories/create-category-form";
 import { CategoryRuleSection } from "@/components/category-rules/category-rule-section";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { AppShell } from "@/components/layout/app-shell";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LinkButton } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { listUserCategoriesForNavigation } from "@/lib/categories";
 import { listUserCategoryRules } from "@/lib/category-rules";
@@ -18,73 +25,83 @@ export default async function CategoriesPage() {
     listUserCategoryRules(user.id),
   ]);
   const categories = result.ok ? result.data.categories : [];
-  const options = categories.flatMap((parent) => [{ id: parent.id, label: parent.name }, ...parent.children.map((child) => ({ id: child.id, label: `  └─ ${child.name}` }))]);
+  const options = categories.flatMap((parent) => [
+    { id: parent.id, label: parent.name },
+    ...parent.children.map((child) => ({ id: child.id, label: `  └─ ${child.name}` })),
+  ]);
 
   return (
-    <div className="min-h-screen bg-brand-surface">
-      <Sidebar activeItem="categories" />
-      <main className="lg:pl-72">
-        <Topbar eyebrow="Organizacao" periodLabel="Categorias" title="Categorias" user={user} />
-        <div className="space-y-6 px-5 py-6 lg:px-8">
-          <section className="rounded-xl border border-teal-100 bg-white p-5 shadow-soft lg:p-6">
-            <p className="text-sm font-semibold text-brand-teal">Organize sua rota</p>
-            <h1 className="mt-2 text-xl font-bold text-brand-navy sm:text-2xl">
-              Organize suas transacoes com categorias e subcategorias.
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Crie categorias principais, subcategorias e regras simples para organizar suas transacoes.
-            </p>
-          </section>
+    <AppShell
+      activeItem="categories"
+      contentClassName="flex flex-col gap-6"
+      eyebrow="Organização"
+      periodLabel="Categorias"
+      title="Categorias"
+      user={user}
+    >
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Organize sua rota</p>
+          <CardTitle className="text-xl sm:text-2xl">Categorias que explicam seus gastos</CardTitle>
+          <CardDescription className="max-w-3xl leading-6">
+            Crie categorias principais, subcategorias e regras simples para organizar suas transações.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-          <Card>
-            <CardHeader>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Nova categoria</p>
-                <h2 className="mt-1 text-lg font-bold text-brand-navy">Criar categoria principal</h2>
-              </div>
-            </CardHeader>
-            <CardBody>
-              <CreateCategoryForm />
-            </CardBody>
-          </Card>
+      <Card>
+        <CardHeader>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Nova categoria</p>
+          <CardTitle>Criar categoria principal</CardTitle>
+          <CardDescription>Use nomes curtos e consistentes para facilitar filtros e análises.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CreateCategoryForm />
+        </CardContent>
+      </Card>
 
-          {result.ok ? (
-            <Card>
-              <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Revisao rapida</p>
-                  <h2 className="mt-1 text-lg font-bold text-brand-navy">Despesas sem categoria</h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    {result.data.uncategorizedExpenseCount} {result.data.uncategorizedExpenseCount === 1 ? "despesa precisa" : "despesas precisam"} de revisao no periodo importado.
-                  </p>
-                </div>
-                <LinkButton
-                  className="shrink-0"
-                  href={buildTransactionsUrl({
-                    period: "imported-period",
-                    direction: "EXPENSE",
-                    filter: "uncategorized",
-                  })}
-                >
-                  Ver despesas sem categoria
-                </LinkButton>
-              </CardBody>
-            </Card>
-          ) : null}
+      {result.ok ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Despesas sem categoria</CardTitle>
+            <CardDescription>
+              {result.data.uncategorizedExpenseCount} {result.data.uncategorizedExpenseCount === 1 ? "despesa precisa" : "despesas precisam"} de revisão no período importado.
+            </CardDescription>
+            <CardAction>
+              <LinkButton
+                href={buildTransactionsUrl({
+                  period: "imported-period",
+                  direction: "EXPENSE",
+                  filter: "uncategorized",
+                })}
+                size="sm"
+              >
+                Revisar agora
+              </LinkButton>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
 
-          {!result.ok ? (
-            <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              {result.message}
-            </p>
-          ) : categories.length === 0 ? (
-            <CategoriesEmptyState />
-          ) : (
-            <CategoryList categories={categories} />
-          )}
-          <CategoryRuleSection rules={rulesResult.ok ? rulesResult.data : []} options={options} />
-          {!rulesResult.ok ? <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{rulesResult.message}</p> : null}
-        </div>
-      </main>
-    </div>
+      {!result.ok ? (
+        <Alert variant="destructive">
+          <AlertTitle>Não foi possível carregar categorias</AlertTitle>
+          <AlertDescription>{result.message}</AlertDescription>
+        </Alert>
+      ) : categories.length === 0 ? (
+        <CategoriesEmptyState />
+      ) : (
+        <CategoryList categories={categories} />
+      )}
+
+      <CategoryRuleSection rules={rulesResult.ok ? rulesResult.data : []} options={options} />
+
+      {!rulesResult.ok ? (
+        <Alert variant="destructive">
+          <AlertTitle>Não foi possível carregar regras</AlertTitle>
+          <AlertDescription>{rulesResult.message}</AlertDescription>
+        </Alert>
+      ) : null}
+    </AppShell>
   );
 }

@@ -1,54 +1,54 @@
-import type { TransactionListItem } from "@/lib/transactions";
 import { CategoryAssignmentForm } from "@/components/transactions/category-assignment-form";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { TransactionListItem } from "@/lib/transactions";
 
 type CategoryOption = { id: string; label: string };
 
-export function TransactionsCategorizationTable({
-  transactions,
-  options,
-  highlightedTransactionId,
-}: {
-  transactions: TransactionListItem[];
-  options: CategoryOption[];
-  highlightedTransactionId?: string;
-}) {
+export function TransactionsCategorizationTable({ transactions, options, highlightedTransactionId }: { transactions: TransactionListItem[]; options: CategoryOption[]; highlightedTransactionId?: string }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="w-full min-w-[940px] text-sm">
-        <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-          <tr><th className="px-4 py-3">Data</th><th className="px-4 py-3">Descricao</th><th className="px-4 py-3">Tipo</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3 text-right">Valor</th></tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
+    <div className="overflow-hidden rounded-xl border bg-card">
+      <Table className="min-w-[940px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Tipo</TableHead><TableHead>Categoria</TableHead><TableHead className="text-right">Valor</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {transactions.length ? transactions.map((transaction) => (
-            <tr
-              key={transaction.id}
-              className={`align-top ${
-                transaction.id === highlightedTransactionId
-                  ? "bg-teal-50/70 outline outline-2 -outline-offset-2 outline-brand-teal"
-                  : ""
-              }`}
-            >
-              <td className="whitespace-nowrap px-4 py-4 text-slate-600">{formatDate(transaction.occurredAt)}</td>
-              <td className="max-w-72 px-4 py-4 font-medium text-brand-navy">
-                {transaction.id === highlightedTransactionId ? (
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-brand-teal">Transacao selecionada</span>
-                ) : null}
+            <TableRow key={transaction.id} className={transaction.id === highlightedTransactionId ? "bg-primary/5 outline-2 -outline-offset-2 outline-primary" : ""}>
+              <TableCell>{formatDate(transaction.occurredAt)}</TableCell>
+              <TableCell className="max-w-72 font-medium">
+                {transaction.id === highlightedTransactionId ? <Badge className="mb-1 block w-fit" variant="secondary">Transação selecionada</Badge> : null}
                 <span className="block truncate">{transaction.description}</span>
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 text-slate-600">{formatDirection(transaction.direction)}</td>
-              <td className="px-4 py-3">
-                {!transaction.category ? <span className="mb-2 inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">Sem categoria</span> : <p className="mb-2 text-xs text-slate-500">Atual: {transaction.category.parentName ? `${transaction.category.parentName} / ` : ""}{transaction.category.name}</p>}
+              </TableCell>
+              <TableCell>{formatDirection(transaction.direction)}</TableCell>
+              <TableCell>
+                {!transaction.category ? (
+                  <Badge className="mb-2 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" variant="secondary">Sem categoria</Badge>
+                ) : (
+                  <p className="mb-2 text-xs text-muted-foreground">Atual: {transaction.category.parentName ? `${transaction.category.parentName} / ` : ""}{transaction.category.name}</p>
+                )}
                 <CategoryAssignmentForm transactionId={transaction.id} categoryId={transaction.category?.id ?? null} options={options} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-4 text-right font-semibold tabular-nums">{formatCurrency(transaction.amountCents)}</td>
-            </tr>
-          )) : <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-500">Nenhuma transacao encontrada neste filtro.</td></tr>}
-        </tbody>
-      </table>
+              </TableCell>
+              <TableCell className="text-right font-semibold tabular-nums">{formatCurrency(transaction.amountCents)}</TableCell>
+            </TableRow>
+          )) : (
+            <TableRow><TableCell colSpan={5} className="h-24 text-center text-muted-foreground">Nenhuma transação encontrada neste filtro.</TableCell></TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
 function formatDate(date: Date) { return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(date); }
 function formatCurrency(value: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100); }
-function formatDirection(direction: string) { return ({ INCOME: "Entrada", EXPENSE: "Saida", TRANSFER: "Transferencia", REVERSAL: "Estorno" } as Record<string, string>)[direction] ?? direction; }
+function formatDirection(direction: string) { return ({ INCOME: "Entrada", EXPENSE: "Saída", TRANSFER: "Transferência", REVERSAL: "Estorno" } as Record<string, string>)[direction] ?? direction; }

@@ -4,39 +4,28 @@ import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { Loader2, Plus } from "lucide-react";
 
-import {
-  createCategoryAction,
-} from "@/app/categories/actions";
+import { createCategoryAction } from "@/app/categories/actions";
 import { initialCategoryActionState } from "@/app/categories/category-action-state";
 import { CategoryActionMessage } from "@/components/categories/action-message";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export function CreateCategoryForm() {
   const [state, action] = useActionState(createCategoryAction, initialCategoryActionState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state.status === "success") {
-      formRef.current?.reset();
-    }
+    if (state.status === "success") formRef.current?.reset();
   }, [state.status]);
 
   return (
     <form ref={formRef} action={action} className="space-y-3" noValidate>
-      <label className="block max-w-xl">
-        <span className="text-sm font-medium text-slate-700">Nome da categoria</span>
-        <input
-          className="mt-2 h-11 w-full rounded-md border border-slate-200 px-3 text-sm outline-none transition focus:border-brand-teal focus:ring-2 focus:ring-teal-100"
-          maxLength={60}
-          name="name"
-          placeholder="Ex.: Alimentacao"
-          required
-          type="text"
-        />
-        {state.fieldErrors?.name ? (
-          <span className="mt-2 block text-sm text-rose-700">{state.fieldErrors.name[0]}</span>
-        ) : null}
-      </label>
+      <Field className="max-w-xl" data-invalid={Boolean(state.fieldErrors?.name)}>
+        <FieldLabel htmlFor="category-name">Nome da categoria</FieldLabel>
+        <Input id="category-name" maxLength={60} name="name" placeholder="Ex.: Alimentação" required type="text" />
+        <FieldError errors={state.fieldErrors?.name?.map((message) => ({ message }))} />
+      </Field>
       <CategoryActionMessage state={state} />
       <SubmitButton />
     </form>
@@ -45,10 +34,9 @@ export function CreateCategoryForm() {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-
   return (
     <Button disabled={pending} type="submit">
-      {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
+      {pending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Plus aria-hidden="true" />}
       {pending ? "Criando..." : "Criar categoria"}
     </Button>
   );

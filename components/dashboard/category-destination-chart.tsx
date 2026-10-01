@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import { EChartsClient } from "@/components/dashboard/echarts-client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LinkButton } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type {
   DashboardCategoryDestinationModel,
   DashboardDateFilterId,
@@ -20,13 +22,15 @@ type CategoryDestinationChartProps = {
 export function CategoryDestinationChart({ activeFilter, model }: CategoryDestinationChartProps) {
   if (model.totalExpenseCents === 0) {
     return (
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Alert className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-bold text-brand-navy">Não há valor de saída para compor este gráfico.</p>
-          <p className="mt-1 text-sm text-slate-600">O destino por categoria fica sem base enquanto o total de saídas do período for zero.</p>
+          <AlertTitle>Não há valor de saída para compor este gráfico.</AlertTitle>
+          <AlertDescription>O destino por categoria fica sem base enquanto o total de saídas do período for zero.</AlertDescription>
         </div>
-        <LinkButton href={buildTransactionsUrl({ period: activeFilter, direction: "EXPENSE" })} variant="secondary">Ver saídas</LinkButton>
-      </div>
+        <LinkButton href={buildTransactionsUrl({ period: activeFilter, direction: "EXPENSE" })} variant="outline">
+          Ver saídas
+        </LinkButton>
+      </Alert>
     );
   }
 
@@ -46,40 +50,40 @@ export function CategoryDestinationChart({ activeFilter, model }: CategoryDestin
       />
 
       <div>
-        <p className="text-xs leading-5 text-slate-500">
+        <p className="text-xs leading-5 text-muted-foreground">
           Total reconciliado: {formatDashboardCurrency(model.totalExpenseCents)}. Categorias filhas são
           consolidadas na categoria raiz.
         </p>
-        <ol className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-slate-50/70">
+        <ol className="mt-3 divide-y rounded-xl border bg-muted/30">
           {items.map((item, index) => (
             <li className="flex min-w-0 items-center gap-3 px-3 py-3" key={item.key}>
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-xs font-bold text-slate-500">
+              <Badge className="size-7 shrink-0 justify-center rounded-full p-0" variant="outline">
                 {index + 1}
-              </span>
+              </Badge>
               <div className="min-w-0 flex-1">
                 {item.href ? (
                   <Link
-                    className="block break-words text-sm font-bold text-brand-navy underline-offset-4 hover:text-brand-teal hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal"
+                    className="block break-words text-sm font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     href={item.href}
                     title={item.label}
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className="block break-words text-sm font-bold text-brand-navy" title={item.label}>
+                  <span className="block break-words text-sm font-semibold text-foreground" title={item.label}>
                     {item.label}
                   </span>
                 )}
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {item.transactionCount} {item.transactionCount === 1 ? "despesa" : "despesas"}
                   {item.kind === "OTHER" ? " · agregado sem drill-through" : ""}
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-sm font-bold tabular-nums text-brand-navy">
+                <p className="text-sm font-semibold tabular-nums text-foreground">
                   {formatDashboardCurrency(item.amountCents)}
                 </p>
-                <p className="text-xs tabular-nums text-slate-500">
+                <p className="text-xs tabular-nums text-muted-foreground">
                   {formatDashboardPercentage(item.percentage)}
                 </p>
               </div>

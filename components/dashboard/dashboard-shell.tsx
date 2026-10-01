@@ -7,9 +7,8 @@ import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-f
 import { ExpenseHighlights } from "@/components/dashboard/expense-highlights";
 import { ExpenseFlow } from "@/components/dashboard/expense-flow";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { AppShell } from "@/components/layout/app-shell";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DashboardDateFilterId, DashboardSummary } from "@/lib/dashboard/dashboard-types";
 import {
   buildDashboardCategoryDestinationModel,
@@ -33,26 +32,29 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
   const categoryModel = buildDashboardCategoryDestinationModel(summary.categories);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-50">
-      <Sidebar activeItem="dashboard" />
-      <main className="min-w-0 lg:pl-72">
-        <Topbar eyebrow="Cockpit financeiro" showContextBadge={false} title="Dashboard financeiro" user={user} />
-        <div className="min-w-0 space-y-6 px-4 py-5 sm:px-5 lg:px-8 lg:py-7">
-          <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-soft">
-            <div className="border-l-4 border-brand-teal p-5 sm:p-6">
+    <AppShell
+      activeItem="dashboard"
+      contentClassName="flex flex-col gap-6 overflow-x-hidden"
+      eyebrow="Cockpit financeiro"
+      showContextBadge={false}
+      title="Dashboard financeiro"
+      user={user}
+    >
+          <section className="overflow-hidden rounded-2xl border bg-card shadow-xs">
+            <div className="border-l-4 border-primary p-5 sm:p-6">
               <div className="flex flex-col gap-5">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Contexto analítico</p>
-                  <h2 className="mt-2 text-balance text-xl font-bold text-brand-navy sm:text-2xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Contexto analítico</p>
+                  <h2 className="mt-2 text-balance text-xl font-semibold sm:text-2xl">
                     Olá, {user.name}. Este é o resultado calculado para {activeFilterLabel.toLocaleLowerCase("pt-BR")}.
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {summary.hasImportedTransactions
                       ? "Entradas e saídas são calculadas pelas transações importadas deste usuário; transferências e estornos ficam fora dos indicadores financeiros."
                       : "Importe seu primeiro CSV fictício para ver os indicadores calculados."}
                   </p>
                   {periodRangeLabel ? (
-                    <p className="mt-2 text-sm font-medium text-slate-500">
+                    <p className="mt-2 text-sm font-medium text-muted-foreground">
                       Intervalo considerado: {periodRangeLabel}. O resultado do período não representa saldo bancário.
                     </p>
                   ) : null}
@@ -66,7 +68,7 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
           {hasTransactionsInPeriod ? (
             <>
               {summary.kpis.includedTransactionCount === 0 ? (
-                <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600">
+                <p className="rounded-xl border bg-card p-5 text-sm leading-6 text-muted-foreground">
                   Há movimentações neste período, mas somente transferências ou estornos. Elas aparecem nas últimas transações e ficam fora dos indicadores de entradas e saídas.
                 </p>
               ) : null}
@@ -97,28 +99,24 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
 
               <Card>
                 <CardHeader>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Sinais do período</p>
-                    <h2 className="mt-1 text-lg font-bold text-brand-navy">Leituras contextuais</h2>
-                    <p className="mt-1 text-sm text-slate-500">Fatos derivados do recorte atual, sem recomendação financeira.</p>
-                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Sinais do período</p>
+                  <CardTitle>Leituras contextuais</CardTitle>
+                  <CardDescription>Fatos derivados do recorte atual, sem recomendação financeira.</CardDescription>
                 </CardHeader>
-                <CardBody>
+                <CardContent>
                   <BasicInsights activeFilter={activeFilter} insights={summary.insights} />
-                </CardBody>
+                </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Movimento recente</p>
-                    <h2 className="mt-1 text-lg font-bold text-brand-navy">Últimas transações</h2>
-                    <p className="mt-1 text-sm text-slate-500">Inclui transferências e estornos para manter o histórico recente transparente.</p>
-                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Movimento recente</p>
+                  <CardTitle>Últimas transações</CardTitle>
+                  <CardDescription>Inclui transferências e estornos para manter o histórico recente transparente.</CardDescription>
                 </CardHeader>
-                <CardBody>
+                <CardContent>
                   <TransactionsTable activeFilter={activeFilter} transactions={summary.recentTransactions} />
-                </CardBody>
+                </CardContent>
               </Card>
             </>
           ) : (
@@ -128,9 +126,7 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
               variant={summary.hasImportedTransactions ? "empty-period" : "no-data"}
             />
           )}
-        </div>
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

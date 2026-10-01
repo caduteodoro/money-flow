@@ -1,8 +1,7 @@
 "use client";
 
 import { CheckCircle2, FileUp, Loader2, TriangleAlert } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { useActionState } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 
@@ -11,8 +10,27 @@ import {
   previewStatementImportAction,
   type ImportActionState,
 } from "@/app/import/actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { StatementImportSummary } from "@/lib/imports/statement-import-service";
 
 const initialState: ImportActionState = {
@@ -61,23 +79,19 @@ export function ImportForm({ history }: ImportFormProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-brand-teal">CSV</p>
-              <h2 className="text-lg font-bold text-brand-navy">Importar extrato</h2>
-            </div>
-            <span className="rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              Max. 2 MB
-            </span>
-          </div>
+          <CardTitle>Importar extrato</CardTitle>
+          <CardDescription>Selecione um CSV e revise o preview antes de confirmar.</CardDescription>
+          <CardAction>
+            <Badge variant="secondary">Máx. 2 MB</Badge>
+          </CardAction>
         </CardHeader>
-        <CardBody>
+        <CardContent>
           <form action={previewAction} className="space-y-5">
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Arquivo CSV</span>
-              <input
+            <Field>
+              <FieldLabel htmlFor="statement-file">Arquivo CSV</FieldLabel>
+              <Input
                 accept=".csv,text/csv"
-                className="mt-2 block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-teal hover:file:bg-teal-100"
+                id="statement-file"
                 name="statementFile"
                 onChange={(event) => {
                   const file = event.target.files?.[0];
@@ -88,7 +102,7 @@ export function ImportForm({ history }: ImportFormProps) {
                 required
                 type="file"
               />
-            </label>
+            </Field>
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <PreviewButton />
@@ -118,85 +132,74 @@ export function ImportForm({ history }: ImportFormProps) {
             <ActionMessage state={previewState} />
             <ActionMessage state={confirmState} />
           </form>
-        </CardBody>
+        </CardContent>
       </Card>
 
       {preview ? (
         <Card>
           <CardHeader>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-brand-navy">Preview</h2>
-                <p className="text-sm text-slate-500">
-                  {preview.sourceProvider} via {preview.parserId}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Periodo: {formatStatementPeriod(preview.periodStart, preview.periodEnd)}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                <span className="rounded-md bg-slate-100 px-2.5 py-1">{preview.rowCount} linhas</span>
-                <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-emerald-700">
-                  {preview.rowCount - preview.duplicateCount - preview.invalidRowCount} novas
-                </span>
-                <span className="rounded-md bg-amber-50 px-2.5 py-1 text-amber-700">
-                  {preview.duplicateCount} duplicadas
-                </span>
-                <span className="rounded-md bg-rose-50 px-2.5 py-1 text-rose-700">
-                  {preview.invalidRowCount} invalidas
-                </span>
-              </div>
-            </div>
+            <CardTitle>Preview</CardTitle>
+            <CardDescription>
+              {preview.sourceProvider} via {preview.parserId} · {formatStatementPeriod(preview.periodStart, preview.periodEnd)}
+            </CardDescription>
           </CardHeader>
-          <CardBody className="space-y-4">
-            <div className="overflow-x-auto rounded-md border border-slate-200">
-              <table className="min-w-[760px] w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3">Data</th>
-                    <th className="px-4 py-3">Descricao</th>
-                    <th className="px-4 py-3">Tipo</th>
-                    <th className="px-4 py-3 text-right">Valor</th>
-                    <th className="px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">{preview.rowCount} linhas</Badge>
+              <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" variant="secondary">
+                {preview.rowCount - preview.duplicateCount - preview.invalidRowCount} novas
+              </Badge>
+              <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" variant="secondary">
+                {preview.duplicateCount} duplicadas
+              </Badge>
+              <Badge variant="destructive">{preview.invalidRowCount} inválidas</Badge>
+            </div>
+
+            <div className="rounded-lg border">
+              <Table className="min-w-[760px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {previewRows.map((row) => (
-                    <tr key={`${row.sourceRowNumber}-${row.occurredAt}`} className="text-slate-700">
-                      <td className="px-4 py-3">{formatDate(row.occurredAt)}</td>
-                      <td className="max-w-[320px] truncate px-4 py-3">{row.description}</td>
-                      <td className="px-4 py-3">{formatDirection(row.direction)}</td>
-                      <td className="px-4 py-3 text-right font-medium">{formatMoney(row.amountCents)}</td>
-                      <td className="px-4 py-3">
-                        <LineStatus duplicate={row.duplicate} />
-                      </td>
-                    </tr>
+                    <TableRow key={`${row.sourceRowNumber}-${row.occurredAt}`}>
+                      <TableCell>{formatDate(row.occurredAt)}</TableCell>
+                      <TableCell className="max-w-[320px] truncate">{row.description}</TableCell>
+                      <TableCell>{formatDirection(row.direction)}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">{formatMoney(row.amountCents)}</TableCell>
+                      <TableCell><LineStatus duplicate={row.duplicate} /></TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {preview.warnings.length > 0 ? (
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
-                  <TriangleAlert className="size-4" aria-hidden="true" />
-                  Linhas ignoradas
-                </div>
-                <ul className="mt-2 space-y-1 text-sm text-amber-800">
-                  {preview.warnings.slice(0, 5).map((warning, index) => (
-                    <li key={`${warning.row ?? "row"}-${index}`}>
-                      Linha {warning.row ?? "-"}: {warning.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <Alert>
+                <TriangleAlert aria-hidden="true" />
+                <AlertTitle>Linhas ignoradas</AlertTitle>
+                <AlertDescription>
+                  <ul className="mt-1 space-y-1">
+                    {preview.warnings.slice(0, 5).map((warning, index) => (
+                      <li key={`${warning.row ?? "row"}-${index}`}>
+                        Linha {warning.row ?? "-"}: {warning.message}
+                      </li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
             ) : null}
-          </CardBody>
+          </CardContent>
         </Card>
       ) : null}
 
       {confirmState.summary ? <ImportSummary summary={confirmState.summary} /> : null}
-
       <ImportHistory history={history} />
     </div>
   );
@@ -207,7 +210,7 @@ function PreviewButton() {
 
   return (
     <Button className="w-full sm:w-auto" disabled={pending} type="submit">
-      {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <FileUp className="size-4" aria-hidden="true" />}
+      {pending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <FileUp aria-hidden="true" />}
       Gerar preview
     </Button>
   );
@@ -228,14 +231,10 @@ function ConfirmButton({
       disabled={isPending || !canConfirm}
       onClick={onConfirm}
       type="button"
-      variant="secondary"
+      variant="outline"
     >
-      {isPending ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-      ) : (
-        <CheckCircle2 className="size-4" aria-hidden="true" />
-      )}
-      Confirmar importacao
+      {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <CheckCircle2 aria-hidden="true" />}
+      Confirmar importação
     </Button>
   );
 }
@@ -245,45 +244,46 @@ function ActionMessage({ state }: { state: ImportActionState }) {
     return null;
   }
 
-  const styles =
-    state.status === "error"
-      ? "border-rose-200 bg-rose-50 text-rose-700"
-      : "border-emerald-200 bg-emerald-50 text-emerald-700";
-
-  return <p className={`rounded-md border px-3 py-2 text-sm ${styles}`}>{state.message}</p>;
+  return (
+    <Alert variant={state.status === "error" ? "destructive" : "default"}>
+      {state.status === "error" ? <TriangleAlert aria-hidden="true" /> : <CheckCircle2 aria-hidden="true" />}
+      <AlertTitle>{state.status === "error" ? "Não foi possível continuar" : "Importação atualizada"}</AlertTitle>
+      <AlertDescription>{state.message}</AlertDescription>
+    </Alert>
+  );
 }
 
 function LineStatus({ duplicate }: { duplicate: boolean }) {
-  if (duplicate) {
-    return <span className="rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">Duplicada</span>;
-  }
-
-  return <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">Nova</span>;
+  return duplicate ? (
+    <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" variant="secondary">Duplicada</Badge>
+  ) : (
+    <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" variant="secondary">Nova</Badge>
+  );
 }
 
 function ImportSummary({ summary }: { summary: StatementImportSummary }) {
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-lg font-bold text-brand-navy">Resumo da importacao</h2>
+        <CardTitle>Resumo da importação</CardTitle>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryItem label="Total de linhas" value={summary.rowCount} />
           <SummaryItem label="Importadas" value={summary.importedCount} />
           <SummaryItem label="Duplicadas" value={summary.duplicateCount} />
-          <SummaryItem label="Invalidas/ignoradas" value={summary.invalidRowCount} />
+          <SummaryItem label="Inválidas/ignoradas" value={summary.invalidRowCount} />
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }
 
 function SummaryItem({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-brand-navy">{value}</p>
+    <div className="rounded-lg border bg-muted/30 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
@@ -292,57 +292,55 @@ function ImportHistory({ history }: { history: StatementImportSummary[] }) {
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-lg font-bold text-brand-navy">Historico de importacoes</h2>
+        <CardTitle>Histórico de importações</CardTitle>
+        <CardDescription>Processamentos realizados na sua conta.</CardDescription>
       </CardHeader>
-      <CardBody>
-        <div className="overflow-x-auto rounded-md border border-slate-200">
-          <table className="min-w-[860px] w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">Origem/parser</th>
-                <th className="px-4 py-3">Periodo</th>
-                <th className="px-4 py-3 text-right">Linhas</th>
-                <th className="px-4 py-3 text-right">Importadas</th>
-                <th className="px-4 py-3 text-right">Duplicadas</th>
-                <th className="px-4 py-3 text-right">Ignoradas</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+      <CardContent>
+        <div className="rounded-lg border">
+          <Table className="min-w-[860px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Origem/parser</TableHead>
+                <TableHead>Período</TableHead>
+                <TableHead className="text-right">Linhas</TableHead>
+                <TableHead className="text-right">Importadas</TableHead>
+                <TableHead className="text-right">Duplicadas</TableHead>
+                <TableHead className="text-right">Ignoradas</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {history.length > 0 ? (
                 history.map((item) => (
-                  <tr key={item.id} className="text-slate-700">
-                    <td className="px-4 py-3">{formatDateTime(item.createdAt)}</td>
-                    <td className="px-4 py-3">{item.sourceProvider ?? "CSV"}</td>
-                    <td className="px-4 py-3">{formatStatementPeriod(item.periodStart, item.periodEnd)}</td>
-                    <td className="px-4 py-3 text-right">{item.rowCount}</td>
-                    <td className="px-4 py-3 text-right">{item.importedCount}</td>
-                    <td className="px-4 py-3 text-right">{item.duplicateCount}</td>
-                    <td className="px-4 py-3 text-right">{item.invalidRowCount}</td>
-                    <td className="px-4 py-3">{formatStatus(item.status)}</td>
-                  </tr>
+                  <TableRow key={item.id}>
+                    <TableCell>{formatDateTime(item.createdAt)}</TableCell>
+                    <TableCell>{item.sourceProvider ?? "CSV"}</TableCell>
+                    <TableCell>{formatStatementPeriod(item.periodStart, item.periodEnd)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{item.rowCount}</TableCell>
+                    <TableCell className="text-right tabular-nums">{item.importedCount}</TableCell>
+                    <TableCell className="text-right tabular-nums">{item.duplicateCount}</TableCell>
+                    <TableCell className="text-right tabular-nums">{item.invalidRowCount}</TableCell>
+                    <TableCell><Badge variant="outline">{formatStatus(item.status)}</Badge></TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <tr>
-                  <td className="px-4 py-8 text-center text-slate-500" colSpan={8}>
-                    Nenhuma importacao registrada ainda.
-                  </td>
-                </tr>
+                <TableRow>
+                  <TableCell className="h-24 text-center text-muted-foreground" colSpan={8}>
+                    Nenhuma importação registrada ainda.
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }
 
 function formatMoney(amountCents: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(amountCents / 100);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amountCents / 100);
 }
 
 function formatDate(value: string) {
@@ -350,10 +348,7 @@ function formatDate(value: string) {
 }
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 }
 
 function formatStatementPeriod(periodStart: string | null, periodEnd: string | null) {
@@ -361,34 +356,24 @@ function formatStatementPeriod(periodStart: string | null, periodEnd: string | n
     return "-";
   }
 
-  const start = new Date(periodStart);
-  const end = new Date(periodEnd);
-  const startLabel = formatMonthYear(start);
-  const endLabel = formatMonthYear(end);
-
+  const startLabel = formatMonthYear(new Date(periodStart));
+  const endLabel = formatMonthYear(new Date(periodEnd));
   return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
 }
 
 function formatMonthYear(value: Date) {
-  const formatted = new Intl.DateTimeFormat("pt-BR", {
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(value);
-
+  const formatted = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" }).format(value);
   const label = formatted.replace(".", "").replace(" de ", "/");
-
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function formatDirection(direction: string) {
   const labels: Record<string, string> = {
     INCOME: "Entrada",
-    EXPENSE: "Saida",
-    TRANSFER: "Transferencia",
+    EXPENSE: "Saída",
+    TRANSFER: "Transferência",
     REVERSAL: "Estorno",
   };
-
   return labels[direction] ?? direction;
 }
 
@@ -396,9 +381,8 @@ function formatStatus(status: string) {
   const labels: Record<string, string> = {
     PENDING: "Pendente",
     PROCESSING: "Processando",
-    COMPLETED: "Concluida",
+    COMPLETED: "Concluída",
     FAILED: "Falhou",
   };
-
   return labels[status] ?? status;
 }

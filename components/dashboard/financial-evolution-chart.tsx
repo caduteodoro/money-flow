@@ -1,4 +1,12 @@
 import { EChartsClient } from "@/components/dashboard/echarts-client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { DashboardEvolutionChartModel } from "@/lib/dashboard/dashboard-types";
 import { formatDashboardCurrency } from "@/lib/dashboard/dashboard-visualization";
 
@@ -16,41 +24,41 @@ export function FinancialEvolutionChart({ model }: FinancialEvolutionChartProps)
         model={model}
       />
 
-      <p className="text-xs leading-5 text-slate-500">
+      <p className="text-xs leading-5 text-muted-foreground">
         Entradas aparecem acima de zero, saídas abaixo de zero e a linha acompanha o resultado acumulado.
       </p>
 
-      <details className="rounded-lg border border-slate-200 bg-slate-50">
-        <summary className="min-h-11 cursor-pointer px-3 py-3 text-sm font-bold text-brand-teal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal">
+      <details className="overflow-hidden rounded-lg border bg-muted/30">
+        <summary className="min-h-11 cursor-pointer px-3 py-3 text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           Consultar dados da evolução em tabela
         </summary>
-        <div className="overflow-x-auto border-t border-slate-200">
-          <table className="w-full min-w-[620px] text-left text-xs">
-            <thead className="bg-white text-slate-500">
-              <tr>
-                <th className="px-3 py-2">Período</th>
-                <th className="px-3 py-2 text-right">Entradas</th>
-                <th className="px-3 py-2 text-right">Saídas</th>
-                <th className="px-3 py-2 text-right">Resultado acumulado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
+        <div className="overflow-x-auto border-t bg-background">
+          <Table className="min-w-[620px] text-xs">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Período</TableHead>
+                <TableHead className="text-right">Entradas</TableHead>
+                <TableHead className="text-right">Saídas</TableHead>
+                <TableHead className="text-right">Resultado acumulado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {model.labels.map((label, index) => (
-                <tr key={`${label}-${index}`}>
-                  <td className="px-3 py-2 font-medium text-brand-navy">{label}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-emerald-700">
+                <TableRow key={`${label}-${index}`}>
+                  <TableCell className="font-medium">{label}</TableCell>
+                  <TableCell className="text-right tabular-nums text-emerald-700">
                     {formatDashboardCurrency(model.incomeCents[index] ?? 0)}
-                  </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-rose-700">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-rose-700">
                     {formatDashboardCurrency(model.expenseCents[index] ?? 0)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-semibold tabular-nums text-sky-700">
+                  </TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums text-sky-700">
                     {formatDashboardCurrency(model.cumulativeResultCents[index] ?? 0)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </details>
     </div>

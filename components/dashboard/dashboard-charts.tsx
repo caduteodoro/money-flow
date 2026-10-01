@@ -1,6 +1,7 @@
 import { CategoryDestinationChart } from "@/components/dashboard/category-destination-chart";
 import { FinancialEvolutionChart } from "@/components/dashboard/financial-evolution-chart";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   DashboardCategoryDestinationModel,
   DashboardChartGranularity,
@@ -22,36 +23,30 @@ export function DashboardCharts({
   granularity,
 }: DashboardChartsProps) {
   return (
-    <section className="min-w-0 space-y-6" aria-label="Visualizações analíticas">
+    <section className="flex min-w-0 flex-col gap-6" aria-label="Visualizações analíticas">
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Fluxo do período</p>
-              <h2 className="mt-1 text-lg font-bold text-brand-navy">Evolução financeira</h2>
-              <p className="mt-1 text-sm text-slate-500">Entradas, saídas e resultado acumulado no mesmo eixo monetário.</p>
-            </div>
-            <span className="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {granularity === "month" ? "Agrupado por mês" : "Agrupado por dia"}
-            </span>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Fluxo do período</p>
+          <CardTitle>Evolução financeira</CardTitle>
+          <CardDescription>Entradas, saídas e resultado acumulado no mesmo eixo monetário.</CardDescription>
+          <Badge className="mt-2 w-fit" variant="secondary">
+            {granularity === "month" ? "Agrupado por mês" : "Agrupado por dia"}
+          </Badge>
         </CardHeader>
-        <CardBody>
+        <CardContent>
           <FinancialEvolutionChart model={evolutionModel} />
-        </CardBody>
+        </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-brand-teal">Destino das despesas</p>
-            <h2 className="mt-1 text-lg font-bold text-brand-navy">Onde o dinheiro foi usado</h2>
-            <p className="mt-1 text-sm text-slate-500">Ranking por categoria raiz, com Outros e Sem categoria tratados separadamente.</p>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Destino das despesas</p>
+          <CardTitle>Onde o dinheiro foi usado</CardTitle>
+          <CardDescription>Ranking por categoria raiz, com Outros e Sem categoria tratados separadamente.</CardDescription>
         </CardHeader>
-        <CardBody>
+        <CardContent>
           <CategoryDestinationChart activeFilter={activeFilter} model={categoryModel} />
-        </CardBody>
+        </CardContent>
       </Card>
     </section>
   );

@@ -3,15 +3,19 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { deleteAccountAction } from "@/app/settings/actions";
 import { initialAccountDeletionActionState } from "@/app/settings/account-deletion-state";
+import { deleteAccountAction } from "@/app/settings/actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { ACCOUNT_DELETION_CONFIRMATION } from "@/lib/account/account-deletion-contract";
 
 function DeleteButton() {
   const { pending } = useFormStatus();
+
   return (
-    <Button className="w-full sm:w-auto" disabled={pending} type="submit" variant="destructive">
+    <Button className="w-full sm:w-auto" disabled={pending} size="lg" type="submit" variant="destructive">
       {pending ? "Excluindo conta..." : "Excluir minha conta definitivamente"}
     </Button>
   );
@@ -19,36 +23,49 @@ function DeleteButton() {
 
 export function AccountDeletionForm() {
   const [state, formAction] = useActionState(deleteAccountAction, initialAccountDeletionActionState);
+  const passwordError = state.fieldErrors?.currentPassword?.[0];
+  const confirmationError = state.fieldErrors?.confirmation?.[0];
 
   return (
-    <form action={formAction} className="mt-6 space-y-5" noValidate>
-      <label className="block max-w-xl">
-        <span className="text-sm font-semibold text-slate-800">Senha atual</span>
-        <input
-          autoComplete="current-password"
-          className="mt-2 h-11 w-full rounded-md border border-rose-200 px-3 text-sm outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
-          name="currentPassword"
-          type="password"
-        />
-        {state.fieldErrors?.currentPassword ? <span className="mt-2 block text-sm text-rose-700">{state.fieldErrors.currentPassword[0]}</span> : null}
-      </label>
+    <form action={formAction} className="max-w-xl" noValidate>
+      <FieldGroup>
+        <Field data-invalid={Boolean(passwordError)}>
+          <FieldLabel htmlFor="currentPassword">Senha atual</FieldLabel>
+          <Input
+            aria-invalid={Boolean(passwordError)}
+            autoComplete="current-password"
+            id="currentPassword"
+            name="currentPassword"
+            type="password"
+          />
+          <FieldError>{passwordError}</FieldError>
+        </Field>
 
-      <label className="block max-w-xl">
-        <span className="text-sm font-semibold text-slate-800">
-          Digite <strong>{ACCOUNT_DELETION_CONFIRMATION}</strong>
-        </span>
-        <input
-          autoComplete="off"
-          className="mt-2 h-11 w-full rounded-md border border-rose-200 px-3 text-sm outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
-          name="confirmation"
-          spellCheck={false}
-          type="text"
-        />
-        {state.fieldErrors?.confirmation ? <span className="mt-2 block text-sm text-rose-700">{state.fieldErrors.confirmation[0]}</span> : null}
-      </label>
+        <Field data-invalid={Boolean(confirmationError)}>
+          <FieldLabel htmlFor="confirmation">Confirmação textual</FieldLabel>
+          <Input
+            aria-invalid={Boolean(confirmationError)}
+            autoComplete="off"
+            id="confirmation"
+            name="confirmation"
+            spellCheck={false}
+            type="text"
+          />
+          <FieldDescription>
+            Digite <strong>{ACCOUNT_DELETION_CONFIRMATION}</strong> exatamente como exibido.
+          </FieldDescription>
+          <FieldError>{confirmationError}</FieldError>
+        </Field>
 
-      {state.message ? <p className="max-w-xl rounded-md bg-rose-100 px-3 py-2 text-sm text-rose-800" role="alert">{state.message}</p> : null}
-      <DeleteButton />
+        {state.message ? (
+          <Alert variant="destructive">
+            <AlertTitle>Não foi possível excluir a conta</AlertTitle>
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <DeleteButton />
+      </FieldGroup>
     </form>
   );
 }
