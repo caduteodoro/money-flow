@@ -1,4 +1,5 @@
 import type { CategorizationSource, TransactionDirection } from "@prisma/client";
+import type { ExpenseFlowModel } from "./expense-flow";
 
 export type DashboardDateFilterId = "imported-period" | "last-30-days" | "current-month" | "previous-month";
 
@@ -260,5 +261,6 @@ export type DashboardSummary = {
   charts: DashboardCharts;
   categories: DashboardCategoryAnalytics;
   offenders: DashboardOffenders;
+  expenseFlow: ExpenseFlowModel;
   insights: DashboardInsight[];
 };

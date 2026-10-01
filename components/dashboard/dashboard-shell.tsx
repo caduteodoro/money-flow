@@ -5,6 +5,7 @@ import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-stat
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardPeriodFilter } from "@/components/dashboard/dashboard-period-filter";
 import { ExpenseHighlights } from "@/components/dashboard/expense-highlights";
+import { ExpenseFlow } from "@/components/dashboard/expense-flow";
 import { TransactionsTable } from "@/components/dashboard/transactions-table";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -84,6 +85,8 @@ export function DashboardShell({ user, summary, activeFilter }: DashboardShellPr
               />
 
               <CategorizationCoverage coverage={summary.categories.coverage} period={activeFilter} />
+
+              <ExpenseFlow model={summary.expenseFlow} period={activeFilter} />
 
               <ExpenseHighlights
                 offenders={summary.offenders}

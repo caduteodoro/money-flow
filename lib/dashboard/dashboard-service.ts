@@ -1,4 +1,5 @@
 import "server-only";
+import { buildExpenseFlow } from "./expense-flow";
 
 import { prisma } from "@/lib/db/prisma";
 import {
@@ -191,6 +192,7 @@ function buildDashboardSummary(
     },
     categories,
     offenders,
+    expenseFlow: buildExpenseFlow(currentTransactions),
     insights: buildDashboardInsights(categories, offenders),
   };
 }

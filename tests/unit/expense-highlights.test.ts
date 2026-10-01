@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { ExpenseHighlights } from "@/components/dashboard/expense-highlights";
+import { buildExpenseFlow } from "@/lib/dashboard/expense-flow";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { buildDashboardOffenders, calculateCategoryAnalytics, calculateFinancialKpis, buildDashboardKpiComparisons } from "@/lib/dashboard/dashboard-calculations";
 import { parseDescriptionHash, resolveDescriptionGroup } from "@/lib/dashboard/description-groups";
@@ -130,7 +131,7 @@ function shell(rows: DashboardAnalyticsTransaction[], hasImportedTransactions = 
     comparisonPeriod: null, hasImportedTransactions, periodTransactionCount: rows.length, kpis,
     comparisons: buildDashboardKpiComparisons(kpis, null), largestExpense: offenders.largestExpenses[0] ?? null,
     recentTransactions: rows.map((row) => ({ id: row.id, occurredAt: row.occurredAt.toISOString(), amountCents: row.amountCents, direction: row.direction, description: row.description, category: null })),
-    charts: { granularity: "day", cashflow: [], incomeExpense: { incomeCents: kpis.totalIncomeCents, expenseCents: kpis.totalExpenseCents } }, categories, offenders, insights: [],
+    charts: { granularity: "day", cashflow: [], incomeExpense: { incomeCents: kpis.totalIncomeCents, expenseCents: kpis.totalExpenseCents } }, categories, offenders, expenseFlow: buildExpenseFlow(rows), insights: [],
   };
   return renderToStaticMarkup(createElement(DashboardShell, { user: { name: "Synthetic", email: "synthetic@example.test" }, activeFilter: "current-month", summary }));
 }
