@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { applyHeaders, PROTECTED_CACHE_HEADERS } from "@/lib/security/response-headers";
+
 const SESSION_COOKIE_NAME = "money_flow_session";
 
 export function middleware(request: NextRequest) {
@@ -8,11 +10,18 @@ export function middleware(request: NextRequest) {
 
   if (!hasSessionCookie) {
     const loginUrl = new URL("/login", request.url);
+    const response = NextResponse.redirect(loginUrl);
 
-    return NextResponse.redirect(loginUrl);
+    applyHeaders(response.headers, PROTECTED_CACHE_HEADERS);
+
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+
+  applyHeaders(response.headers, PROTECTED_CACHE_HEADERS);
+
+  return response;
 }
 
 export const config = {

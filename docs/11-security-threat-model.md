@@ -364,3 +364,15 @@ O plano controlado permanece como referencia historica de sequencia. Os Blocos 3
 5. Privacidade e retencao — exclusao do banco ativo concluida; `BCK-032` e `BCK-033` permanecem abertos.
 6. Dependencias e headers — consolidados no Bloco 6 e ainda bloqueantes conforme a matriz.
 7. Testes automatizados e regressao — fundacao de seguranca aprovada; `BCK-011` amplo permanece aberto.
+
+## Atualização pré-deploy — CAD-9
+
+Em 21 de novembro de 2026, a CAD-9 repetiu a revisão antes de qualquer preparação de infraestrutura. A evidência completa está em [`docs/19-cad-9-pre-deploy-security-review.md`](19-cad-9-pre-deploy-security-review.md).
+
+- `SEC-012` deixou de representar ausência total de headers: a aplicação agora configura CSP mínima, proteção contra framing, `nosniff`, política de referência e permissões, além de `no-store` nas respostas do middleware para rotas protegidas. TLS, HSTS, proxy e headers finais continuam dependentes do deployment.
+- Atualizações compatíveis removeram os advisories diretamente corrigíveis de Next, Zod e Sharp. O `postcss@8.4.31` interno do Next 15.5.29 permanece como risco residual; o npm propõe Next 16 com `--force`, mudança incompatível não autorizada nesta atividade.
+- A inspeção de autenticação, sessão, uploads e isolamento por `userId` não identificou novo bypass no escopo avaliado.
+- O histórico Git recebeu uma varredura heurística sem correspondências não classificadas; a ausência de `gitleaks` foi registrada como limitação.
+- A decisão do gate permanece negativa para exposição externa: a CAD-19 bloqueia a CAD-9 porque o cadastro ainda está aberto. A CAD-20 não foi implementada nem autorizada por esta revisão.
+
+Esta atualização substitui somente o estado temporal dos achados citados. Os riscos históricos, limitações e fronteiras de confiança anteriores permanecem documentados para auditoria.

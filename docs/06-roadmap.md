@@ -101,7 +101,7 @@ Estado atual:
 
 ## Sprint 6
 
-Status: em andamento. O Bloco 4A foi implementado e homologado funcionalmente pelo usuário. O Bloco 3 permanece preservado. Esta formalização não inicia o Bloco 4B e não encerra a Sprint 6.
+Status: em andamento. O Bloco 4A foi implementado e homologado funcionalmente pelo usuário. O Bloco 4B foi implementado tecnicamente e ainda aguarda homologação manual. A revisão técnica pré-deploy da CAD-9 foi executada, mas o gate externo permanece bloqueado pela CAD-19 e não autoriza iniciar a CAD-20. O Bloco 3 permanece preservado e a Sprint 6 não está encerrada.
 
 ### Bloco 4A — Principais gastos do período e drill-through
 

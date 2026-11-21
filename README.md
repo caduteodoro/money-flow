@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 6 em andamento; Bloco 4A implementado e homologado funcionalmente pelo usuário. Bloco 4B não iniciado; preview externo, produção e deploy continuam sem autorização**. Evidências e limites em [Roadmap — Sprint 6](docs/06-roadmap.md#sprint-6).
+Status atual: **Sprint 6 em andamento; Blocos 4A e 4B implementados tecnicamente, com a homologação manual do 4B ainda pendente. A CAD-9 concluiu a revisão técnica pré-deploy, mas preview externo, produção e deploy continuam sem autorização enquanto a CAD-19 não fechar o cadastro**. Evidências e limites em [Roadmap — Sprint 6](docs/06-roadmap.md#sprint-6) e na [revisão de segurança da CAD-9](docs/19-cad-9-pre-deploy-security-review.md).
 
 ## Problema
 
@@ -284,6 +284,7 @@ Sprint 5:
 - IP, quando registrado, deve ser armazenado apenas como hash.
 - O roadmap deve considerar LGPD/GDPR.
 - Futuramente, campos sensiveis devem ter criptografia e a plataforma deve evitar que operadores vejam transacoes individuais.
+- A decisão pré-deploy atual está documentada na [CAD-9](docs/19-cad-9-pre-deploy-security-review.md); ela não autoriza preview externo nem produção pública.
 
 ## Dados de exemplo
 
@@ -295,8 +296,9 @@ A pasta `sample-data/` contem apenas dados ficticios. Use esses arquivos para de
 - Sem MFA.
 - Rate limiting persistente por identidade implementado no login e no cadastro; ainda sem proteção por IP ou borda confiável.
 - Sem login social.
-- `SEC-008` permanece parcialmente mitigado: PostCSS e Sharp vulneraveis continuam no grafo do Next 15.5.23, mas nao sao alcancaveis pelo desenho atual sem CSS ou imagens nao confiaveis; qualquer novo caminho desse tipo exige reavaliacao.
+- `SEC-008` permanece parcialmente mitigado: as atualizações compatíveis removeram os advisories diretamente corrigíveis, mas o PostCSS interno do Next 15.5.29 permanece no grafo; qualquer CSS não confiável ou exposição externa exige reavaliação.
 - `SEC-009` permanece parcialmente mitigado e depende de validacao atras do proxy real antes de preview externo.
+- `SEC-012` recebeu headers explícitos e política `no-store` para rotas protegidas; TLS, HSTS e os headers finais ainda dependem de validação no deployment.
 - Sem autoexecucao de regras na importacao.
 - Grupos de descrição sem hash válido não têm drill-through; o ranking não representa necessariamente todas as saídas. Observações não bloqueantes da homologação estão no [backlog](docs/08-backlog.md#reconciliação-da-homologação-do-bloco-4a).
 - A integridade relacional multiusuario e a unicidade estrutural de categorias estao protegidas no banco; retencao/exclusao continuam pendentes.
