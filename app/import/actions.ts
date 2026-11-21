@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireCurrentUser } from "@/lib/auth/current-user";
+import { applyCategoryRulesToUncategorizedTransactions } from "@/lib/category-rules";
 import {
   buildStatementImportPreview,
   importStatementTransactions,
@@ -58,12 +59,14 @@ export async function confirmStatementImportAction(
     const user = await requireCurrentUser();
     const uploadInput = await buildUploadInput(user.id, formData);
     const summary = await importStatementTransactions(uploadInput);
+    const message = await applyRulesAfterImport(user.id, summary.importedCount);
 
     revalidatePath("/import");
+    revalidatePath("/transactions");
 
     return {
       status: "success",
-      message: "Importacao concluida.",
+      message,
       summary,
     };
   } catch (error) {
@@ -72,6 +75,24 @@ export async function confirmStatementImportAction(
       message: getFriendlyErrorMessage(error),
     };
   }
+}
+
+async function applyRulesAfterImport(userId: string, importedCount: number) {
+  if (importedCount === 0) {
+    return "Importacao concluida.";
+  }
+
+  const applied = await applyCategoryRulesToUncategorizedTransactions(userId);
+
+  if (!applied.ok) {
+    return "Importacao concluida, mas as regras nao puderam ser aplicadas agora. Use \"Aplicar regras\" em Categorias.";
+  }
+
+  const { categorizedCount } = applied.data;
+  const categorizedText =
+    categorizedCount === 1 ? "1 transacao categorizada" : `${categorizedCount} transacoes categorizadas`;
+
+  return `Importacao concluida. ${categorizedText} pelas regras.`;
 }
 
 async function buildUploadInput(userId: string, formData: FormData): Promise<StatementUploadInput> {
