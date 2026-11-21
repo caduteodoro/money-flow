@@ -1,0 +1,6 @@
+.env
+.env.*
+Alinhamentos/
+raio-x-repositorio.md
+*.csv
+*.ofx

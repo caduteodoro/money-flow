@@ -36,6 +36,16 @@
 
 `docs/` guarda decisoes e documentacao de evolucao.
 
+## Preparação de deployment
+
+A CAD-20 preserva os modelos e migrations existentes e separa somente os canais de conexão. `DATABASE_URL` alimenta o Prisma Client com o endpoint pooled do Neon; `DIRECT_URL` alimenta o Prisma CLI com o endpoint direto para migrations. Em desenvolvimento e integração locais, ambas podem apontar para o mesmo PostgreSQL direto.
+
+O build preparado para a Vercel valida as variáveis sem imprimir valores, regenera o Prisma Client, executa `prisma migrate deploy` e só então executa `next build`. `postinstall` também regenera o client para evitar cache incompatível. Preview e Production precisam de bancos ou branches Neon separados; não existe fallback automático para banco de desenvolvimento.
+
+As Server Actions aceitam até 3 MB de corpo para acomodar um CSV funcionalmente limitado a 2 MiB mais o overhead multipart. A validação de arquivo continua no domínio e o aumento do transporte não amplia o limite do produto.
+
+Detalhes, fronteiras e checklist operacional estão em [`docs/20-cad-20-vercel-neon-preparation.md`](20-cad-20-vercel-neon-preparation.md).
+
 ## Autenticacao e sessao
 
 A Sprint 1 implementa autenticacao propria para o MVP:

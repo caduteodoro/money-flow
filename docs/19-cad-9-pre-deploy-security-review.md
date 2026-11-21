@@ -99,3 +99,7 @@ O Vitest emitiu um aviso não bloqueante sobre o carregamento futuro de configur
 ## Critério para reabrir o gate
 
 Depois da CAD-19, a CAD-9 deve confirmar novamente o cadastro fechado e repetir os gates relevantes. Somente então poderá decidir se a CAD-20 pode começar. A aprovação da CAD-20 ainda não autoriza deploy: a CAD-21 deverá validar o ambiente real com conta e dados exclusivamente sintéticos.
+
+### Exceção de sequência autorizada
+
+Em 21 de novembro de 2026, o usuário autorizou explicitamente iniciar a preparação técnica da CAD-20 antes da conclusão da CAD-19. A exceção não altera a decisão deste gate: preview externo, produção e deploy continuam não aprovados, e a CAD-21 permanece condicionada ao fechamento do cadastro e à repetição das validações da CAD-9.

@@ -101,7 +101,7 @@ Estado atual:
 
 ## Sprint 6
 
-Status: em andamento. O Bloco 4A foi implementado e homologado funcionalmente pelo usuário. O Bloco 4B foi implementado tecnicamente e ainda aguarda homologação manual. A revisão técnica pré-deploy da CAD-9 foi executada, mas o gate externo permanece bloqueado pela CAD-19 e não autoriza iniciar a CAD-20. O Bloco 3 permanece preservado e a Sprint 6 não está encerrada.
+Status: em andamento. O Bloco 4A foi implementado e homologado funcionalmente pelo usuário. O Bloco 4B foi implementado tecnicamente e ainda aguarda homologação manual. Por autorização explícita, a CAD-20 concluiu a preparação técnica local para Vercel e Neon como exceção de sequência. Isso não altera o gate externo: a CAD-9 permanece bloqueada pela CAD-19 e a CAD-21/deploy não estão autorizados. O Bloco 3 permanece preservado e a Sprint 6 não está encerrada.
 
 ### Bloco 4A — Principais gastos do período e drill-through
 

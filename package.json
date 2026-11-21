@@ -4,8 +4,11 @@
   "private": true,
   "description": "Money Flow - Seu GPS financeiro pessoal.",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "npm run deploy:check && prisma generate && prisma migrate deploy && next build",
+    "deploy:check": "node scripts/validate-deployment-env.mjs",
     "start": "next start",
     "test": "vitest run --exclude tests/integration/** --passWithNoTests",
     "test:integration": "node tests/helpers/run-integration.mjs",

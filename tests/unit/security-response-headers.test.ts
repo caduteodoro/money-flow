@@ -6,6 +6,10 @@ import nextConfig from "@/next.config";
 import { GLOBAL_SECURITY_HEADERS, PROTECTED_CACHE_HEADERS } from "@/lib/security/response-headers";
 
 describe("security response headers", () => {
+  it("keeps transport headroom for the 2 MB CSV business limit", () => {
+    expect(nextConfig.experimental?.serverActions?.bodySizeLimit).toBe("3mb");
+  });
+
   it("applies the global hardening headers through Next configuration", async () => {
     const configured = await nextConfig.headers?.();
 

@@ -4,7 +4,7 @@
 
 Money Flow e um sistema web de financas pessoais pensado para transformar extratos bancarios em visao clara: KPIs, dashboards, graficos, tabelas, categorias editaveis e insights uteis para decisoes do dia a dia.
 
-Status atual: **Sprint 6 em andamento; Blocos 4A e 4B implementados tecnicamente, com a homologação manual do 4B ainda pendente. A CAD-9 concluiu a revisão técnica pré-deploy, mas preview externo, produção e deploy continuam sem autorização enquanto a CAD-19 não fechar o cadastro**. Evidências e limites em [Roadmap — Sprint 6](docs/06-roadmap.md#sprint-6) e na [revisão de segurança da CAD-9](docs/19-cad-9-pre-deploy-security-review.md).
+Status atual: **Sprint 6 em andamento; Blocos 4A e 4B implementados tecnicamente, com a homologação manual do 4B ainda pendente. A CAD-20 concluiu a preparação local para Vercel e Neon, mas preview externo, produção e deploy continuam sem autorização enquanto a CAD-19 não fechar o cadastro e a CAD-9 não repetir o gate**. Evidências e limites em [Roadmap — Sprint 6](docs/06-roadmap.md#sprint-6), na [revisão de segurança da CAD-9](docs/19-cad-9-pre-deploy-security-review.md) e na [preparação da CAD-20](docs/20-cad-20-vercel-neon-preparation.md).
 
 ## Problema
 
@@ -167,11 +167,15 @@ POSTGRES_USER=money_flow
 POSTGRES_PASSWORD=change-me-in-local-env
 POSTGRES_DB=money_flow
 DATABASE_URL="postgresql://money_flow:change-me-in-local-env@localhost:5432/money_flow?schema=public"
+DIRECT_URL="postgresql://money_flow:change-me-in-local-env@localhost:5432/money_flow?schema=public"
+RATE_LIMIT_HMAC_SECRET="replace-with-at-least-32-random-characters"
 ```
 
 Nao use segredos reais em arquivos versionados.
 
 Login e cadastro exigem `RATE_LIMIT_HMAC_SECRET` no ambiente local. Gere um segredo exclusivo com fonte criptograficamente segura (pelo menos 32 bytes aleatórios; por exemplo, representados em 64 caracteres hexadecimais) e grave somente no `.env` ignorado. O valor de exemplo não é um segredo utilizável. Não exiba o valor em terminal, logs, clipboard ou documentos. Depois de configurar, reinicie o servidor. A validação relevante é o carregamento pelo runtime; um build aprovado não comprova a presença dessa variável.
+
+Localmente, `DATABASE_URL` e `DIRECT_URL` apontam para a mesma instância PostgreSQL direta. Na Vercel com Neon, `DATABASE_URL` deve usar o endpoint pooled e `DIRECT_URL` o endpoint direto do mesmo banco. As três variáveis são segredos e devem ser configuradas separadamente por ambiente; valores reais nunca entram no Git.
 
 ## Prisma
 
@@ -186,6 +190,15 @@ Criar/aplicar migration local:
 ```bash
 npx prisma migrate dev
 ```
+
+Aplicar migrations versionadas em ambiente hospedado, somente depois de validar o destino:
+
+```bash
+npm run deploy:check
+npx prisma migrate deploy
+```
+
+O build preparado para a Vercel executa validação, `prisma generate`, `prisma migrate deploy` e `next build` por meio de `npm run vercel-build`. Preview e Production devem usar bancos ou branches Neon distintos. Esta preparação não autoriza deploy; o procedimento completo e os limites estão em [CAD-20 — Vercel e Neon](docs/20-cad-20-vercel-neon-preparation.md).
 
 Abrir Prisma Studio:
 

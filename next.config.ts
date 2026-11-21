@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 import { GLOBAL_SECURITY_HEADERS } from "./lib/security/response-headers";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "3mb",
+    },
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

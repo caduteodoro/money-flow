@@ -11,6 +11,8 @@ const environment = {
   NODE_ENV: "test",
   MONEY_FLOW_TEST_DATABASE_CONFIRMED: "yes",
   DATABASE_URL,
+  DIRECT_URL: DATABASE_URL,
+  RATE_LIMIT_HMAC_SECRET: "synthetic-test-rate-limit-secret-at-least-32-characters",
 };
 const compose = ["compose", "-p", "money-flow-test", "-f", "docker-compose.test.yml"];
 const prismaCli = fileURLToPath(new URL("../../node_modules/prisma/build/index.js", import.meta.url));
